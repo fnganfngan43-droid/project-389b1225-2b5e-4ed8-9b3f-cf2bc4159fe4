@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { Voucher } from '@/types/accounting';
+import { printVoucher } from '@/utils/printService';
 import { 
   Select,
   SelectContent,
@@ -12,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Save, X, Calendar } from 'lucide-react';
+import { Save, X, Calendar, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface VoucherScreenProps {
@@ -20,10 +21,15 @@ interface VoucherScreenProps {
 }
 
 export function VoucherScreen({ type }: VoucherScreenProps) {
-  const { vouchers, accounts, groups, currencies, addVoucher, deleteVoucher } = useAccounting();
+  const { vouchers, accounts, groups, currencies, settings, addVoucher, deleteVoucher } = useAccounting();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
+
+  const handlePrint = (voucher: Voucher) => {
+    printVoucher({ voucher, settings });
+    toast.success('جاري طباعة السند...');
+  };
 
   const filteredVouchers = vouchers.filter(v => 
     v.type === type && (
@@ -275,11 +281,24 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       <p className="font-semibold text-foreground">{voucher.accountName}</p>
                       <p className="text-xs text-muted-foreground mt-1">{voucher.description}</p>
                     </div>
-                    <div className="text-left">
-                      <p className={`font-bold text-lg ${type === 'receipt' ? 'text-success' : 'text-destructive'}`}>
-                        {voucher.amount.toLocaleString()}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{voucher.currency}</p>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePrint(voucher);
+                        }}
+                        className="text-primary hover:bg-primary/10"
+                      >
+                        <Printer className="w-4 h-4" />
+                      </Button>
+                      <div className="text-left">
+                        <p className={`font-bold text-lg ${type === 'receipt' ? 'text-success' : 'text-destructive'}`}>
+                          {voucher.amount.toLocaleString()}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{voucher.currency}</p>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
