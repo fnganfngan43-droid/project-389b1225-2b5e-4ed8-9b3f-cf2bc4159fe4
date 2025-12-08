@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAccounting } from '@/contexts/AccountingContext';
+import { printReport } from '@/utils/printService';
 import { 
   Select,
   SelectContent,
@@ -15,7 +16,7 @@ import { toast } from 'sonner';
 type ReportType = 'analytical' | 'summary';
 
 export function ReportsScreen() {
-  const { accounts, groups, currencies, vouchers, invoices } = useAccounting();
+  const { accounts, groups, currencies, vouchers, invoices, settings } = useAccounting();
   const [reportType, setReportType] = useState<ReportType>('analytical');
   const [selectedGroup, setSelectedGroup] = useState('');
   const [selectedAccount, setSelectedAccount] = useState('');
@@ -67,6 +68,31 @@ export function ReportsScreen() {
     return { ...t, balance: runningBalance };
   });
 
+  const handlePrintReport = () => {
+    if (!showReport || !selectedAccount || !selectedCurrency) {
+      toast.error('يرجى إنشاء التقرير أولاً');
+      return;
+    }
+    
+    const title = reportType === 'analytical' ? 'كشف حساب تحليلي' : 'كشف حساب إجمالي';
+    const totals = {
+      debit: transactionsWithBalance.reduce((sum, t) => sum + t.debit, 0),
+      credit: transactionsWithBalance.reduce((sum, t) => sum + t.credit, 0),
+      balance: runningBalance,
+    };
+    
+    printReport({
+      title,
+      accountName: selectedAccount,
+      currency: selectedCurrency,
+      transactions: transactionsWithBalance,
+      settings,
+      totals,
+    });
+    
+    toast.success('جاري طباعة التقرير...');
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Report toolbar */}
@@ -75,7 +101,8 @@ export function ReportsScreen() {
           <Button 
             variant="secondary" 
             size="sm"
-            onClick={() => toast.info('سيتم إضافة خاصية الطباعة قريباً')}
+            onClick={handlePrintReport}
+            disabled={!showReport}
           >
             <Printer className="w-4 h-4" />
             طباعة
