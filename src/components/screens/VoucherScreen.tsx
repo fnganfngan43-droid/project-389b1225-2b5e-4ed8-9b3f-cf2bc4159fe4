@@ -189,7 +189,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">
-                  {type === 'receipt' ? 'المبلغ المدين' : 'المبلغ الدائن'}
+                  {type === 'receipt' ? 'المبلغ الدائن' : 'المبلغ المدين'}
                 </label>
                 <Input
                   type="number"
