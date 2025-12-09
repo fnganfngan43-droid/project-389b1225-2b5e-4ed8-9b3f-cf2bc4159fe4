@@ -201,7 +201,7 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">
-                  {isReturn ? 'المبلغ المدين' : 'المبلغ الدائن'}
+                  {isReturn ? 'المبلغ الدائن' : 'المبلغ المدين'}
                 </label>
                 <Input
                   type="number"
