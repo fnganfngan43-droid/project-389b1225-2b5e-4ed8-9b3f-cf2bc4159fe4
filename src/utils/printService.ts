@@ -50,20 +50,44 @@ const getCommonStyles = () => `
     background: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
     color: white;
     padding: 20px;
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header-right {
+    text-align: right;
+    flex: 1;
+  }
+  .header-center {
+    flex: 0 0 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .header-center img {
+    max-width: 80px;
+    max-height: 80px;
+    object-fit: contain;
+  }
+  .header-left {
+    text-align: left;
+    flex: 1;
+    direction: ltr;
+  }
+  .header h1, .header h2, .header p {
+    margin: 2px 0;
   }
   .header h1 {
-    font-size: 24px;
-    margin-bottom: 5px;
+    font-size: 18px;
+    font-weight: bold;
   }
   .header h2 {
-    font-size: 18px;
+    font-size: 14px;
     opacity: 0.9;
   }
   .header p {
-    font-size: 14px;
+    font-size: 12px;
     opacity: 0.8;
-    margin-top: 5px;
   }
   .content {
     padding: 25px;
@@ -245,9 +269,19 @@ export function printVoucher({ voucher, settings }: PrintVoucherData) {
     <body>
       <div class="print-container">
         <div class="header">
-          <h1>${settings.headerArabic[0]}</h1>
-          <h2>${settings.headerArabic[1]}</h2>
-          <p>${settings.headerArabic[2]}</p>
+          <div class="header-right">
+            <h1>${settings.headerArabic[0]}</h1>
+            <h2>${settings.headerArabic[1]}</h2>
+            <p>${settings.headerArabic[2]}</p>
+          </div>
+          <div class="header-center">
+            ${settings.logo ? `<img src="${settings.logo}" alt="Logo" />` : ''}
+          </div>
+          <div class="header-left">
+            <h1>${settings.headerEnglish[0]}</h1>
+            <h2>${settings.headerEnglish[1]}</h2>
+            <p>${settings.headerEnglish[2]}</p>
+          </div>
         </div>
         
         <div class="content">
@@ -338,9 +372,19 @@ export function printReport({ title, accountName, currency, transactions, settin
     <body>
       <div class="print-container">
         <div class="header">
-          <h1>${settings.headerArabic[0]}</h1>
-          <h2>${settings.headerArabic[1]}</h2>
-          <p>${settings.headerArabic[2]}</p>
+          <div class="header-right">
+            <h1>${settings.headerArabic[0]}</h1>
+            <h2>${settings.headerArabic[1]}</h2>
+            <p>${settings.headerArabic[2]}</p>
+          </div>
+          <div class="header-center">
+            ${settings.logo ? `<img src="${settings.logo}" alt="Logo" />` : ''}
+          </div>
+          <div class="header-left">
+            <h1>${settings.headerEnglish[0]}</h1>
+            <h2>${settings.headerEnglish[1]}</h2>
+            <p>${settings.headerEnglish[2]}</p>
+          </div>
         </div>
         
         <div class="content">
