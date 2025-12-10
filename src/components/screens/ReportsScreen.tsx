@@ -43,21 +43,23 @@ export function ReportsScreen() {
   );
 
   const transactions = [
+    // سند قبض = دائن، سند صرف = مدين
     ...accountVouchers.map(v => ({
       date: v.date,
       type: v.type === 'receipt' ? 'قبض' : 'صرف',
       description: v.description,
       reference: v.reference,
-      debit: v.type === 'receipt' ? v.amount : 0,
-      credit: v.type === 'payment' ? v.amount : 0,
+      debit: v.type === 'payment' ? v.amount : 0,
+      credit: v.type === 'receipt' ? v.amount : 0,
     })),
+    // مبيعات = مدين، مرتجع = دائن
     ...accountInvoices.map(i => ({
       date: i.date,
       type: i.amount >= 0 ? 'مبيعات' : 'مرتجع',
       description: i.description,
       reference: i.reference,
-      debit: i.amount < 0 ? Math.abs(i.amount) : 0,
-      credit: i.amount >= 0 ? i.amount : 0,
+      debit: i.amount >= 0 ? i.amount : 0,
+      credit: i.amount < 0 ? Math.abs(i.amount) : 0,
     })),
   ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
