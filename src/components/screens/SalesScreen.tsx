@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { Invoice } from '@/types/accounting';
+import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { 
   Select,
   SelectContent,
@@ -179,21 +180,13 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
               </div>
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-                <Select 
-                  value={formData.accountName} 
-                  onValueChange={(val) => setFormData(prev => ({ ...prev, accountName: val }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر الحساب" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredAccounts.map(acc => (
-                      <SelectItem key={acc.id} value={acc.accountName}>
-                        {acc.accountName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <AccountSearchInput
+                  accounts={filteredAccounts}
+                  value={formData.accountName}
+                  onSelect={(val) => setFormData(prev => ({ ...prev, accountName: val }))}
+                  placeholder="ابحث عن الحساب..."
+                  disabled={!formData.groupName}
+                />
               </div>
             </div>
 
