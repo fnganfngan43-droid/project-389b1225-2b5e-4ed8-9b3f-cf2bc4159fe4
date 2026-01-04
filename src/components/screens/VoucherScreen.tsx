@@ -6,6 +6,7 @@ import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { Voucher } from '@/types/accounting';
 import { printVoucher } from '@/utils/printService';
+import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { 
   Select,
   SelectContent,
@@ -210,21 +211,13 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                     </div>
                     <div>
                       <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-                      <Select 
-                        value={formData.debitAccountName} 
-                        onValueChange={(val) => setFormData(prev => ({ ...prev, debitAccountName: val }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="اختر الحساب" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {debitFilteredAccounts.map(acc => (
-                            <SelectItem key={acc.id} value={acc.accountName}>
-                              {acc.accountName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <AccountSearchInput
+                        accounts={debitFilteredAccounts}
+                        value={formData.debitAccountName}
+                        onSelect={(val) => setFormData(prev => ({ ...prev, debitAccountName: val }))}
+                        placeholder="ابحث عن الحساب..."
+                        disabled={!formData.debitGroupName}
+                      />
                     </div>
                   </div>
 
@@ -305,21 +298,13 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                     </div>
                     <div>
                       <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-                      <Select 
-                        value={formData.creditAccountName} 
-                        onValueChange={(val) => setFormData(prev => ({ ...prev, creditAccountName: val }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="اختر الحساب" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {creditFilteredAccounts.map(acc => (
-                            <SelectItem key={acc.id} value={acc.accountName}>
-                              {acc.accountName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <AccountSearchInput
+                        accounts={creditFilteredAccounts}
+                        value={formData.creditAccountName}
+                        onSelect={(val) => setFormData(prev => ({ ...prev, creditAccountName: val }))}
+                        placeholder="ابحث عن الحساب..."
+                        disabled={!formData.creditGroupName}
+                      />
                     </div>
                   </div>
 
@@ -402,21 +387,13 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                     </div>
                     <div>
                       <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-                      <Select 
-                        value={formData.creditAccountName} 
-                        onValueChange={(val) => setFormData(prev => ({ ...prev, creditAccountName: val }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="اختر الحساب" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {creditFilteredAccounts.map(acc => (
-                            <SelectItem key={acc.id} value={acc.accountName}>
-                              {acc.accountName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <AccountSearchInput
+                        accounts={creditFilteredAccounts}
+                        value={formData.creditAccountName}
+                        onSelect={(val) => setFormData(prev => ({ ...prev, creditAccountName: val }))}
+                        placeholder="ابحث عن الحساب..."
+                        disabled={!formData.creditGroupName}
+                      />
                     </div>
                   </div>
 
@@ -497,21 +474,13 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                     </div>
                     <div>
                       <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-                      <Select 
-                        value={formData.debitAccountName} 
-                        onValueChange={(val) => setFormData(prev => ({ ...prev, debitAccountName: val }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="اختر الحساب" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {debitFilteredAccounts.map(acc => (
-                            <SelectItem key={acc.id} value={acc.accountName}>
-                              {acc.accountName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <AccountSearchInput
+                        accounts={debitFilteredAccounts}
+                        value={formData.debitAccountName}
+                        onSelect={(val) => setFormData(prev => ({ ...prev, debitAccountName: val }))}
+                        placeholder="ابحث عن الحساب..."
+                        disabled={!formData.debitGroupName}
+                      />
                     </div>
                   </div>
 

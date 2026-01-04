@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { printReport } from '@/utils/printService';
+import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { 
   Select,
   SelectContent,
@@ -14,10 +15,12 @@ import { BarChart3, Eye, Printer, Share2, FileText, ArrowRight } from 'lucide-re
 import { toast } from 'sonner';
 
 type ReportType = 'analytical' | 'summary';
+type OperationType = 'all' | 'opening' | 'receipt' | 'payment' | 'invoices' | 'returns' | 'discount';
 
 export function ReportsScreen() {
-  const { accounts, groups, currencies, vouchers, invoices, settings } = useAccounting();
+  const { accounts, groups, currencies, vouchers, invoices, openingBalances, settings } = useAccounting();
   const [reportType, setReportType] = useState<ReportType>('analytical');
+  const [operationType, setOperationType] = useState<OperationType>('all');
   const [selectedGroup, setSelectedGroup] = useState('');
   const [selectedAccount, setSelectedAccount] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('');
@@ -34,34 +37,100 @@ export function ReportsScreen() {
     toast.success('تم إنشاء التقرير بنجاح');
   };
 
-  // Get transactions for selected account
-  const accountVouchers = vouchers.filter(v => 
-    v.accountName === selectedAccount && v.currency === selectedCurrency
-  );
-  const accountInvoices = invoices.filter(i => 
-    i.accountName === selectedAccount && i.currency === selectedCurrency
-  );
+  // Get transactions for selected account based on operation type
+  const getTransactions = () => {
+    let allTransactions: Array<{
+      date: string;
+      type: string;
+      description: string;
+      reference?: string;
+      debit: number;
+      credit: number;
+    }> = [];
 
-  const transactions = [
-    // سند قبض = دائن، سند صرف = مدين
-    ...accountVouchers.map(v => ({
-      date: v.date,
-      type: v.type === 'receipt' ? 'قبض' : 'صرف',
-      description: v.description,
-      reference: v.reference,
-      debit: v.type === 'payment' ? v.amount : 0,
-      credit: v.type === 'receipt' ? v.amount : 0,
-    })),
-    // مبيعات = مدين، مرتجع = دائن
-    ...accountInvoices.map(i => ({
-      date: i.date,
-      type: i.amount >= 0 ? 'مبيعات' : 'مرتجع',
-      description: i.description,
-      reference: i.reference,
-      debit: i.amount >= 0 ? i.amount : 0,
-      credit: i.amount < 0 ? Math.abs(i.amount) : 0,
-    })),
-  ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    // Opening balances
+    if (operationType === 'all' || operationType === 'opening') {
+      const accountOpenings = openingBalances.filter(ob => 
+        ob.accountName === selectedAccount && ob.currency === selectedCurrency
+      );
+      allTransactions.push(...accountOpenings.map(ob => ({
+        date: ob.date,
+        type: 'افتتاحي',
+        description: 'رصيد افتتاحي',
+        reference: undefined,
+        debit: ob.debit,
+        credit: ob.credit,
+      })));
+    }
+
+    // Vouchers (receipt and payment)
+    if (operationType === 'all' || operationType === 'receipt') {
+      const receiptVouchers = vouchers.filter(v => 
+        v.accountName === selectedAccount && v.currency === selectedCurrency && v.type === 'receipt'
+      );
+      allTransactions.push(...receiptVouchers.map(v => ({
+        date: v.date,
+        type: 'قبض',
+        description: v.description,
+        reference: v.reference,
+        debit: 0,
+        credit: v.amount,
+      })));
+    }
+
+    if (operationType === 'all' || operationType === 'payment') {
+      const paymentVouchers = vouchers.filter(v => 
+        v.accountName === selectedAccount && v.currency === selectedCurrency && v.type === 'payment'
+      );
+      allTransactions.push(...paymentVouchers.map(v => ({
+        date: v.date,
+        type: 'صرف',
+        description: v.description,
+        reference: v.reference,
+        debit: v.amount,
+        credit: 0,
+      })));
+    }
+
+    // Invoices
+    if (operationType === 'all' || operationType === 'invoices') {
+      const salesInvoices = invoices.filter(i => 
+        i.accountName === selectedAccount && i.currency === selectedCurrency && i.amount >= 0
+      );
+      allTransactions.push(...salesInvoices.map(i => ({
+        date: i.date,
+        type: 'فواتير',
+        description: i.description,
+        reference: i.reference,
+        debit: i.amount,
+        credit: 0,
+      })));
+    }
+
+    // Returns
+    if (operationType === 'all' || operationType === 'returns') {
+      const returnInvoices = invoices.filter(i => 
+        i.accountName === selectedAccount && i.currency === selectedCurrency && i.amount < 0
+      );
+      allTransactions.push(...returnInvoices.map(i => ({
+        date: i.date,
+        type: 'مرتجع',
+        description: i.description,
+        reference: i.reference,
+        debit: 0,
+        credit: Math.abs(i.amount),
+      })));
+    }
+
+    // Discount - placeholder for now
+    if (operationType === 'discount') {
+      // Add discount logic when implemented
+    }
+
+    return allTransactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  };
+
+  const transactions = getTransactions();
 
   // Calculate running balance
   let runningBalance = 0;
@@ -168,15 +237,18 @@ export function ReportsScreen() {
             </div>
             <div>
               <label className="text-sm text-muted-foreground mb-1 block">نوع العملية</label>
-              <Select>
+              <Select value={operationType} onValueChange={(val) => setOperationType(val as OperationType)}>
                 <SelectTrigger>
                   <SelectValue placeholder="الكل" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">الكل</SelectItem>
-                  <SelectItem value="receipts">قبض</SelectItem>
-                  <SelectItem value="payments">صرف</SelectItem>
-                  <SelectItem value="sales">مبيعات</SelectItem>
+                  <SelectItem value="opening">افتتاحي</SelectItem>
+                  <SelectItem value="receipt">قبض</SelectItem>
+                  <SelectItem value="payment">صرف</SelectItem>
+                  <SelectItem value="invoices">فواتير</SelectItem>
+                  <SelectItem value="returns">مرتجع</SelectItem>
+                  <SelectItem value="discount">خصم</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -225,21 +297,12 @@ export function ReportsScreen() {
             </div>
             <div>
               <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-              <Select 
-                value={selectedAccount} 
-                onValueChange={setSelectedAccount}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="اختر الحساب" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredAccounts.map(acc => (
-                    <SelectItem key={acc.id} value={acc.accountName}>
-                      {acc.accountName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <AccountSearchInput
+                accounts={filteredAccounts}
+                value={selectedAccount}
+                onSelect={setSelectedAccount}
+                placeholder="ابحث عن الحساب..."
+              />
             </div>
           </div>
 

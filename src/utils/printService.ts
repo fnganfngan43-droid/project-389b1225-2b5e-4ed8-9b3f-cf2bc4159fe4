@@ -13,7 +13,7 @@ interface PrintReportData {
     date: string;
     type: string;
     description: string;
-    reference: string;
+    reference?: string;
     debit: number;
     credit: number;
     balance: number;
