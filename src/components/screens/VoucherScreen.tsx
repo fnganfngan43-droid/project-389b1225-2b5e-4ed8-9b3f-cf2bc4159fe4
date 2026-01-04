@@ -60,6 +60,16 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
   const debitFilteredAccounts = accounts.filter(a => a.groupName === formData.debitGroupName);
   const creditFilteredAccounts = accounts.filter(a => a.groupName === formData.creditGroupName);
 
+  // Check balance validation
+  const isBalanced = formData.debitCurrency === formData.creditCurrency && 
+    formData.debitAmount && formData.creditAmount &&
+    parseFloat(formData.debitAmount) === parseFloat(formData.creditAmount);
+
+  const showBalanceWarning = formData.debitCurrency && formData.creditCurrency && 
+    formData.debitCurrency === formData.creditCurrency &&
+    formData.debitAmount && formData.creditAmount &&
+    parseFloat(formData.debitAmount) !== parseFloat(formData.creditAmount);
+
   const handleSave = () => {
     if (!formData.debitAccountName || !formData.debitAmount || !formData.debitCurrency) {
       toast.error('يرجى ملء حقول الطرف المدين');
@@ -68,6 +78,14 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
     if (!formData.creditAccountName || !formData.creditAmount || !formData.creditCurrency) {
       toast.error('يرجى ملء حقول الطرف الدائن');
       return;
+    }
+
+    // Check balance if same currency
+    if (formData.debitCurrency === formData.creditCurrency) {
+      if (parseFloat(formData.debitAmount) !== parseFloat(formData.creditAmount)) {
+        toast.error('المبلغ المدين والدائن غير متوازنين');
+        return;
+      }
     }
 
     addVoucher({
@@ -164,201 +182,406 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
               </div>
             </div>
 
-            {/* Debit Side - الطرف المدين */}
-            <div className="border-2 border-primary/30 rounded-lg p-3 space-y-3">
-              <h3 className="text-sm font-semibold text-primary text-center bg-primary/10 rounded py-1">الطرف المدين</h3>
-              
-              {/* Row 1 - Group & Account */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
-                  <Select 
-                    value={formData.debitGroupName} 
-                    onValueChange={(val) => setFormData(prev => ({ ...prev, debitGroupName: val, debitAccountName: '' }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="اختر المجموعة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {groups.map(group => (
-                        <SelectItem key={group.id} value={group.name}>
-                          {group.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-                  <Select 
-                    value={formData.debitAccountName} 
-                    onValueChange={(val) => setFormData(prev => ({ ...prev, debitAccountName: val }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="اختر الحساب" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {debitFilteredAccounts.map(acc => (
-                        <SelectItem key={acc.id} value={acc.accountName}>
-                          {acc.accountName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+            {/* First Side - depends on voucher type */}
+            {type === 'receipt' ? (
+              <>
+                {/* Debit Side First for Receipt */}
+                <div className="border-2 border-primary/30 rounded-lg p-3 space-y-3">
+                  <h3 className="text-sm font-semibold text-primary text-center bg-primary/10 rounded py-1">الطرف المدين</h3>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
+                      <Select 
+                        value={formData.debitGroupName} 
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, debitGroupName: val, debitAccountName: '' }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختر المجموعة" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {groups.map(group => (
+                            <SelectItem key={group.id} value={group.name}>
+                              {group.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
+                      <Select 
+                        value={formData.debitAccountName} 
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, debitAccountName: val }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختر الحساب" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {debitFilteredAccounts.map(acc => (
+                            <SelectItem key={acc.id} value={acc.accountName}>
+                              {acc.accountName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
 
-              {/* Row 2 - Currency & Amount */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">رمز العملة</label>
-                  <Select 
-                    value={formData.debitCurrency} 
-                    onValueChange={(val) => setFormData(prev => ({ ...prev, debitCurrency: val }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="العملة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {currencies.map(curr => (
-                        <SelectItem key={curr.id} value={curr.symbol}>
-                          {curr.symbol}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">المبلغ مدين</label>
-                  <Input
-                    type="number"
-                    value={formData.debitAmount}
-                    onChange={(e) => setFormData(prev => ({ ...prev, debitAmount: e.target.value }))}
-                    placeholder="0"
-                    className="text-left"
-                    dir="ltr"
-                  />
-                </div>
-              </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">رمز العملة</label>
+                      <Select 
+                        value={formData.debitCurrency} 
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, debitCurrency: val }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="العملة" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {currencies.map(curr => (
+                            <SelectItem key={curr.id} value={curr.symbol}>
+                              {curr.symbol}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">المبلغ مدين</label>
+                      <Input
+                        type="number"
+                        value={formData.debitAmount}
+                        onChange={(e) => setFormData(prev => ({ ...prev, debitAmount: e.target.value }))}
+                        placeholder="0"
+                        className="text-left"
+                        dir="ltr"
+                      />
+                    </div>
+                  </div>
 
-              {/* Row 3 - Description & Reference */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">البيان</label>
-                  <Input
-                    value={formData.debitDescription}
-                    onChange={(e) => setFormData(prev => ({ ...prev, debitDescription: e.target.value }))}
-                    placeholder="البيان"
-                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">البيان</label>
+                      <Input
+                        value={formData.debitDescription}
+                        onChange={(e) => setFormData(prev => ({ ...prev, debitDescription: e.target.value }))}
+                        placeholder="البيان"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">رقم المرجع</label>
+                      <Input
+                        value={formData.debitReference}
+                        onChange={(e) => setFormData(prev => ({ ...prev, debitReference: e.target.value }))}
+                        placeholder="رقم المرجع"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">رقم المرجع</label>
-                  <Input
-                    value={formData.debitReference}
-                    onChange={(e) => setFormData(prev => ({ ...prev, debitReference: e.target.value }))}
-                    placeholder="رقم المرجع"
-                  />
-                </div>
-              </div>
-            </div>
 
-            {/* Credit Side - الطرف الدائن */}
-            <div className="border-2 border-success/30 rounded-lg p-3 space-y-3">
-              <h3 className="text-sm font-semibold text-success text-center bg-success/10 rounded py-1">الطرف الدائن</h3>
-              
-              {/* Row 1 - Group & Account */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
-                  <Select 
-                    value={formData.creditGroupName} 
-                    onValueChange={(val) => setFormData(prev => ({ ...prev, creditGroupName: val, creditAccountName: '' }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="اختر المجموعة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {groups.map(group => (
-                        <SelectItem key={group.id} value={group.name}>
-                          {group.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-                  <Select 
-                    value={formData.creditAccountName} 
-                    onValueChange={(val) => setFormData(prev => ({ ...prev, creditAccountName: val }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="اختر الحساب" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {creditFilteredAccounts.map(acc => (
-                        <SelectItem key={acc.id} value={acc.accountName}>
-                          {acc.accountName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+                {/* Credit Side Second for Receipt */}
+                <div className="border-2 border-success/30 rounded-lg p-3 space-y-3">
+                  <h3 className="text-sm font-semibold text-success text-center bg-success/10 rounded py-1">الطرف الدائن</h3>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
+                      <Select 
+                        value={formData.creditGroupName} 
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, creditGroupName: val, creditAccountName: '' }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختر المجموعة" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {groups.map(group => (
+                            <SelectItem key={group.id} value={group.name}>
+                              {group.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
+                      <Select 
+                        value={formData.creditAccountName} 
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, creditAccountName: val }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختر الحساب" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {creditFilteredAccounts.map(acc => (
+                            <SelectItem key={acc.id} value={acc.accountName}>
+                              {acc.accountName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
 
-              {/* Row 2 - Currency & Amount */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">رمز العملة</label>
-                  <Select 
-                    value={formData.creditCurrency} 
-                    onValueChange={(val) => setFormData(prev => ({ ...prev, creditCurrency: val }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="العملة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {currencies.map(curr => (
-                        <SelectItem key={curr.id} value={curr.symbol}>
-                          {curr.symbol}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">المبلغ الدائن</label>
-                  <Input
-                    type="number"
-                    value={formData.creditAmount}
-                    onChange={(e) => setFormData(prev => ({ ...prev, creditAmount: e.target.value }))}
-                    placeholder="0"
-                    className="text-left"
-                    dir="ltr"
-                  />
-                </div>
-              </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">رمز العملة</label>
+                      <Select 
+                        value={formData.creditCurrency} 
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, creditCurrency: val }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="العملة" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {currencies.map(curr => (
+                            <SelectItem key={curr.id} value={curr.symbol}>
+                              {curr.symbol}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">المبلغ الدائن</label>
+                      <Input
+                        type="number"
+                        value={formData.creditAmount}
+                        onChange={(e) => setFormData(prev => ({ ...prev, creditAmount: e.target.value }))}
+                        placeholder="0"
+                        className="text-left"
+                        dir="ltr"
+                      />
+                    </div>
+                  </div>
 
-              {/* Row 3 - Description & Reference */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">البيان</label>
-                  <Input
-                    value={formData.creditDescription}
-                    onChange={(e) => setFormData(prev => ({ ...prev, creditDescription: e.target.value }))}
-                    placeholder="البيان"
-                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">البيان</label>
+                      <Input
+                        value={formData.creditDescription}
+                        onChange={(e) => setFormData(prev => ({ ...prev, creditDescription: e.target.value }))}
+                        placeholder="البيان"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">رقم المرجع</label>
+                      <Input
+                        value={formData.creditReference}
+                        onChange={(e) => setFormData(prev => ({ ...prev, creditReference: e.target.value }))}
+                        placeholder="رقم المرجع"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">رقم المرجع</label>
-                  <Input
-                    value={formData.creditReference}
-                    onChange={(e) => setFormData(prev => ({ ...prev, creditReference: e.target.value }))}
-                    placeholder="رقم المرجع"
-                  />
+              </>
+            ) : (
+              <>
+                {/* Credit Side First for Payment */}
+                <div className="border-2 border-success/30 rounded-lg p-3 space-y-3">
+                  <h3 className="text-sm font-semibold text-success text-center bg-success/10 rounded py-1">الطرف الدائن</h3>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
+                      <Select 
+                        value={formData.creditGroupName} 
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, creditGroupName: val, creditAccountName: '' }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختر المجموعة" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {groups.map(group => (
+                            <SelectItem key={group.id} value={group.name}>
+                              {group.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
+                      <Select 
+                        value={formData.creditAccountName} 
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, creditAccountName: val }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختر الحساب" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {creditFilteredAccounts.map(acc => (
+                            <SelectItem key={acc.id} value={acc.accountName}>
+                              {acc.accountName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">رمز العملة</label>
+                      <Select 
+                        value={formData.creditCurrency} 
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, creditCurrency: val }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="العملة" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {currencies.map(curr => (
+                            <SelectItem key={curr.id} value={curr.symbol}>
+                              {curr.symbol}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">المبلغ الدائن</label>
+                      <Input
+                        type="number"
+                        value={formData.creditAmount}
+                        onChange={(e) => setFormData(prev => ({ ...prev, creditAmount: e.target.value }))}
+                        placeholder="0"
+                        className="text-left"
+                        dir="ltr"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">البيان</label>
+                      <Input
+                        value={formData.creditDescription}
+                        onChange={(e) => setFormData(prev => ({ ...prev, creditDescription: e.target.value }))}
+                        placeholder="البيان"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">رقم المرجع</label>
+                      <Input
+                        value={formData.creditReference}
+                        onChange={(e) => setFormData(prev => ({ ...prev, creditReference: e.target.value }))}
+                        placeholder="رقم المرجع"
+                      />
+                    </div>
+                  </div>
                 </div>
+
+                {/* Debit Side Second for Payment */}
+                <div className="border-2 border-primary/30 rounded-lg p-3 space-y-3">
+                  <h3 className="text-sm font-semibold text-primary text-center bg-primary/10 rounded py-1">الطرف المدين</h3>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
+                      <Select 
+                        value={formData.debitGroupName} 
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, debitGroupName: val, debitAccountName: '' }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختر المجموعة" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {groups.map(group => (
+                            <SelectItem key={group.id} value={group.name}>
+                              {group.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
+                      <Select 
+                        value={formData.debitAccountName} 
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, debitAccountName: val }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختر الحساب" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {debitFilteredAccounts.map(acc => (
+                            <SelectItem key={acc.id} value={acc.accountName}>
+                              {acc.accountName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">رمز العملة</label>
+                      <Select 
+                        value={formData.debitCurrency} 
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, debitCurrency: val }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="العملة" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {currencies.map(curr => (
+                            <SelectItem key={curr.id} value={curr.symbol}>
+                              {curr.symbol}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">المبلغ مدين</label>
+                      <Input
+                        type="number"
+                        value={formData.debitAmount}
+                        onChange={(e) => setFormData(prev => ({ ...prev, debitAmount: e.target.value }))}
+                        placeholder="0"
+                        className="text-left"
+                        dir="ltr"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">البيان</label>
+                      <Input
+                        value={formData.debitDescription}
+                        onChange={(e) => setFormData(prev => ({ ...prev, debitDescription: e.target.value }))}
+                        placeholder="البيان"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">رقم المرجع</label>
+                      <Input
+                        value={formData.debitReference}
+                        onChange={(e) => setFormData(prev => ({ ...prev, debitReference: e.target.value }))}
+                        placeholder="رقم المرجع"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Balance Warning */}
+            {showBalanceWarning && (
+              <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 text-center">
+                <p className="text-destructive text-sm font-medium">تحذير: المبلغ المدين والدائن غير متوازنين</p>
               </div>
-            </div>
+            )}
+
+            {/* Balance OK indicator */}
+            {isBalanced && (
+              <div className="bg-success/10 border border-success/30 rounded-lg p-3 text-center">
+                <p className="text-success text-sm font-medium">✓ السند متوازن</p>
+              </div>
+            )}
 
             {/* Save button */}
             <Button onClick={handleSave} className="w-full" size="lg">
