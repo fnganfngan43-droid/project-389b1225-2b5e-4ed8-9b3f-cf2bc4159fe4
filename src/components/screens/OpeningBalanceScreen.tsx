@@ -6,6 +6,7 @@ import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { OpeningBalance } from '@/types/accounting';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
+import { parseExcelFile, mapOpeningBalanceRow } from '@/utils/excelImport';
 import { 
   Select,
   SelectContent,
@@ -67,11 +68,38 @@ export function OpeningBalanceScreen() {
     setIsAdding(false);
   };
 
+  const handleImport = async (file: File) => {
+    try {
+      const rows = await parseExcelFile(file);
+      let successCount = 0;
+
+      for (const row of rows) {
+        const mapped = mapOpeningBalanceRow(row);
+        if (mapped && mapped.accountName) {
+          addOpeningBalance({
+            date: mapped.date,
+            accountName: mapped.accountName,
+            currency: mapped.currency,
+            debit: mapped.debit,
+            credit: mapped.credit,
+          });
+          successCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`تم استيراد ${successCount} رصيد افتتاحي بنجاح`);
+      }
+    } catch (error) {
+      toast.error('فشل في استيراد الملف');
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       <ActionToolbar
         onAdd={() => setIsAdding(true)}
-        onImport={() => toast.info('سيتم إضافة خاصية الاستيراد قريباً')}
+        onImport={handleImport}
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
         searchPlaceholder="بحث في الأرصدة..."

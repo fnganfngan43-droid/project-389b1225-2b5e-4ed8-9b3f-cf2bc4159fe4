@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
+import { parseExcelFile, mapDiscountRow } from '@/utils/excelImport';
 import { 
   Select,
   SelectContent,
@@ -98,12 +99,44 @@ export function DiscountScreen() {
     setIsAdding(false);
   };
 
+  const handleImport = async (file: File) => {
+    try {
+      const rows = await parseExcelFile(file);
+      let successCount = 0;
+
+      for (const row of rows) {
+        const mapped = mapDiscountRow(row);
+        if (mapped && mapped.accountName) {
+          const newDiscount: DiscountEntry = {
+            id: Math.random().toString(36).substr(2, 9),
+            date: mapped.date,
+            discountNumber: mapped.discountNumber || String(discounts.length + successCount + 1).padStart(4, '0'),
+            accountName: mapped.accountName,
+            amount: mapped.amount,
+            currency: mapped.currency,
+            type: mapped.type,
+            reference: mapped.reference,
+            description: mapped.description || 'خصم',
+          };
+          setDiscounts(prev => [...prev, newDiscount]);
+          successCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`تم استيراد ${successCount} خصم بنجاح`);
+      }
+    } catch (error) {
+      toast.error('فشل في استيراد الملف');
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       <ActionToolbar
         onAdd={() => setIsAdding(true)}
         onDelete={selectedDiscount ? handleDelete : undefined}
-        onImport={() => toast.info('سيتم إضافة خاصية الاستيراد قريباً')}
+        onImport={handleImport}
         showDuplicate
         onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
         searchValue={searchTerm}

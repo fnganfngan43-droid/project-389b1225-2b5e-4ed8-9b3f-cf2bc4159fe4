@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Trash2, Edit, Download, Copy, Search } from 'lucide-react';
@@ -6,7 +7,7 @@ interface ActionToolbarProps {
   onAdd?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
-  onImport?: () => void;
+  onImport?: (file: File) => void;
   onDuplicate?: () => void;
   searchValue?: string;
   onSearchChange?: (value: string) => void;
@@ -25,8 +26,30 @@ export function ActionToolbar({
   searchPlaceholder = 'بحث...',
   showDuplicate = false,
 }: ActionToolbarProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onImport) {
+      onImport(file);
+      // Reset the input so the same file can be selected again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   return (
     <div className="space-y-3 p-4 bg-card border-b border-border">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".xlsx,.xls"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+      
       {/* Action buttons row */}
       <div className="flex flex-wrap gap-2">
         {onAdd && (
@@ -42,7 +65,7 @@ export function ActionToolbar({
           </Button>
         )}
         {onImport && (
-          <Button onClick={onImport} size="sm" variant="secondary">
+          <Button onClick={() => fileInputRef.current?.click()} size="sm" variant="secondary">
             <Download className="w-4 h-4" />
             استيراد Excel
           </Button>
