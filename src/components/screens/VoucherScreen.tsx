@@ -7,6 +7,7 @@ import { useAccounting } from '@/contexts/AccountingContext';
 import { Voucher } from '@/types/accounting';
 import { printVoucher } from '@/utils/printService';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
+import { parseExcelFile, mapVoucherRow } from '@/utils/excelImport';
 import { 
   Select,
   SelectContent,
@@ -133,12 +134,43 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
     setIsAdding(false);
   };
 
+  const handleImport = async (file: File) => {
+    try {
+      const rows = await parseExcelFile(file);
+      let successCount = 0;
+
+      for (const row of rows) {
+        const mapped = mapVoucherRow(row);
+        if (mapped && (mapped.debitAccountName || mapped.creditAccountName)) {
+          addVoucher({
+            date: mapped.date,
+            voucherNumber: mapped.voucherNumber || String(vouchers.length + successCount + 1).padStart(4, '0'),
+            accountName: mapped.debitAccountName,
+            groupName: mapped.debitGroupName,
+            amount: mapped.debitAmount,
+            currency: mapped.debitCurrency,
+            reference: mapped.debitReference,
+            description: mapped.debitDescription || (type === 'receipt' ? 'سند قبض' : 'سند صرف'),
+            type,
+          });
+          successCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`تم استيراد ${successCount} سند بنجاح`);
+      }
+    } catch (error) {
+      toast.error('فشل في استيراد الملف');
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       <ActionToolbar
         onAdd={() => setIsAdding(true)}
         onDelete={selectedVoucher ? handleDelete : undefined}
-        onImport={() => toast.info('سيتم إضافة خاصية الاستيراد قريباً')}
+        onImport={handleImport}
         showDuplicate
         onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
         searchValue={searchTerm}

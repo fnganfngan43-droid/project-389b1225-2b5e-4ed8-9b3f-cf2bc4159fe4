@@ -6,6 +6,7 @@ import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { Invoice } from '@/types/accounting';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
+import { parseExcelFile, mapInvoiceRow } from '@/utils/excelImport';
 import { 
   Select,
   SelectContent,
@@ -92,12 +93,43 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
     setIsAdding(false);
   };
 
+  const handleImport = async (file: File) => {
+    try {
+      const rows = await parseExcelFile(file);
+      let successCount = 0;
+
+      for (const row of rows) {
+        const mapped = mapInvoiceRow(row);
+        if (mapped && mapped.accountName) {
+          addInvoice({
+            date: mapped.date,
+            invoiceNumber: mapped.invoiceNumber || String(invoices.length + successCount + 1).padStart(4, '0'),
+            accountName: mapped.accountName,
+            groupName: mapped.groupName,
+            amount: isReturn ? -Math.abs(mapped.amount) : mapped.amount,
+            currency: mapped.currency,
+            type: mapped.type,
+            reference: mapped.reference,
+            description: mapped.description || (isReturn ? 'مرتجع مبيعات' : 'فاتورة مبيعات'),
+          });
+          successCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`تم استيراد ${successCount} ${isReturn ? 'مرتجع' : 'فاتورة'} بنجاح`);
+      }
+    } catch (error) {
+      toast.error('فشل في استيراد الملف');
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       <ActionToolbar
         onAdd={() => setIsAdding(true)}
         onDelete={selectedInvoice ? handleDelete : undefined}
-        onImport={() => toast.info('سيتم إضافة خاصية الاستيراد قريباً')}
+        onImport={handleImport}
         showDuplicate
         onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
         searchValue={searchTerm}

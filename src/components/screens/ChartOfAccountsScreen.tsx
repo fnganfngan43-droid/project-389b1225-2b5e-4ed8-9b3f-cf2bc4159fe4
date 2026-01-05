@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { Account } from '@/types/accounting';
+import { parseExcelFile, mapAccountRow } from '@/utils/excelImport';
 import { 
   Select,
   SelectContent,
@@ -118,13 +119,52 @@ export function ChartOfAccountsScreen() {
     setEditingAccount(null);
   };
 
+  const handleImport = async (file: File) => {
+    try {
+      const rows = await parseExcelFile(file);
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const row of rows) {
+        const mapped = mapAccountRow(row);
+        if (mapped && mapped.accountName && mapped.groupName) {
+          // Check for duplicate
+          const isDuplicate = accounts.some(a => 
+            a.accountNumber === mapped.accountNumber || a.accountName === mapped.accountName
+          );
+          if (!isDuplicate) {
+            addAccount({
+              ...mapped,
+              balance: 0,
+              type: 'debit',
+            });
+            successCount++;
+          } else {
+            errorCount++;
+          }
+        } else {
+          errorCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`تم استيراد ${successCount} حساب بنجاح`);
+      }
+      if (errorCount > 0) {
+        toast.warning(`تم تجاهل ${errorCount} صف (بيانات ناقصة أو مكررة)`);
+      }
+    } catch (error) {
+      toast.error('فشل في استيراد الملف');
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       <ActionToolbar
         onAdd={() => setIsAdding(true)}
         onEdit={selectedAccount ? handleEdit : undefined}
         onDelete={selectedAccount ? handleDelete : undefined}
-        onImport={() => toast.info('سيتم إضافة خاصية الاستيراد قريباً')}
+        onImport={handleImport}
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
         searchPlaceholder="بحث في الحسابات..."
