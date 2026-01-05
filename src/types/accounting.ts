@@ -32,13 +32,44 @@ export interface Voucher {
   id: string;
   voucherNumber: string;
   date: string;
-  accountName: string;
-  groupName: string;
-  amount: number;
-  currency: string;
+  // Debit side
+  debitAccountName: string;
+  debitGroupName: string;
+  debitAmount: number;
+  debitCurrency: string;
+  debitReference?: string;
+  debitDescription?: string;
+  // Credit side
+  creditAccountName: string;
+  creditGroupName: string;
+  creditAmount: number;
+  creditCurrency: string;
+  creditReference?: string;
+  creditDescription?: string;
+  // Legacy support
+  accountName?: string;
+  groupName?: string;
+  amount?: number;
+  currency?: string;
+  reference?: string;
+  description?: string;
+  type: 'receipt' | 'payment';
+}
+
+export interface CurrencyExchange {
+  id: string;
+  date: string;
+  exchangeNumber: string;
+  fromAccountName: string;
+  fromGroupName: string;
+  fromAmount: number;
+  fromCurrency: string;
+  toAccountName: string;
+  toGroupName: string;
+  toAmount: number;
+  toCurrency: string;
   reference?: string;
   description: string;
-  type: 'receipt' | 'payment';
 }
 
 export interface OpeningBalance {

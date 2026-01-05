@@ -7,7 +7,8 @@ import {
   Voucher, 
   OpeningBalance,
   Invoice,
-  Settings 
+  Settings,
+  CurrencyExchange 
 } from '@/types/accounting';
 
 interface AccountingContextType {
@@ -55,6 +56,11 @@ interface AccountingContextType {
   addInvoice: (invoice: Omit<Invoice, 'id'>) => void;
   updateInvoice: (id: string, invoice: Partial<Invoice>) => void;
   deleteInvoice: (id: string) => void;
+
+  // Currency Exchanges
+  currencyExchanges: CurrencyExchange[];
+  addCurrencyExchange: (exchange: Omit<CurrencyExchange, 'id'>) => void;
+  deleteCurrencyExchange: (id: string) => void;
 }
 
 const AccountingContext = createContext<AccountingContextType | undefined>(undefined);
@@ -105,6 +111,7 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [openingBalances, setOpeningBalances] = useState<OpeningBalance[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [currencyExchanges, setCurrencyExchanges] = useState<CurrencyExchange[]>([]);
 
   const value: AccountingContextType = {
     settings,
@@ -143,6 +150,10 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
     addInvoice: (invoice) => setInvoices(prev => [...prev, { ...invoice, id: generateId() }]),
     updateInvoice: (id, invoice) => setInvoices(prev => prev.map(i => i.id === id ? { ...i, ...invoice } : i)),
     deleteInvoice: (id) => setInvoices(prev => prev.filter(i => i.id !== id)),
+
+    currencyExchanges,
+    addCurrencyExchange: (exchange) => setCurrencyExchanges(prev => [...prev, { ...exchange, id: generateId() }]),
+    deleteCurrencyExchange: (id) => setCurrencyExchanges(prev => prev.filter(e => e.id !== id)),
   };
 
   return (

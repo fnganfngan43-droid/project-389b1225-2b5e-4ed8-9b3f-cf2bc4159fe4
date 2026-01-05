@@ -15,36 +15,23 @@ import { Save, X, ArrowLeftRight, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
 
-interface ExchangeEntry {
-  id: string;
-  date: string;
-  exchangeNumber: string;
-  fromAccount: string;
-  fromAmount: number;
-  fromCurrency: string;
-  toAccount: string;
-  toAmount: number;
-  toCurrency: string;
-  reference?: string;
-  description: string;
-}
+import { CurrencyExchange } from '@/types/accounting';
 
 export function CurrencyExchangeScreen() {
-  const { accounts, groups, currencies } = useAccounting();
-  const [exchanges, setExchanges] = useState<ExchangeEntry[]>([]);
+  const { accounts, groups, currencies, currencyExchanges, addCurrencyExchange, deleteCurrencyExchange } = useAccounting();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
-  const [selectedExchange, setSelectedExchange] = useState<ExchangeEntry | null>(null);
+  const [selectedExchange, setSelectedExchange] = useState<CurrencyExchange | null>(null);
 
-  const filteredExchanges = exchanges.filter(e => 
-    e.fromAccount.includes(searchTerm) || 
-    e.toAccount.includes(searchTerm) ||
+  const filteredExchanges = currencyExchanges.filter(e => 
+    e.fromAccountName.includes(searchTerm) || 
+    e.toAccountName.includes(searchTerm) ||
     e.exchangeNumber.includes(searchTerm)
   );
 
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
-    exchangeNumber: String(exchanges.length + 1).padStart(4, '0'),
+    exchangeNumber: String(currencyExchanges.length + 1).padStart(4, '0'),
     fromGroupName: '',
     fromAccountName: '',
     fromAmount: '',
@@ -66,28 +53,28 @@ export function CurrencyExchangeScreen() {
       return;
     }
 
-    const newExchange: ExchangeEntry = {
-      id: Math.random().toString(36).substr(2, 9),
+    addCurrencyExchange({
       date: formData.date,
       exchangeNumber: formData.exchangeNumber,
-      fromAccount: formData.fromAccountName,
+      fromAccountName: formData.fromAccountName,
+      fromGroupName: formData.fromGroupName,
       fromAmount: parseFloat(formData.fromAmount),
       fromCurrency: formData.fromCurrency,
-      toAccount: formData.toAccountName,
+      toAccountName: formData.toAccountName,
+      toGroupName: formData.toGroupName,
       toAmount: parseFloat(formData.toAmount),
       toCurrency: formData.toCurrency,
       reference: formData.fromReference,
       description: `مبتاع بقيمة ${formData.toAmount} ${formData.toCurrency} بصرف ${formData.fromCurrency}`,
-    };
+    });
 
-    setExchanges(prev => [...prev, newExchange]);
     toast.success('تم حفظ عملية الصرف بنجاح');
     resetForm();
   };
 
   const handleDelete = () => {
     if (selectedExchange) {
-      setExchanges(prev => prev.filter(e => e.id !== selectedExchange.id));
+      deleteCurrencyExchange(selectedExchange.id);
       setSelectedExchange(null);
       toast.success('تم حذف العملية بنجاح');
     }
@@ -96,7 +83,7 @@ export function CurrencyExchangeScreen() {
   const resetForm = () => {
     setFormData({
       date: new Date().toISOString().split('T')[0],
-      exchangeNumber: String(exchanges.length + 2).padStart(4, '0'),
+      exchangeNumber: String(currencyExchanges.length + 2).padStart(4, '0'),
       fromGroupName: '',
       fromAccountName: '',
       fromAmount: '',
@@ -361,7 +348,7 @@ export function CurrencyExchangeScreen() {
                   <div className="flex items-center justify-between">
                     <div className="text-center flex-1">
                       <p className="text-xs text-muted-foreground">من</p>
-                      <p className="font-semibold text-sm">{exchange.fromAccount}</p>
+                      <p className="font-semibold text-sm">{exchange.fromAccountName}</p>
                       <p className="text-destructive font-bold">
                         {exchange.fromAmount.toLocaleString()} {exchange.fromCurrency}
                       </p>
@@ -369,7 +356,7 @@ export function CurrencyExchangeScreen() {
                     <ArrowLeftRight className="w-5 h-5 text-muted-foreground mx-2" />
                     <div className="text-center flex-1">
                       <p className="text-xs text-muted-foreground">إلى</p>
-                      <p className="font-semibold text-sm">{exchange.toAccount}</p>
+                      <p className="font-semibold text-sm">{exchange.toAccountName}</p>
                       <p className="text-success font-bold">
                         {exchange.toAmount.toLocaleString()} {exchange.toCurrency}
                       </p>
