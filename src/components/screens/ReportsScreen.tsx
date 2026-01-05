@@ -15,10 +15,10 @@ import { BarChart3, Eye, Printer, Share2, FileText, ArrowRight } from 'lucide-re
 import { toast } from 'sonner';
 
 type ReportType = 'analytical' | 'summary';
-type OperationType = 'all' | 'opening' | 'receipt' | 'payment' | 'invoices' | 'returns' | 'discount';
+type OperationType = 'all' | 'opening' | 'receipt' | 'payment' | 'invoices' | 'returns' | 'discount' | 'exchange';
 
 export function ReportsScreen() {
-  const { accounts, groups, currencies, vouchers, invoices, openingBalances, settings } = useAccounting();
+  const { accounts, groups, currencies, vouchers, invoices, openingBalances, currencyExchanges, settings } = useAccounting();
   const [reportType, setReportType] = useState<ReportType>('analytical');
   const [operationType, setOperationType] = useState<OperationType>('all');
   const [selectedGroup, setSelectedGroup] = useState('');
@@ -63,33 +63,91 @@ export function ReportsScreen() {
       })));
     }
 
-    // Vouchers (receipt and payment)
+    // Vouchers (receipt and payment) - check both debit and credit sides
     if (operationType === 'all' || operationType === 'receipt') {
-      const receiptVouchers = vouchers.filter(v => 
-        v.accountName === selectedAccount && v.currency === selectedCurrency && v.type === 'receipt'
-      );
-      allTransactions.push(...receiptVouchers.map(v => ({
-        date: v.date,
-        type: 'قبض',
-        description: v.description,
-        reference: v.reference,
-        debit: 0,
-        credit: v.amount,
-      })));
+      const receiptVouchers = vouchers.filter(v => v.type === 'receipt');
+      
+      // Check debit side (المقبوض منه - مدين)
+      receiptVouchers.forEach(v => {
+        if (v.debitAccountName === selectedAccount && v.debitCurrency === selectedCurrency) {
+          allTransactions.push({
+            date: v.date,
+            type: 'قبض',
+            description: v.debitDescription || 'سند قبض',
+            reference: v.debitReference,
+            debit: v.debitAmount,
+            credit: 0,
+          });
+        }
+        // Check credit side (المقبوض له - دائن)
+        if (v.creditAccountName === selectedAccount && v.creditCurrency === selectedCurrency) {
+          allTransactions.push({
+            date: v.date,
+            type: 'قبض',
+            description: v.creditDescription || 'سند قبض',
+            reference: v.creditReference,
+            debit: 0,
+            credit: v.creditAmount,
+          });
+        }
+      });
     }
 
     if (operationType === 'all' || operationType === 'payment') {
-      const paymentVouchers = vouchers.filter(v => 
-        v.accountName === selectedAccount && v.currency === selectedCurrency && v.type === 'payment'
-      );
-      allTransactions.push(...paymentVouchers.map(v => ({
-        date: v.date,
-        type: 'صرف',
-        description: v.description,
-        reference: v.reference,
-        debit: v.amount,
-        credit: 0,
-      })));
+      const paymentVouchers = vouchers.filter(v => v.type === 'payment');
+      
+      // Check debit side (المصروف له - مدين)
+      paymentVouchers.forEach(v => {
+        if (v.debitAccountName === selectedAccount && v.debitCurrency === selectedCurrency) {
+          allTransactions.push({
+            date: v.date,
+            type: 'صرف',
+            description: v.debitDescription || 'سند صرف',
+            reference: v.debitReference,
+            debit: v.debitAmount,
+            credit: 0,
+          });
+        }
+        // Check credit side (المصروف منه - دائن)
+        if (v.creditAccountName === selectedAccount && v.creditCurrency === selectedCurrency) {
+          allTransactions.push({
+            date: v.date,
+            type: 'صرف',
+            description: v.creditDescription || 'سند صرف',
+            reference: v.creditReference,
+            debit: 0,
+            credit: v.creditAmount,
+          });
+        }
+      });
+    }
+
+    // Currency Exchange - check both from and to sides
+    if (operationType === 'all' || operationType === 'exchange') {
+      currencyExchanges.forEach(ex => {
+        // From side (المحول منه - دائن)
+        if (ex.fromAccountName === selectedAccount && ex.fromCurrency === selectedCurrency) {
+          allTransactions.push({
+            date: ex.date,
+            type: 'صرف عملة',
+            description: ex.description || 'صرف عملة',
+            reference: ex.reference,
+            debit: 0,
+            credit: ex.fromAmount,
+          });
+        }
+        // To side (المحول إليه - مدين)
+        if (ex.toAccountName === selectedAccount && ex.toCurrency === selectedCurrency) {
+          allTransactions.push({
+            date: ex.date,
+            type: 'صرف عملة',
+            description: ex.description || 'صرف عملة',
+            reference: ex.reference,
+            debit: ex.toAmount,
+            credit: 0,
+          });
+        }
+      });
     }
 
     // Invoices
@@ -249,6 +307,7 @@ export function ReportsScreen() {
                   <SelectItem value="invoices">فواتير</SelectItem>
                   <SelectItem value="returns">مرتجع</SelectItem>
                   <SelectItem value="discount">خصم</SelectItem>
+                  <SelectItem value="exchange">صرف عملة</SelectItem>
                 </SelectContent>
               </Select>
             </div>
