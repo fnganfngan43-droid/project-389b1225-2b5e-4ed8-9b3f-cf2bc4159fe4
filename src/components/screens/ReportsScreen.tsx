@@ -27,18 +27,23 @@ export function ReportsScreen() {
   const [showReport, setShowReport] = useState(false);
 
   const filteredAccounts = accounts.filter(a => !selectedGroup || a.groupName === selectedGroup);
+  const groupAccounts = accounts.filter(a => a.groupName === selectedGroup);
 
   const generateReport = () => {
-    if (!selectedAccount || !selectedCurrency) {
+    if (reportType === 'analytical' && (!selectedAccount || !selectedCurrency)) {
       toast.error('يرجى اختيار الحساب والعملة');
+      return;
+    }
+    if (reportType === 'summary' && !selectedGroup) {
+      toast.error('يرجى اختيار المجموعة');
       return;
     }
     setShowReport(true);
     toast.success('تم إنشاء التقرير بنجاح');
   };
 
-  // Get transactions for selected account based on operation type
-  const getTransactions = () => {
+  // Get transactions for a specific account and currency
+  const getTransactionsForAccount = (accountName: string, currency: string) => {
     let allTransactions: Array<{
       date: string;
       type: string;
@@ -51,7 +56,7 @@ export function ReportsScreen() {
     // Opening balances
     if (operationType === 'all' || operationType === 'opening') {
       const accountOpenings = openingBalances.filter(ob => 
-        ob.accountName === selectedAccount && ob.currency === selectedCurrency
+        ob.accountName === accountName && ob.currency === currency
       );
       allTransactions.push(...accountOpenings.map(ob => ({
         date: ob.date,
@@ -67,9 +72,8 @@ export function ReportsScreen() {
     if (operationType === 'all' || operationType === 'receipt') {
       const receiptVouchers = vouchers.filter(v => v.type === 'receipt');
       
-      // Check debit side (المقبوض منه - مدين)
       receiptVouchers.forEach(v => {
-        if (v.debitAccountName === selectedAccount && v.debitCurrency === selectedCurrency) {
+        if (v.debitAccountName === accountName && v.debitCurrency === currency) {
           allTransactions.push({
             date: v.date,
             type: 'قبض',
@@ -79,8 +83,7 @@ export function ReportsScreen() {
             credit: 0,
           });
         }
-        // Check credit side (المقبوض له - دائن)
-        if (v.creditAccountName === selectedAccount && v.creditCurrency === selectedCurrency) {
+        if (v.creditAccountName === accountName && v.creditCurrency === currency) {
           allTransactions.push({
             date: v.date,
             type: 'قبض',
@@ -96,9 +99,8 @@ export function ReportsScreen() {
     if (operationType === 'all' || operationType === 'payment') {
       const paymentVouchers = vouchers.filter(v => v.type === 'payment');
       
-      // Check debit side (المصروف له - مدين)
       paymentVouchers.forEach(v => {
-        if (v.debitAccountName === selectedAccount && v.debitCurrency === selectedCurrency) {
+        if (v.debitAccountName === accountName && v.debitCurrency === currency) {
           allTransactions.push({
             date: v.date,
             type: 'صرف',
@@ -108,8 +110,7 @@ export function ReportsScreen() {
             credit: 0,
           });
         }
-        // Check credit side (المصروف منه - دائن)
-        if (v.creditAccountName === selectedAccount && v.creditCurrency === selectedCurrency) {
+        if (v.creditAccountName === accountName && v.creditCurrency === currency) {
           allTransactions.push({
             date: v.date,
             type: 'صرف',
@@ -125,8 +126,7 @@ export function ReportsScreen() {
     // Currency Exchange - check both from and to sides
     if (operationType === 'all' || operationType === 'exchange') {
       currencyExchanges.forEach(ex => {
-        // From side (المحول منه - دائن)
-        if (ex.fromAccountName === selectedAccount && ex.fromCurrency === selectedCurrency) {
+        if (ex.fromAccountName === accountName && ex.fromCurrency === currency) {
           allTransactions.push({
             date: ex.date,
             type: 'صرف عملة',
@@ -136,8 +136,7 @@ export function ReportsScreen() {
             credit: ex.fromAmount,
           });
         }
-        // To side (المحول إليه - مدين)
-        if (ex.toAccountName === selectedAccount && ex.toCurrency === selectedCurrency) {
+        if (ex.toAccountName === accountName && ex.toCurrency === currency) {
           allTransactions.push({
             date: ex.date,
             type: 'صرف عملة',
@@ -153,7 +152,7 @@ export function ReportsScreen() {
     // Invoices
     if (operationType === 'all' || operationType === 'invoices') {
       const salesInvoices = invoices.filter(i => 
-        i.accountName === selectedAccount && i.currency === selectedCurrency && i.amount >= 0
+        i.accountName === accountName && i.currency === currency && i.amount >= 0
       );
       allTransactions.push(...salesInvoices.map(i => ({
         date: i.date,
@@ -168,7 +167,7 @@ export function ReportsScreen() {
     // Returns
     if (operationType === 'all' || operationType === 'returns') {
       const returnInvoices = invoices.filter(i => 
-        i.accountName === selectedAccount && i.currency === selectedCurrency && i.amount < 0
+        i.accountName === accountName && i.currency === currency && i.amount < 0
       );
       allTransactions.push(...returnInvoices.map(i => ({
         date: i.date,
@@ -187,6 +186,41 @@ export function ReportsScreen() {
 
     return allTransactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   };
+
+  // Get summary data for all accounts in a group
+  const getSummaryData = () => {
+    const currenciesToShow = selectedCurrency === 'all' 
+      ? currencies.map(c => c.symbol) 
+      : [selectedCurrency];
+    
+    return currenciesToShow.map(currency => {
+      const accountsSummary = groupAccounts.map(account => {
+        const transactions = getTransactionsForAccount(account.accountName, currency);
+        const totalDebit = transactions.reduce((sum, t) => sum + t.debit, 0);
+        const totalCredit = transactions.reduce((sum, t) => sum + t.credit, 0);
+        const balance = totalDebit - totalCredit;
+        
+        return {
+          accountName: account.accountName,
+          accountNumber: account.accountNumber,
+          totalDebit,
+          totalCredit,
+          balance,
+        };
+      }).filter(acc => acc.totalDebit > 0 || acc.totalCredit > 0 || acc.balance !== 0);
+
+      return {
+        currency,
+        accounts: accountsSummary,
+        totalDebit: accountsSummary.reduce((sum, a) => sum + a.totalDebit, 0),
+        totalCredit: accountsSummary.reduce((sum, a) => sum + a.totalCredit, 0),
+        totalBalance: accountsSummary.reduce((sum, a) => sum + a.balance, 0),
+      };
+    }).filter(c => c.accounts.length > 0);
+  };
+
+  // For analytical report
+  const getTransactions = () => getTransactionsForAccount(selectedAccount, selectedCurrency);
 
   const transactions = getTransactions();
 
@@ -321,6 +355,9 @@ export function ReportsScreen() {
                   <SelectValue placeholder="العملة" />
                 </SelectTrigger>
                 <SelectContent>
+                  {reportType === 'summary' && (
+                    <SelectItem value="all">الكل</SelectItem>
+                  )}
                   {currencies.map(curr => (
                     <SelectItem key={curr.id} value={curr.symbol}>
                       {curr.symbol}
@@ -332,7 +369,7 @@ export function ReportsScreen() {
           </div>
 
           {/* Row 2 */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className={`grid gap-3 ${reportType === 'analytical' ? 'grid-cols-2' : 'grid-cols-1'}`}>
             <div>
               <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
               <Select 
@@ -354,15 +391,17 @@ export function ReportsScreen() {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-              <AccountSearchInput
-                accounts={filteredAccounts}
-                value={selectedAccount}
-                onSelect={setSelectedAccount}
-                placeholder="ابحث عن الحساب..."
-              />
-            </div>
+            {reportType === 'analytical' && (
+              <div>
+                <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
+                <AccountSearchInput
+                  accounts={filteredAccounts}
+                  value={selectedAccount}
+                  onSelect={setSelectedAccount}
+                  placeholder="ابحث عن الحساب..."
+                />
+              </div>
+            )}
           </div>
 
           <Button onClick={generateReport} className="w-full" size="lg">
@@ -373,14 +412,12 @@ export function ReportsScreen() {
       </Card>
 
       {/* Report display */}
-      {showReport && (
+      {showReport && reportType === 'analytical' && (
         <div className="flex-1 overflow-auto p-4 animate-fade-in">
           <Card>
             <CardHeader className="gradient-primary text-primary-foreground rounded-t-2xl">
               <CardTitle className="text-center">
-                <p className="text-lg font-bold">
-                  {reportType === 'analytical' ? 'كشف حساب تحليلي' : 'كشف حساب إجمالي'}
-                </p>
+                <p className="text-lg font-bold">كشف حساب تحليلي</p>
                 <p className="text-sm opacity-80 mt-1">{selectedAccount}</p>
                 <p className="text-xs opacity-60 mt-1">العملة: {selectedCurrency}</p>
               </CardTitle>
@@ -443,6 +480,85 @@ export function ReportsScreen() {
               )}
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* Summary Report display */}
+      {showReport && reportType === 'summary' && (
+        <div className="flex-1 overflow-auto p-4 animate-fade-in space-y-4">
+          {getSummaryData().map((currencyData, idx) => (
+            <Card key={idx}>
+              <CardHeader className="gradient-primary text-primary-foreground rounded-t-2xl">
+                <CardTitle className="text-center">
+                  <p className="text-lg font-bold">كشف حساب إجمالي</p>
+                  <p className="text-sm opacity-80 mt-1">المجموعة: {selectedGroup}</p>
+                  <p className="text-xs opacity-60 mt-1">العملة: {currencyData.currency}</p>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {/* Table header */}
+                <div className="grid grid-cols-5 gap-1 p-3 bg-secondary text-secondary-foreground text-xs font-semibold border-b">
+                  <div>رقم الحساب</div>
+                  <div>اسم الحساب</div>
+                  <div className="text-left">مدين</div>
+                  <div className="text-left">دائن</div>
+                  <div className="text-left">الرصيد</div>
+                </div>
+
+                {/* Table body */}
+                {currencyData.accounts.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                    <p>لا توجد حسابات بهذه العملة</p>
+                  </div>
+                ) : (
+                  currencyData.accounts.map((acc, index) => (
+                    <div 
+                      key={index}
+                      className="grid grid-cols-5 gap-1 p-3 text-xs border-b border-border/50 hover:bg-secondary/30 transition-colors"
+                    >
+                      <div className="text-muted-foreground">{acc.accountNumber}</div>
+                      <div className="font-medium">{acc.accountName}</div>
+                      <div className="text-left text-success font-medium">
+                        {acc.totalDebit > 0 ? acc.totalDebit.toLocaleString() : '-'}
+                      </div>
+                      <div className="text-left text-destructive font-medium">
+                        {acc.totalCredit > 0 ? acc.totalCredit.toLocaleString() : '-'}
+                      </div>
+                      <div className={`text-left font-bold ${acc.balance >= 0 ? 'text-success' : 'text-destructive'}`}>
+                        {acc.balance.toLocaleString()}
+                      </div>
+                    </div>
+                  ))
+                )}
+
+                {/* Summary footer */}
+                {currencyData.accounts.length > 0 && (
+                  <div className="grid grid-cols-5 gap-1 p-3 bg-muted text-sm font-bold border-t-2">
+                    <div className="col-span-2">الإجمالي</div>
+                    <div className="text-left text-success">
+                      {currencyData.totalDebit.toLocaleString()}
+                    </div>
+                    <div className="text-left text-destructive">
+                      {currencyData.totalCredit.toLocaleString()}
+                    </div>
+                    <div className={`text-left ${currencyData.totalBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
+                      {currencyData.totalBalance.toLocaleString()}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+          
+          {getSummaryData().length === 0 && (
+            <Card>
+              <CardContent className="text-center py-8 text-muted-foreground">
+                <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p>لا توجد حسابات في هذه المجموعة</p>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
     </div>
