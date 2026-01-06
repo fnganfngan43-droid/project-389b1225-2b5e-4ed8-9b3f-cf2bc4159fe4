@@ -35,7 +35,8 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
 
   const filteredVouchers = vouchers.filter(v => 
     v.type === type && (
-      v.accountName.includes(searchTerm) || 
+      v.debitAccountName?.includes(searchTerm) || 
+      v.creditAccountName?.includes(searchTerm) ||
       v.voucherNumber.includes(searchTerm)
     )
   );
@@ -634,8 +635,17 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                         </span>
                         <span className="text-xs text-muted-foreground">{voucher.date}</span>
                       </div>
-                      <p className="font-semibold text-foreground">{voucher.accountName}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{voucher.description}</p>
+                      <div className="flex gap-4 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">مدين: </span>
+                          <span className="font-semibold">{voucher.debitAccountName}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">دائن: </span>
+                          <span className="font-semibold">{voucher.creditAccountName}</span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">{voucher.debitDescription || voucher.creditDescription}</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <Button
@@ -651,9 +661,9 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       </Button>
                       <div className="text-left">
                         <p className={`font-bold text-lg ${type === 'receipt' ? 'text-success' : 'text-destructive'}`}>
-                          {voucher.amount.toLocaleString()}
+                          {voucher.debitAmount?.toLocaleString() || voucher.creditAmount?.toLocaleString()}
                         </p>
-                        <p className="text-xs text-muted-foreground">{voucher.currency}</p>
+                        <p className="text-xs text-muted-foreground">{voucher.debitCurrency || voucher.creditCurrency}</p>
                       </div>
                     </div>
                   </div>
