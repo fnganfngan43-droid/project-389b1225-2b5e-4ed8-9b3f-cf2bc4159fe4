@@ -67,6 +67,9 @@ const AccountingContext = createContext<AccountingContextType | undefined>(undef
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
+// Storage key
+const STORAGE_KEY = 'accounting_data';
+
 // Initial demo data
 const initialGroups: AccountGroup[] = [
   { id: '1', name: 'العملاء', initialNumber: '21000' },
@@ -96,22 +99,63 @@ const initialAccounts: Account[] = [
   { id: '5', accountNumber: '12001', accountName: 'الصندوق الرئيسي', groupName: 'الصندوق', currency: 'ر.ي', balance: 75000, type: 'debit' },
 ];
 
+// Load data from localStorage
+const loadFromStorage = () => {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    if (data) {
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error('Error loading from localStorage:', error);
+  }
+  return null;
+};
+
+// Save data to localStorage
+const saveToStorage = (data: any) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
+  }
+};
+
 export function AccountingProvider({ children }: { children: ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [settings, setSettings] = useState<Settings>({
+  // Load stored data or use initial data
+  const storedData = loadFromStorage();
+  
+  const [isLoggedIn, setIsLoggedIn] = useState(storedData?.isLoggedIn ?? false);
+  const [settings, setSettings] = useState<Settings>(storedData?.settings ?? {
     userName: 'المستخدم',
     headerArabic: ['رفيق المحاسب', 'برنامج محاسبي متكامل', 'إدارة الحسابات بسهولة'],
     headerEnglish: ['Accountant Companion', 'Integrated Accounting System', 'Easy Account Management'],
   });
 
-  const [accounts, setAccounts] = useState<Account[]>(initialAccounts);
-  const [groups, setGroups] = useState<AccountGroup[]>(initialGroups);
-  const [currencies, setCurrencies] = useState<Currency[]>(initialCurrencies);
-  const [governorates, setGovernorates] = useState<Governorate[]>(initialGovernorates);
-  const [vouchers, setVouchers] = useState<Voucher[]>([]);
-  const [openingBalances, setOpeningBalances] = useState<OpeningBalance[]>([]);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [currencyExchanges, setCurrencyExchanges] = useState<CurrencyExchange[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>(storedData?.accounts ?? initialAccounts);
+  const [groups, setGroups] = useState<AccountGroup[]>(storedData?.groups ?? initialGroups);
+  const [currencies, setCurrencies] = useState<Currency[]>(storedData?.currencies ?? initialCurrencies);
+  const [governorates, setGovernorates] = useState<Governorate[]>(storedData?.governorates ?? initialGovernorates);
+  const [vouchers, setVouchers] = useState<Voucher[]>(storedData?.vouchers ?? []);
+  const [openingBalances, setOpeningBalances] = useState<OpeningBalance[]>(storedData?.openingBalances ?? []);
+  const [invoices, setInvoices] = useState<Invoice[]>(storedData?.invoices ?? []);
+  const [currencyExchanges, setCurrencyExchanges] = useState<CurrencyExchange[]>(storedData?.currencyExchanges ?? []);
+
+  // Save to localStorage whenever data changes
+  React.useEffect(() => {
+    saveToStorage({
+      isLoggedIn,
+      settings,
+      accounts,
+      groups,
+      currencies,
+      governorates,
+      vouchers,
+      openingBalances,
+      invoices,
+      currencyExchanges,
+    });
+  }, [isLoggedIn, settings, accounts, groups, currencies, governorates, vouchers, openingBalances, invoices, currencyExchanges]);
 
   const value: AccountingContextType = {
     settings,
