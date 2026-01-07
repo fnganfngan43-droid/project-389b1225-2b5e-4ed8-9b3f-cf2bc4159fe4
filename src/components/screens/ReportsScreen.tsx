@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { printReport } from '@/utils/printService';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
@@ -11,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BarChart3, Eye, Printer, Share2, FileText, ArrowRight } from 'lucide-react';
+import { BarChart3, Eye, Printer, Share2, FileText, ArrowRight, CalendarIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 type ReportType = 'analytical' | 'summary';
@@ -25,9 +27,20 @@ export function ReportsScreen() {
   const [selectedAccount, setSelectedAccount] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('');
   const [showReport, setShowReport] = useState(false);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const filteredAccounts = accounts.filter(a => !selectedGroup || a.groupName === selectedGroup);
   const groupAccounts = accounts.filter(a => a.groupName === selectedGroup);
+
+  // Filter by date range
+  const isInDateRange = (date: string) => {
+    if (!dateFrom && !dateTo) return true;
+    const d = new Date(date);
+    if (dateFrom && d < new Date(dateFrom)) return false;
+    if (dateTo && d > new Date(dateTo)) return false;
+    return true;
+  };
 
   const generateReport = () => {
     if (reportType === 'analytical' && (!selectedAccount || !selectedCurrency)) {
@@ -56,7 +69,7 @@ export function ReportsScreen() {
     // Opening balances
     if (operationType === 'all' || operationType === 'opening') {
       const accountOpenings = openingBalances.filter(ob => 
-        ob.accountName === accountName && ob.currency === currency
+        ob.accountName === accountName && ob.currency === currency && isInDateRange(ob.date)
       );
       allTransactions.push(...accountOpenings.map(ob => ({
         date: ob.date,
@@ -70,7 +83,7 @@ export function ReportsScreen() {
 
     // Vouchers (receipt and payment) - check both debit and credit sides
     if (operationType === 'all' || operationType === 'receipt') {
-      const receiptVouchers = vouchers.filter(v => v.type === 'receipt');
+      const receiptVouchers = vouchers.filter(v => v.type === 'receipt' && isInDateRange(v.date));
       
       receiptVouchers.forEach(v => {
         if (v.debitAccountName === accountName && v.debitCurrency === currency) {
@@ -97,7 +110,7 @@ export function ReportsScreen() {
     }
 
     if (operationType === 'all' || operationType === 'payment') {
-      const paymentVouchers = vouchers.filter(v => v.type === 'payment');
+      const paymentVouchers = vouchers.filter(v => v.type === 'payment' && isInDateRange(v.date));
       
       paymentVouchers.forEach(v => {
         if (v.debitAccountName === accountName && v.debitCurrency === currency) {
@@ -125,7 +138,7 @@ export function ReportsScreen() {
 
     // Currency Exchange - check both from and to sides
     if (operationType === 'all' || operationType === 'exchange') {
-      currencyExchanges.forEach(ex => {
+      currencyExchanges.filter(ex => isInDateRange(ex.date)).forEach(ex => {
         if (ex.fromAccountName === accountName && ex.fromCurrency === currency) {
           allTransactions.push({
             date: ex.date,
@@ -152,7 +165,7 @@ export function ReportsScreen() {
     // Invoices
     if (operationType === 'all' || operationType === 'invoices') {
       const salesInvoices = invoices.filter(i => 
-        i.accountName === accountName && i.currency === currency && i.amount >= 0
+        i.accountName === accountName && i.currency === currency && i.amount >= 0 && isInDateRange(i.date)
       );
       allTransactions.push(...salesInvoices.map(i => ({
         date: i.date,
@@ -167,7 +180,7 @@ export function ReportsScreen() {
     // Returns
     if (operationType === 'all' || operationType === 'returns') {
       const returnInvoices = invoices.filter(i => 
-        i.accountName === accountName && i.currency === currency && i.amount < 0
+        i.accountName === accountName && i.currency === currency && i.amount < 0 && isInDateRange(i.date)
       );
       allTransactions.push(...returnInvoices.map(i => ({
         date: i.date,
@@ -368,7 +381,29 @@ export function ReportsScreen() {
             </div>
           </div>
 
-          {/* Row 2 */}
+          {/* Row 2: Date filters */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm text-muted-foreground mb-1 block">من تاريخ</label>
+              <Input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="text-right"
+              />
+            </div>
+            <div>
+              <label className="text-sm text-muted-foreground mb-1 block">إلى تاريخ</label>
+              <Input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="text-right"
+              />
+            </div>
+          </div>
+
+          {/* Row 3: Group and Account */}
           <div className={`grid gap-3 ${reportType === 'analytical' ? 'grid-cols-2' : 'grid-cols-1'}`}>
             <div>
               <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
