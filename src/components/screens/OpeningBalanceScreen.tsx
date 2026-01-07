@@ -7,6 +7,7 @@ import { useAccounting } from '@/contexts/AccountingContext';
 import { OpeningBalance } from '@/types/accounting';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { parseExcelFile, mapOpeningBalanceRow } from '@/utils/excelImport';
+import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { 
   Select,
   SelectContent,
@@ -94,6 +95,46 @@ export function OpeningBalanceScreen() {
       toast.error('فشل في استيراد الملف');
     }
   };
+
+  const columns = [
+    {
+      key: 'date',
+      header: 'التاريخ',
+      render: (balance: OpeningBalance) => balance.date,
+    },
+    {
+      key: 'accountName',
+      header: 'اسم الحساب',
+      render: (balance: OpeningBalance) => (
+        <span className="font-semibold">{balance.accountName}</span>
+      ),
+    },
+    {
+      key: 'currency',
+      header: 'العملة',
+      render: (balance: OpeningBalance) => balance.currency,
+    },
+    {
+      key: 'debit',
+      header: 'مدين',
+      render: (balance: OpeningBalance) => (
+        <span className={balance.debit > 0 ? 'text-success font-bold' : ''}>
+          {balance.debit > 0 ? balance.debit.toLocaleString() : '-'}
+        </span>
+      ),
+      className: 'text-left',
+    },
+    {
+      key: 'credit',
+      header: 'دائن',
+      render: (balance: OpeningBalance) => (
+        <span className={balance.credit > 0 ? 'text-destructive font-bold' : ''}>
+          {balance.credit > 0 ? balance.credit.toLocaleString() : '-'}
+        </span>
+      ),
+      className: 'text-left',
+    },
+  ];
 
   return (
     <div className="flex flex-col h-full">
@@ -216,58 +257,18 @@ export function OpeningBalanceScreen() {
         </Card>
       )}
 
-      {/* Balances List */}
-      <div className="flex-1 overflow-auto p-4">
-        <div className="space-y-2">
-          {filteredBalances.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="text-lg">لا توجد أرصدة افتتاحية</p>
-              <p className="text-sm">اضغط على "إضافة" لإنشاء رصيد افتتاحي جديد</p>
-            </div>
-          ) : (
-            filteredBalances.map((balance, index) => (
-              <Card
-                key={balance.id}
-                onClick={() => setSelectedBalance(selectedBalance?.id === balance.id ? null : balance)}
-                className={`cursor-pointer transition-all duration-200 animate-slide-up ${
-                  selectedBalance?.id === balance.id 
-                    ? 'border-2 border-primary bg-primary/5 shadow-glow' 
-                    : 'hover:border-primary/30'
-                }`}
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <p className="text-xs text-muted-foreground mb-1">{balance.date}</p>
-                      <p className="font-semibold text-foreground">{balance.accountName}</p>
-                      <p className="text-xs text-muted-foreground mt-1">رصيد افتتاحي</p>
-                    </div>
-                    <div className="text-left">
-                      {balance.debit > 0 ? (
-                        <div>
-                          <p className="text-xs text-muted-foreground">مدين</p>
-                          <p className="font-bold text-lg text-success">
-                            {balance.debit.toLocaleString()}
-                          </p>
-                        </div>
-                      ) : (
-                        <div>
-                          <p className="text-xs text-muted-foreground">دائن</p>
-                          <p className="font-bold text-lg text-destructive">
-                            {balance.credit.toLocaleString()}
-                          </p>
-                        </div>
-                      )}
-                      <p className="text-xs text-muted-foreground">{balance.currency}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+      {/* Balances Table */}
+      <div className="flex-1 overflow-hidden p-4">
+        <ScrollableTable
+          data={filteredBalances}
+          columns={columns}
+          onRowClick={(balance) => setSelectedBalance(selectedBalance?.id === balance.id ? null : balance)}
+          selectedId={selectedBalance?.id}
+          getItemId={(balance) => balance.id}
+          emptyIcon={<BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />}
+          emptyTitle="لا توجد أرصدة افتتاحية"
+          emptyDescription="اضغط على 'إضافة' لإنشاء رصيد افتتاحي جديد"
+        />
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { parseExcelFile, mapDiscountRow } from '@/utils/excelImport';
+import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { 
   Select,
   SelectContent,
@@ -130,6 +131,66 @@ export function DiscountScreen() {
       toast.error('فشل في استيراد الملف');
     }
   };
+
+  const columns = [
+    {
+      key: 'discountNumber',
+      header: 'رقم الخصم',
+      render: (discount: DiscountEntry) => (
+        <span className="font-mono text-sm bg-secondary px-2 py-1 rounded">#{discount.discountNumber}</span>
+      ),
+    },
+    {
+      key: 'date',
+      header: 'التاريخ',
+      render: (discount: DiscountEntry) => discount.date,
+    },
+    {
+      key: 'type',
+      header: 'النوع',
+      render: (discount: DiscountEntry) => (
+        <span className={`text-xs px-2 py-1 rounded-full ${
+          discount.type === 'cash' 
+            ? 'bg-success/20 text-success' 
+            : 'bg-warning/20 text-warning'
+        }`}>
+          {discount.type === 'cash' ? 'نقدي' : 'آجل'}
+        </span>
+      ),
+    },
+    {
+      key: 'accountName',
+      header: 'اسم الحساب',
+      render: (discount: DiscountEntry) => (
+        <span className="font-semibold">{discount.accountName}</span>
+      ),
+    },
+    {
+      key: 'description',
+      header: 'البيان',
+      render: (discount: DiscountEntry) => discount.description || '-',
+    },
+    {
+      key: 'reference',
+      header: 'المرجع',
+      render: (discount: DiscountEntry) => discount.reference || '-',
+    },
+    {
+      key: 'currency',
+      header: 'العملة',
+      render: (discount: DiscountEntry) => discount.currency,
+    },
+    {
+      key: 'amount',
+      header: 'المبلغ',
+      render: (discount: DiscountEntry) => (
+        <span className="font-bold text-accent">
+          {discount.amount.toLocaleString()}
+        </span>
+      ),
+      className: 'text-left',
+    },
+  ];
 
   return (
     <div className="flex flex-col h-full">
@@ -296,58 +357,18 @@ export function DiscountScreen() {
         </Card>
       )}
 
-      {/* Discounts List */}
-      <div className="flex-1 overflow-auto p-4">
-        <div className="space-y-2">
-          {filteredDiscounts.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Percent className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="text-lg">لا توجد خصومات</p>
-              <p className="text-sm">اضغط على "إضافة" لإنشاء خصم جديد</p>
-            </div>
-          ) : (
-            filteredDiscounts.map((discount, index) => (
-              <Card
-                key={discount.id}
-                onClick={() => setSelectedDiscount(selectedDiscount?.id === discount.id ? null : discount)}
-                className={`cursor-pointer transition-all duration-200 animate-slide-up ${
-                  selectedDiscount?.id === discount.id 
-                    ? 'border-2 border-primary bg-primary/5 shadow-glow' 
-                    : 'hover:border-primary/30'
-                }`}
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">
-                          #{discount.discountNumber}
-                        </span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          discount.type === 'cash' 
-                            ? 'bg-success/20 text-success' 
-                            : 'bg-warning/20 text-warning'
-                        }`}>
-                          {discount.type === 'cash' ? 'نقدي' : 'آجل'}
-                        </span>
-                        <span className="text-xs text-muted-foreground">{discount.date}</span>
-                      </div>
-                      <p className="font-semibold text-foreground">{discount.accountName}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{discount.description}</p>
-                    </div>
-                    <div className="text-left">
-                      <p className="font-bold text-lg text-accent">
-                        {discount.amount.toLocaleString()}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{discount.currency}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+      {/* Discounts Table */}
+      <div className="flex-1 overflow-hidden p-4">
+        <ScrollableTable
+          data={filteredDiscounts}
+          columns={columns}
+          onRowClick={(discount) => setSelectedDiscount(selectedDiscount?.id === discount.id ? null : discount)}
+          selectedId={selectedDiscount?.id}
+          getItemId={(discount) => discount.id}
+          emptyIcon={<Percent className="w-12 h-12 mx-auto mb-3 opacity-30" />}
+          emptyTitle="لا توجد خصومات"
+          emptyDescription="اضغط على 'إضافة' لإنشاء خصم جديد"
+        />
       </div>
     </div>
   );
