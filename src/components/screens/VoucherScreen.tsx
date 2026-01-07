@@ -8,6 +8,7 @@ import { Voucher } from '@/types/accounting';
 import { printVoucher } from '@/utils/printService';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { parseExcelFile, mapVoucherRow } from '@/utils/excelImport';
+import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { 
   Select,
   SelectContent,
@@ -15,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Save, X, Calendar, Printer } from 'lucide-react';
+import { Save, X, Calendar, Printer, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface VoucherScreenProps {
@@ -606,72 +607,82 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
         </Card>
       )}
 
-      {/* Vouchers List */}
-      <div className="flex-1 overflow-auto p-4">
-        <div className="space-y-2">
-          {filteredVouchers.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <p className="text-lg">لا توجد سندات</p>
-              <p className="text-sm">اضغط على "إضافة" لإنشاء سند جديد</p>
-            </div>
-          ) : (
-            filteredVouchers.map((voucher, index) => (
-              <Card
-                key={voucher.id}
-                onClick={() => setSelectedVoucher(selectedVoucher?.id === voucher.id ? null : voucher)}
-                className={`cursor-pointer transition-all duration-200 animate-slide-up ${
-                  selectedVoucher?.id === voucher.id 
-                    ? 'border-2 border-primary bg-primary/5 shadow-glow' 
-                    : 'hover:border-primary/30'
-                }`}
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">
-                          #{voucher.voucherNumber}
-                        </span>
-                        <span className="text-xs text-muted-foreground">{voucher.date}</span>
-                      </div>
-                      <div className="flex gap-4 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">مدين: </span>
-                          <span className="font-semibold">{voucher.debitAccountName}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">دائن: </span>
-                          <span className="font-semibold">{voucher.creditAccountName}</span>
-                        </div>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">{voucher.debitDescription || voucher.creditDescription}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handlePrint(voucher);
-                        }}
-                        className="text-primary hover:bg-primary/10"
-                      >
-                        <Printer className="w-4 h-4" />
-                      </Button>
-                      <div className="text-left">
-                        <p className={`font-bold text-lg ${type === 'receipt' ? 'text-success' : 'text-destructive'}`}>
-                          {voucher.debitAmount?.toLocaleString() || voucher.creditAmount?.toLocaleString()}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{voucher.debitCurrency || voucher.creditCurrency}</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+      {/* Vouchers Table */}
+      <div className="flex-1 overflow-hidden p-4">
+        <ScrollableTable
+          data={filteredVouchers}
+          columns={[
+            {
+              key: 'voucherNumber',
+              header: 'رقم السند',
+              render: (voucher: Voucher) => (
+                <span className="font-mono text-sm bg-secondary px-2 py-1 rounded">#{voucher.voucherNumber}</span>
+              ),
+            },
+            {
+              key: 'date',
+              header: 'التاريخ',
+              render: (voucher: Voucher) => voucher.date,
+            },
+            {
+              key: 'debitAccountName',
+              header: 'الحساب المدين',
+              render: (voucher: Voucher) => (
+                <span className="font-semibold">{voucher.debitAccountName}</span>
+              ),
+            },
+            {
+              key: 'creditAccountName',
+              header: 'الحساب الدائن',
+              render: (voucher: Voucher) => (
+                <span className="font-semibold">{voucher.creditAccountName}</span>
+              ),
+            },
+            {
+              key: 'description',
+              header: 'البيان',
+              render: (voucher: Voucher) => voucher.debitDescription || voucher.creditDescription || '-',
+            },
+            {
+              key: 'currency',
+              header: 'العملة',
+              render: (voucher: Voucher) => voucher.debitCurrency || voucher.creditCurrency,
+            },
+            {
+              key: 'amount',
+              header: 'المبلغ',
+              render: (voucher: Voucher) => (
+                <span className={`font-bold ${type === 'receipt' ? 'text-success' : 'text-destructive'}`}>
+                  {(voucher.debitAmount || voucher.creditAmount || 0).toLocaleString()}
+                </span>
+              ),
+              className: 'text-left',
+            },
+            {
+              key: 'actions',
+              header: 'طباعة',
+              render: (voucher: Voucher) => (
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePrint(voucher);
+                  }}
+                  className="text-primary hover:bg-primary/10"
+                >
+                  <Printer className="w-4 h-4" />
+                </Button>
+              ),
+            },
+          ]}
+          onRowClick={(voucher) => setSelectedVoucher(selectedVoucher?.id === voucher.id ? null : voucher)}
+          selectedId={selectedVoucher?.id}
+          getItemId={(voucher) => voucher.id}
+          emptyIcon={<Receipt className="w-12 h-12 mx-auto mb-3 opacity-30" />}
+          emptyTitle="لا توجد سندات"
+          emptyDescription="اضغط على 'إضافة' لإنشاء سند جديد"
+        />
       </div>
     </div>
   );

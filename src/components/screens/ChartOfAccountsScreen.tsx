@@ -6,6 +6,7 @@ import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { Account } from '@/types/accounting';
 import { parseExcelFile, mapAccountRow } from '@/utils/excelImport';
+import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { 
   Select,
   SelectContent,
@@ -13,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Save, X, Phone, MapPin } from 'lucide-react';
+import { Save, X, Phone, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function ChartOfAccountsScreen() {
@@ -158,6 +159,53 @@ export function ChartOfAccountsScreen() {
     }
   };
 
+  const columns = [
+    {
+      key: 'accountNumber',
+      header: 'رقم الحساب',
+      render: (account: Account) => (
+        <span className="font-mono text-sm bg-secondary px-2 py-1 rounded">{account.accountNumber}</span>
+      ),
+    },
+    {
+      key: 'accountName',
+      header: 'اسم الحساب',
+      render: (account: Account) => (
+        <span className="font-semibold">{account.accountName}</span>
+      ),
+    },
+    {
+      key: 'groupName',
+      header: 'المجموعة',
+      render: (account: Account) => account.groupName,
+    },
+    {
+      key: 'phone',
+      header: 'رقم الجوال',
+      render: (account: Account) => account.phone || '-',
+    },
+    {
+      key: 'governorate',
+      header: 'المحافظة',
+      render: (account: Account) => account.governorate || '-',
+    },
+    {
+      key: 'currency',
+      header: 'العملة',
+      render: (account: Account) => account.currency,
+    },
+    {
+      key: 'balance',
+      header: 'الرصيد',
+      render: (account: Account) => (
+        <span className={`font-bold ${account.type === 'debit' ? 'text-success' : 'text-destructive'}`}>
+          {account.balance.toLocaleString()}
+        </span>
+      ),
+      className: 'text-left',
+    },
+  ];
+
   return (
     <div className="flex flex-col h-full">
       <ActionToolbar
@@ -280,47 +328,17 @@ export function ChartOfAccountsScreen() {
       )}
 
       {/* Accounts Table */}
-      <div className="flex-1 overflow-auto p-4">
-        <div className="space-y-2">
-          {filteredAccounts.map((account, index) => (
-            <Card
-              key={account.id}
-              onClick={() => setSelectedAccount(selectedAccount?.id === account.id ? null : account)}
-              className={`cursor-pointer transition-all duration-200 animate-slide-up ${
-                selectedAccount?.id === account.id 
-                  ? 'border-2 border-primary bg-primary/5 shadow-glow' 
-                  : 'hover:border-primary/30'
-              }`}
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">
-                        {account.accountNumber}
-                      </span>
-                      <span className="text-xs text-muted-foreground">{account.groupName}</span>
-                    </div>
-                    <p className="font-semibold text-foreground">{account.accountName}</p>
-                    {account.phone && (
-                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                        <Phone className="w-3 h-3" />
-                        {account.phone}
-                      </p>
-                    )}
-                  </div>
-                  <div className="text-left">
-                    <p className={`font-bold text-lg ${account.type === 'debit' ? 'text-success' : 'text-destructive'}`}>
-                      {account.balance.toLocaleString()}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{account.currency}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      <div className="flex-1 overflow-hidden p-4">
+        <ScrollableTable
+          data={filteredAccounts}
+          columns={columns}
+          onRowClick={(account) => setSelectedAccount(selectedAccount?.id === account.id ? null : account)}
+          selectedId={selectedAccount?.id}
+          getItemId={(account) => account.id}
+          emptyIcon={<Users className="w-12 h-12 mx-auto mb-3 opacity-30" />}
+          emptyTitle="لا توجد حسابات"
+          emptyDescription="اضغط على 'إضافة' لإنشاء حساب جديد"
+        />
       </div>
     </div>
   );

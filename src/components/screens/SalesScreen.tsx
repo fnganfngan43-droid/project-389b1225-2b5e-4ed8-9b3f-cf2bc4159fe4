@@ -7,6 +7,7 @@ import { useAccounting } from '@/contexts/AccountingContext';
 import { Invoice } from '@/types/accounting';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { parseExcelFile, mapInvoiceRow } from '@/utils/excelImport';
+import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { 
   Select,
   SelectContent,
@@ -14,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Save, X, Calendar, ShoppingCart } from 'lucide-react';
+import { Save, X, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SalesScreenProps {
@@ -123,6 +124,66 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
       toast.error('فشل في استيراد الملف');
     }
   };
+
+  const columns = [
+    {
+      key: 'invoiceNumber',
+      header: isReturn ? 'رقم المرتجع' : 'رقم الفاتورة',
+      render: (invoice: Invoice) => (
+        <span className="font-mono text-sm bg-secondary px-2 py-1 rounded">#{invoice.invoiceNumber}</span>
+      ),
+    },
+    {
+      key: 'date',
+      header: 'التاريخ',
+      render: (invoice: Invoice) => invoice.date,
+    },
+    {
+      key: 'type',
+      header: 'النوع',
+      render: (invoice: Invoice) => (
+        <span className={`text-xs px-2 py-1 rounded-full ${
+          invoice.type === 'cash' 
+            ? 'bg-success/20 text-success' 
+            : 'bg-warning/20 text-warning'
+        }`}>
+          {invoice.type === 'cash' ? 'نقدي' : 'آجل'}
+        </span>
+      ),
+    },
+    {
+      key: 'accountName',
+      header: 'اسم الحساب',
+      render: (invoice: Invoice) => (
+        <span className="font-semibold">{invoice.accountName}</span>
+      ),
+    },
+    {
+      key: 'description',
+      header: 'البيان',
+      render: (invoice: Invoice) => invoice.description || '-',
+    },
+    {
+      key: 'reference',
+      header: 'المرجع',
+      render: (invoice: Invoice) => invoice.reference || '-',
+    },
+    {
+      key: 'currency',
+      header: 'العملة',
+      render: (invoice: Invoice) => invoice.currency,
+    },
+    {
+      key: 'amount',
+      header: 'المبلغ',
+      render: (invoice: Invoice) => (
+        <span className={`font-bold ${isReturn ? 'text-destructive' : 'text-success'}`}>
+          {Math.abs(invoice.amount).toLocaleString()}
+        </span>
+      ),
+      className: 'text-left',
+    },
+  ];
 
   return (
     <div className="flex flex-col h-full">
@@ -285,58 +346,18 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
         </Card>
       )}
 
-      {/* Invoices List */}
-      <div className="flex-1 overflow-auto p-4">
-        <div className="space-y-2">
-          {filteredInvoices.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <ShoppingCart className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="text-lg">{isReturn ? 'لا توجد مرتجعات' : 'لا توجد فواتير'}</p>
-              <p className="text-sm">اضغط على "إضافة" لإنشاء {isReturn ? 'مرتجع' : 'فاتورة'} جديدة</p>
-            </div>
-          ) : (
-            filteredInvoices.map((invoice, index) => (
-              <Card
-                key={invoice.id}
-                onClick={() => setSelectedInvoice(selectedInvoice?.id === invoice.id ? null : invoice)}
-                className={`cursor-pointer transition-all duration-200 animate-slide-up ${
-                  selectedInvoice?.id === invoice.id 
-                    ? 'border-2 border-primary bg-primary/5 shadow-glow' 
-                    : 'hover:border-primary/30'
-                }`}
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">
-                          #{invoice.invoiceNumber}
-                        </span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          invoice.type === 'cash' 
-                            ? 'bg-success/20 text-success' 
-                            : 'bg-warning/20 text-warning'
-                        }`}>
-                          {invoice.type === 'cash' ? 'نقدي' : 'آجل'}
-                        </span>
-                        <span className="text-xs text-muted-foreground">{invoice.date}</span>
-                      </div>
-                      <p className="font-semibold text-foreground">{invoice.accountName}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{invoice.description}</p>
-                    </div>
-                    <div className="text-left">
-                      <p className={`font-bold text-lg ${isReturn ? 'text-destructive' : 'text-success'}`}>
-                        {Math.abs(invoice.amount).toLocaleString()}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{invoice.currency}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+      {/* Invoices Table */}
+      <div className="flex-1 overflow-hidden p-4">
+        <ScrollableTable
+          data={filteredInvoices}
+          columns={columns}
+          onRowClick={(invoice) => setSelectedInvoice(selectedInvoice?.id === invoice.id ? null : invoice)}
+          selectedId={selectedInvoice?.id}
+          getItemId={(invoice) => invoice.id}
+          emptyIcon={<ShoppingCart className="w-12 h-12 mx-auto mb-3 opacity-30" />}
+          emptyTitle={isReturn ? 'لا توجد مرتجعات' : 'لا توجد فواتير'}
+          emptyDescription={`اضغط على 'إضافة' لإنشاء ${isReturn ? 'مرتجع' : 'فاتورة'} جديدة`}
+        />
       </div>
     </div>
   );

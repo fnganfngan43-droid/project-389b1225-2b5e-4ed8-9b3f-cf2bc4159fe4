@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
+import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { 
   Select,
   SelectContent,
@@ -13,7 +14,6 @@ import {
 } from "@/components/ui/select";
 import { Save, X, ArrowLeftRight, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
-import { Separator } from '@/components/ui/separator';
 
 import { CurrencyExchange } from '@/types/accounting';
 
@@ -97,6 +97,53 @@ export function CurrencyExchangeScreen() {
     });
     setIsAdding(false);
   };
+
+  const columns = [
+    {
+      key: 'exchangeNumber',
+      header: 'رقم العملية',
+      render: (exchange: CurrencyExchange) => (
+        <span className="font-mono text-sm bg-secondary px-2 py-1 rounded">#{exchange.exchangeNumber}</span>
+      ),
+    },
+    {
+      key: 'date',
+      header: 'التاريخ',
+      render: (exchange: CurrencyExchange) => exchange.date,
+    },
+    {
+      key: 'fromAccountName',
+      header: 'من حساب',
+      render: (exchange: CurrencyExchange) => (
+        <span className="font-semibold">{exchange.fromAccountName}</span>
+      ),
+    },
+    {
+      key: 'fromAmount',
+      header: 'المبلغ (من)',
+      render: (exchange: CurrencyExchange) => (
+        <span className="text-destructive font-bold">
+          {exchange.fromAmount.toLocaleString()} {exchange.fromCurrency}
+        </span>
+      ),
+    },
+    {
+      key: 'toAccountName',
+      header: 'إلى حساب',
+      render: (exchange: CurrencyExchange) => (
+        <span className="font-semibold">{exchange.toAccountName}</span>
+      ),
+    },
+    {
+      key: 'toAmount',
+      header: 'المبلغ (إلى)',
+      render: (exchange: CurrencyExchange) => (
+        <span className="text-success font-bold">
+          {exchange.toAmount.toLocaleString()} {exchange.toCurrency}
+        </span>
+      ),
+    },
+  ];
 
   return (
     <div className="flex flex-col h-full">
@@ -314,59 +361,18 @@ export function CurrencyExchangeScreen() {
         </Card>
       )}
 
-      {/* Exchanges List */}
-      <div className="flex-1 overflow-auto p-4">
-        <div className="space-y-2">
-          {filteredExchanges.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <ArrowLeftRight className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="text-lg">لا توجد عمليات صرف</p>
-              <p className="text-sm">اضغط على "إضافة" لإنشاء عملية صرف جديدة</p>
-            </div>
-          ) : (
-            filteredExchanges.map((exchange, index) => (
-              <Card
-                key={exchange.id}
-                onClick={() => setSelectedExchange(selectedExchange?.id === exchange.id ? null : exchange)}
-                className={`cursor-pointer transition-all duration-200 animate-slide-up ${
-                  selectedExchange?.id === exchange.id 
-                    ? 'border-2 border-primary bg-primary/5 shadow-glow' 
-                    : 'hover:border-primary/30'
-                }`}
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">
-                        #{exchange.exchangeNumber}
-                      </span>
-                      <span className="text-xs text-muted-foreground">{exchange.date}</span>
-                    </div>
-                    <ArrowLeftRight className="w-4 h-4 text-primary" />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-center flex-1">
-                      <p className="text-xs text-muted-foreground">من</p>
-                      <p className="font-semibold text-sm">{exchange.fromAccountName}</p>
-                      <p className="text-destructive font-bold">
-                        {exchange.fromAmount.toLocaleString()} {exchange.fromCurrency}
-                      </p>
-                    </div>
-                    <ArrowLeftRight className="w-5 h-5 text-muted-foreground mx-2" />
-                    <div className="text-center flex-1">
-                      <p className="text-xs text-muted-foreground">إلى</p>
-                      <p className="font-semibold text-sm">{exchange.toAccountName}</p>
-                      <p className="text-success font-bold">
-                        {exchange.toAmount.toLocaleString()} {exchange.toCurrency}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+      {/* Exchanges Table */}
+      <div className="flex-1 overflow-hidden p-4">
+        <ScrollableTable
+          data={filteredExchanges}
+          columns={columns}
+          onRowClick={(exchange) => setSelectedExchange(selectedExchange?.id === exchange.id ? null : exchange)}
+          selectedId={selectedExchange?.id}
+          getItemId={(exchange) => exchange.id}
+          emptyIcon={<ArrowLeftRight className="w-12 h-12 mx-auto mb-3 opacity-30" />}
+          emptyTitle="لا توجد عمليات صرف"
+          emptyDescription="اضغط على 'إضافة' لإنشاء عملية صرف جديدة"
+        />
       </div>
     </div>
   );
