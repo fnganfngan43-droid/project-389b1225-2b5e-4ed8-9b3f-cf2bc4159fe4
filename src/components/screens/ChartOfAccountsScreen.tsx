@@ -216,6 +216,15 @@ export function ChartOfAccountsScreen() {
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
         searchPlaceholder="بحث في الحسابات..."
+        importTitle="استيراد دليل الحسابات"
+        importColumns={[
+          'اسم المجموعة',
+          'رقم الحساب',
+          'اسم الحساب',
+          'رقم الجوال',
+          'العملة',
+          'المحافظة',
+        ]}
       />
 
       {/* Add/Edit Form */}

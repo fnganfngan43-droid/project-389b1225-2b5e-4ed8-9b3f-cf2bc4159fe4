@@ -1,7 +1,15 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Trash2, Edit, Download, Copy, Search } from 'lucide-react';
+import { Plus, Trash2, Edit, Download, Copy, Search, FileSpreadsheet, Info } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface ActionToolbarProps {
   onAdd?: () => void;
@@ -13,6 +21,8 @@ interface ActionToolbarProps {
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
   showDuplicate?: boolean;
+  importColumns?: string[];
+  importTitle?: string;
 }
 
 export function ActionToolbar({
@@ -25,8 +35,11 @@ export function ActionToolbar({
   onSearchChange,
   searchPlaceholder = 'بحث...',
   showDuplicate = false,
+  importColumns = [],
+  importTitle = 'استيراد من Excel',
 }: ActionToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showImportDialog, setShowImportDialog] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -37,6 +50,19 @@ export function ActionToolbar({
         fileInputRef.current.value = '';
       }
     }
+    setShowImportDialog(false);
+  };
+
+  const handleImportClick = () => {
+    if (importColumns.length > 0) {
+      setShowImportDialog(true);
+    } else {
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handleConfirmImport = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -49,6 +75,57 @@ export function ActionToolbar({
         onChange={handleFileChange}
         className="hidden"
       />
+
+      {/* Import Instructions Dialog */}
+      <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileSpreadsheet className="w-5 h-5 text-primary" />
+              {importTitle}
+            </DialogTitle>
+            <DialogDescription className="text-right">
+              يرجى التأكد من ترتيب الأعمدة في ملف Excel كالتالي:
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="bg-muted/50 rounded-lg p-4 border">
+            <div className="flex items-start gap-2 mb-3">
+              <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <p className="text-sm text-muted-foreground">
+                يتم الاستيراد من الصف الثاني (الصف الأول للعناوين)
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="text-sm font-semibold mb-2">ترتيب الأعمدة:</p>
+              <div className="grid gap-1.5">
+                {importColumns.map((column, index) => (
+                  <div 
+                    key={index} 
+                    className="flex items-center gap-2 text-sm bg-background rounded px-3 py-1.5 border"
+                  >
+                    <span className="w-6 h-6 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-bold shrink-0">
+                      {index + 1}
+                    </span>
+                    <span>{column}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowImportDialog(false)}>
+              إلغاء
+            </Button>
+            <Button onClick={handleConfirmImport}>
+              <Download className="w-4 h-4" />
+              موافق - اختر الملف
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       {/* Action buttons row */}
       <div className="flex flex-wrap gap-2">
@@ -65,7 +142,7 @@ export function ActionToolbar({
           </Button>
         )}
         {onImport && (
-          <Button onClick={() => fileInputRef.current?.click()} size="sm" variant="secondary">
+          <Button onClick={handleImportClick} size="sm" variant="secondary">
             <Download className="w-4 h-4" />
             استيراد Excel
           </Button>

@@ -203,6 +203,18 @@ export function DiscountScreen() {
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
         searchPlaceholder="بحث في الخصومات..."
+        importTitle="استيراد الخصومات"
+        importColumns={[
+          'التاريخ',
+          'رقم الخصم',
+          'النوع (نقدي/آجل)',
+          'اسم المجموعة',
+          'اسم الحساب',
+          'المبلغ',
+          'رمز العملة',
+          'رقم المرجع',
+          'البيان',
+        ]}
       />
 
       {/* Add Form */}

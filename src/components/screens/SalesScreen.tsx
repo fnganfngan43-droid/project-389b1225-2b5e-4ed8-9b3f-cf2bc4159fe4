@@ -196,6 +196,18 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
         searchPlaceholder={isReturn ? "بحث في المرتجعات..." : "بحث في الفواتير..."}
+        importTitle={isReturn ? 'استيراد المرتجعات' : 'استيراد الفواتير'}
+        importColumns={[
+          'التاريخ',
+          'رقم الفاتورة',
+          'النوع (نقدي/آجل)',
+          'اسم المجموعة',
+          'اسم الحساب',
+          'المبلغ',
+          'رمز العملة',
+          'رقم المرجع',
+          'البيان',
+        ]}
       />
 
       {/* Add Form */}

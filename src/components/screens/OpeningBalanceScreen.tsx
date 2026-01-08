@@ -144,6 +144,15 @@ export function OpeningBalanceScreen() {
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
         searchPlaceholder="بحث في الأرصدة..."
+        importTitle="استيراد الأرصدة الافتتاحية"
+        importColumns={[
+          'التاريخ',
+          'رمز العملة',
+          'اسم المجموعة',
+          'اسم الحساب',
+          'مدين',
+          'دائن',
+        ]}
       />
 
       {/* Add Form */}
