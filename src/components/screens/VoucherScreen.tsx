@@ -190,6 +190,23 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
         searchPlaceholder="بحث في السندات..."
+        importTitle={type === 'receipt' ? 'استيراد سندات القبض' : 'استيراد سندات الصرف'}
+        importColumns={[
+          'رقم السند',
+          'التاريخ',
+          'اسم المجموعة (مدين)',
+          'اسم الحساب (مدين)',
+          'رمز العملة (مدين)',
+          'المبلغ (مدين)',
+          'البيان (مدين)',
+          'رقم المرجع (مدين)',
+          'اسم المجموعة (دائن)',
+          'اسم الحساب (دائن)',
+          'رمز العملة (دائن)',
+          'المبلغ (دائن)',
+          'البيان (دائن)',
+          'رقم المرجع (دائن)',
+        ]}
       />
 
       {/* Add Form */}
