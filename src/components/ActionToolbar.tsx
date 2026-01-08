@@ -80,10 +80,21 @@ export function ActionToolbar({
       <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileSpreadsheet className="w-5 h-5 text-primary" />
-              {importTitle}
-            </DialogTitle>
+            <div className="flex items-center justify-between gap-2">
+              <DialogTitle className="flex items-center gap-2">
+                <FileSpreadsheet className="w-5 h-5 text-primary" />
+                {importTitle}
+              </DialogTitle>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => setShowImportDialog(false)}>
+                  إلغاء
+                </Button>
+                <Button size="sm" onClick={handleConfirmImport}>
+                  <Download className="w-4 h-4" />
+                  موافق
+                </Button>
+              </div>
+            </div>
             <DialogDescription className="text-right">
               يرجى التأكد من ترتيب الأعمدة في ملف Excel كالتالي:
             </DialogDescription>
@@ -114,16 +125,6 @@ export function ActionToolbar({
               </div>
             </div>
           </div>
-
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setShowImportDialog(false)}>
-              إلغاء
-            </Button>
-            <Button onClick={handleConfirmImport}>
-              <Download className="w-4 h-4" />
-              موافق - اختر الملف
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
       
