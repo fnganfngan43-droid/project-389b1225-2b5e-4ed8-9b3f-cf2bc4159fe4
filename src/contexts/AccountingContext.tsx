@@ -50,6 +50,8 @@ interface AccountingContextType {
   // Opening Balances
   openingBalances: OpeningBalance[];
   addOpeningBalance: (balance: Omit<OpeningBalance, 'id'>) => void;
+  updateOpeningBalance: (id: string, balance: Partial<OpeningBalance>) => void;
+  deleteOpeningBalance: (id: string) => void;
 
   // Invoices
   invoices: Invoice[];
@@ -60,6 +62,7 @@ interface AccountingContextType {
   // Currency Exchanges
   currencyExchanges: CurrencyExchange[];
   addCurrencyExchange: (exchange: Omit<CurrencyExchange, 'id'>) => void;
+  updateCurrencyExchange: (id: string, exchange: Partial<CurrencyExchange>) => void;
   deleteCurrencyExchange: (id: string) => void;
 }
 
@@ -189,6 +192,8 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
 
     openingBalances,
     addOpeningBalance: (balance) => setOpeningBalances(prev => [...prev, { ...balance, id: generateId() }]),
+    updateOpeningBalance: (id, balance) => setOpeningBalances(prev => prev.map(b => b.id === id ? { ...b, ...balance } : b)),
+    deleteOpeningBalance: (id) => setOpeningBalances(prev => prev.filter(b => b.id !== id)),
 
     invoices,
     addInvoice: (invoice) => setInvoices(prev => [...prev, { ...invoice, id: generateId() }]),
@@ -197,6 +202,7 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
 
     currencyExchanges,
     addCurrencyExchange: (exchange) => setCurrencyExchanges(prev => [...prev, { ...exchange, id: generateId() }]),
+    updateCurrencyExchange: (id, exchange) => setCurrencyExchanges(prev => prev.map(e => e.id === id ? { ...e, ...exchange } : e)),
     deleteCurrencyExchange: (id) => setCurrencyExchanges(prev => prev.filter(e => e.id !== id)),
   };
 

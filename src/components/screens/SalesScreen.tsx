@@ -23,10 +23,11 @@ interface SalesScreenProps {
 }
 
 export function SalesScreen({ isReturn = false }: SalesScreenProps) {
-  const { invoices, accounts, groups, currencies, addInvoice, deleteInvoice } = useAccounting();
+  const { invoices, accounts, groups, currencies, addInvoice, updateInvoice, deleteInvoice } = useAccounting();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
 
   const filteredInvoices = invoices.filter(inv => 
     (isReturn ? inv.amount < 0 : inv.amount >= 0) && (
@@ -55,20 +56,52 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
       return;
     }
 
-    addInvoice({
-      date: formData.date,
-      invoiceNumber: formData.invoiceNumber,
-      accountName: formData.accountName,
-      groupName: formData.groupName,
-      amount: isReturn ? -parseFloat(formData.amount) : parseFloat(formData.amount),
-      currency: formData.currency,
-      type: formData.type,
-      reference: formData.reference,
-      description: formData.description || (isReturn ? 'مرتجع مبيعات' : 'فاتورة مبيعات'),
-    });
-
-    toast.success(`تم حفظ ${isReturn ? 'المرتجع' : 'الفاتورة'} بنجاح`);
+    if (editingInvoice) {
+      updateInvoice(editingInvoice.id, {
+        date: formData.date,
+        invoiceNumber: formData.invoiceNumber,
+        accountName: formData.accountName,
+        groupName: formData.groupName,
+        amount: isReturn ? -parseFloat(formData.amount) : parseFloat(formData.amount),
+        currency: formData.currency,
+        type: formData.type,
+        reference: formData.reference,
+        description: formData.description || (isReturn ? 'مرتجع مبيعات' : 'فاتورة مبيعات'),
+      });
+      toast.success(`تم تحديث ${isReturn ? 'المرتجع' : 'الفاتورة'} بنجاح`);
+    } else {
+      addInvoice({
+        date: formData.date,
+        invoiceNumber: formData.invoiceNumber,
+        accountName: formData.accountName,
+        groupName: formData.groupName,
+        amount: isReturn ? -parseFloat(formData.amount) : parseFloat(formData.amount),
+        currency: formData.currency,
+        type: formData.type,
+        reference: formData.reference,
+        description: formData.description || (isReturn ? 'مرتجع مبيعات' : 'فاتورة مبيعات'),
+      });
+      toast.success(`تم حفظ ${isReturn ? 'المرتجع' : 'الفاتورة'} بنجاح`);
+    }
     resetForm();
+  };
+
+  const handleEdit = () => {
+    if (selectedInvoice) {
+      setEditingInvoice(selectedInvoice);
+      setFormData({
+        date: selectedInvoice.date,
+        invoiceNumber: selectedInvoice.invoiceNumber,
+        type: selectedInvoice.type,
+        groupName: selectedInvoice.groupName,
+        accountName: selectedInvoice.accountName,
+        amount: Math.abs(selectedInvoice.amount).toString(),
+        currency: selectedInvoice.currency,
+        reference: selectedInvoice.reference || '',
+        description: selectedInvoice.description,
+      });
+      setIsAdding(true);
+    }
   };
 
   const handleDelete = () => {
@@ -92,6 +125,7 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
       description: '',
     });
     setIsAdding(false);
+    setEditingInvoice(null);
   };
 
   const handleImport = async (file: File) => {
@@ -189,6 +223,7 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
     <div className="flex flex-col h-full">
       <ActionToolbar
         onAdd={() => setIsAdding(true)}
+        onEdit={selectedInvoice ? handleEdit : undefined}
         onDelete={selectedInvoice ? handleDelete : undefined}
         onImport={handleImport}
         showDuplicate
@@ -217,7 +252,9 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
             <CardTitle className="text-lg flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShoppingCart className="w-5 h-5" />
-                {isReturn ? 'مرتجع مبيعات جديد' : 'فاتورة مبيعات جديدة'}
+                {editingInvoice 
+                  ? (isReturn ? 'تعديل مرتجع' : 'تعديل فاتورة') 
+                  : (isReturn ? 'مرتجع مبيعات جديد' : 'فاتورة مبيعات جديدة')}
               </div>
               <Button variant="ghost" size="icon-sm" onClick={resetForm}>
                 <X className="w-4 h-4" />

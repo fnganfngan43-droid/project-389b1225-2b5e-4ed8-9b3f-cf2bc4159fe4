@@ -19,10 +19,11 @@ import { Save, X, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function OpeningBalanceScreen() {
-  const { openingBalances, accounts, groups, currencies, addOpeningBalance } = useAccounting();
+  const { openingBalances, accounts, groups, currencies, addOpeningBalance, updateOpeningBalance, deleteOpeningBalance } = useAccounting();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedBalance, setSelectedBalance] = useState<OpeningBalance | null>(null);
+  const [editingBalance, setEditingBalance] = useState<OpeningBalance | null>(null);
 
   const filteredBalances = openingBalances.filter(b => 
     b.accountName.includes(searchTerm)
@@ -45,16 +46,50 @@ export function OpeningBalanceScreen() {
       return;
     }
 
-    addOpeningBalance({
-      date: formData.date,
-      accountName: formData.accountName,
-      currency: formData.currency,
-      debit: parseFloat(formData.debit) || 0,
-      credit: parseFloat(formData.credit) || 0,
-    });
-
-    toast.success('تم حفظ الرصيد الافتتاحي بنجاح');
+    if (editingBalance) {
+      updateOpeningBalance(editingBalance.id, {
+        date: formData.date,
+        accountName: formData.accountName,
+        currency: formData.currency,
+        debit: parseFloat(formData.debit) || 0,
+        credit: parseFloat(formData.credit) || 0,
+      });
+      toast.success('تم تحديث الرصيد الافتتاحي بنجاح');
+    } else {
+      addOpeningBalance({
+        date: formData.date,
+        accountName: formData.accountName,
+        currency: formData.currency,
+        debit: parseFloat(formData.debit) || 0,
+        credit: parseFloat(formData.credit) || 0,
+      });
+      toast.success('تم حفظ الرصيد الافتتاحي بنجاح');
+    }
     resetForm();
+  };
+
+  const handleEdit = () => {
+    if (selectedBalance) {
+      const account = accounts.find(a => a.accountName === selectedBalance.accountName);
+      setEditingBalance(selectedBalance);
+      setFormData({
+        date: selectedBalance.date,
+        groupName: account?.groupName || '',
+        accountName: selectedBalance.accountName,
+        debit: selectedBalance.debit.toString(),
+        credit: selectedBalance.credit.toString(),
+        currency: selectedBalance.currency,
+      });
+      setIsAdding(true);
+    }
+  };
+
+  const handleDelete = () => {
+    if (selectedBalance) {
+      deleteOpeningBalance(selectedBalance.id);
+      setSelectedBalance(null);
+      toast.success('تم حذف الرصيد بنجاح');
+    }
   };
 
   const resetForm = () => {
@@ -67,6 +102,7 @@ export function OpeningBalanceScreen() {
       currency: '',
     });
     setIsAdding(false);
+    setEditingBalance(null);
   };
 
   const handleImport = async (file: File) => {
@@ -140,6 +176,8 @@ export function OpeningBalanceScreen() {
     <div className="flex flex-col h-full">
       <ActionToolbar
         onAdd={() => setIsAdding(true)}
+        onEdit={selectedBalance ? handleEdit : undefined}
+        onDelete={selectedBalance ? handleDelete : undefined}
         onImport={handleImport}
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
@@ -162,7 +200,7 @@ export function OpeningBalanceScreen() {
             <CardTitle className="text-lg flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BookOpen className="w-5 h-5" />
-                رصيد افتتاحي جديد
+                {editingBalance ? 'تعديل رصيد افتتاحي' : 'رصيد افتتاحي جديد'}
               </div>
               <Button variant="ghost" size="icon-sm" onClick={resetForm}>
                 <X className="w-4 h-4" />

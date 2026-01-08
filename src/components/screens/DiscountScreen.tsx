@@ -34,6 +34,7 @@ export function DiscountScreen() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedDiscount, setSelectedDiscount] = useState<DiscountEntry | null>(null);
+  const [editingDiscount, setEditingDiscount] = useState<DiscountEntry | null>(null);
 
   const filteredDiscounts = discounts.filter(d => 
     d.accountName.includes(searchTerm) || 
@@ -60,21 +61,58 @@ export function DiscountScreen() {
       return;
     }
 
-    const newDiscount: DiscountEntry = {
-      id: Math.random().toString(36).substr(2, 9),
-      date: formData.date,
-      discountNumber: formData.discountNumber,
-      accountName: formData.accountName,
-      amount: parseFloat(formData.amount),
-      currency: formData.currency,
-      type: formData.type,
-      reference: formData.reference,
-      description: formData.description || 'خصم',
-    };
-
-    setDiscounts(prev => [...prev, newDiscount]);
-    toast.success('تم حفظ الخصم بنجاح');
+    if (editingDiscount) {
+      setDiscounts(prev => prev.map(d => 
+        d.id === editingDiscount.id 
+          ? {
+              ...d,
+              date: formData.date,
+              discountNumber: formData.discountNumber,
+              accountName: formData.accountName,
+              amount: parseFloat(formData.amount),
+              currency: formData.currency,
+              type: formData.type,
+              reference: formData.reference,
+              description: formData.description || 'خصم',
+            }
+          : d
+      ));
+      toast.success('تم تحديث الخصم بنجاح');
+    } else {
+      const newDiscount: DiscountEntry = {
+        id: Math.random().toString(36).substr(2, 9),
+        date: formData.date,
+        discountNumber: formData.discountNumber,
+        accountName: formData.accountName,
+        amount: parseFloat(formData.amount),
+        currency: formData.currency,
+        type: formData.type,
+        reference: formData.reference,
+        description: formData.description || 'خصم',
+      };
+      setDiscounts(prev => [...prev, newDiscount]);
+      toast.success('تم حفظ الخصم بنجاح');
+    }
     resetForm();
+  };
+
+  const handleEdit = () => {
+    if (selectedDiscount) {
+      const account = accounts.find(a => a.accountName === selectedDiscount.accountName);
+      setEditingDiscount(selectedDiscount);
+      setFormData({
+        date: selectedDiscount.date,
+        discountNumber: selectedDiscount.discountNumber,
+        type: selectedDiscount.type,
+        groupName: account?.groupName || '',
+        accountName: selectedDiscount.accountName,
+        amount: selectedDiscount.amount.toString(),
+        currency: selectedDiscount.currency,
+        reference: selectedDiscount.reference || '',
+        description: selectedDiscount.description,
+      });
+      setIsAdding(true);
+    }
   };
 
   const handleDelete = () => {
@@ -98,6 +136,7 @@ export function DiscountScreen() {
       description: '',
     });
     setIsAdding(false);
+    setEditingDiscount(null);
   };
 
   const handleImport = async (file: File) => {
@@ -196,6 +235,7 @@ export function DiscountScreen() {
     <div className="flex flex-col h-full">
       <ActionToolbar
         onAdd={() => setIsAdding(true)}
+        onEdit={selectedDiscount ? handleEdit : undefined}
         onDelete={selectedDiscount ? handleDelete : undefined}
         onImport={handleImport}
         showDuplicate
@@ -224,7 +264,7 @@ export function DiscountScreen() {
             <CardTitle className="text-lg flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Percent className="w-5 h-5" />
-                خصم جديد
+                {editingDiscount ? 'تعديل خصم' : 'خصم جديد'}
               </div>
               <Button variant="ghost" size="icon-sm" onClick={resetForm}>
                 <X className="w-4 h-4" />

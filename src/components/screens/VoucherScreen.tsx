@@ -24,10 +24,11 @@ interface VoucherScreenProps {
 }
 
 export function VoucherScreen({ type }: VoucherScreenProps) {
-  const { vouchers, accounts, groups, currencies, settings, addVoucher, deleteVoucher } = useAccounting();
+  const { vouchers, accounts, groups, currencies, settings, addVoucher, updateVoucher, deleteVoucher } = useAccounting();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
+  const [editingVoucher, setEditingVoucher] = useState<Voucher | null>(null);
 
   const handlePrint = (voucher: Voucher) => {
     printVoucher({ voucher, settings });
@@ -92,7 +93,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
       }
     }
 
-    addVoucher({
+    const voucherData = {
       date: formData.date,
       voucherNumber: formData.voucherNumber,
       debitAccountName: formData.debitAccountName,
@@ -108,10 +109,39 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
       creditReference: formData.creditReference,
       creditDescription: formData.creditDescription || (type === 'receipt' ? 'سند قبض' : 'سند صرف'),
       type,
-    });
+    };
 
-    toast.success(`تم حفظ ${type === 'receipt' ? 'سند القبض' : 'سند الصرف'} بنجاح`);
+    if (editingVoucher) {
+      updateVoucher(editingVoucher.id, voucherData);
+      toast.success(`تم تحديث ${type === 'receipt' ? 'سند القبض' : 'سند الصرف'} بنجاح`);
+    } else {
+      addVoucher(voucherData);
+      toast.success(`تم حفظ ${type === 'receipt' ? 'سند القبض' : 'سند الصرف'} بنجاح`);
+    }
     resetForm();
+  };
+
+  const handleEdit = () => {
+    if (selectedVoucher) {
+      setEditingVoucher(selectedVoucher);
+      setFormData({
+        date: selectedVoucher.date,
+        voucherNumber: selectedVoucher.voucherNumber,
+        debitGroupName: selectedVoucher.debitGroupName,
+        debitAccountName: selectedVoucher.debitAccountName,
+        debitCurrency: selectedVoucher.debitCurrency,
+        debitAmount: selectedVoucher.debitAmount.toString(),
+        debitDescription: selectedVoucher.debitDescription || '',
+        debitReference: selectedVoucher.debitReference || '',
+        creditGroupName: selectedVoucher.creditGroupName,
+        creditAccountName: selectedVoucher.creditAccountName,
+        creditCurrency: selectedVoucher.creditCurrency,
+        creditAmount: selectedVoucher.creditAmount.toString(),
+        creditDescription: selectedVoucher.creditDescription || '',
+        creditReference: selectedVoucher.creditReference || '',
+      });
+      setIsAdding(true);
+    }
   };
 
   const handleDelete = () => {
@@ -140,6 +170,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
       creditReference: '',
     });
     setIsAdding(false);
+    setEditingVoucher(null);
   };
 
   const handleImport = async (file: File) => {
@@ -183,6 +214,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
     <div className="flex flex-col h-full">
       <ActionToolbar
         onAdd={() => setIsAdding(true)}
+        onEdit={selectedVoucher ? handleEdit : undefined}
         onDelete={selectedVoucher ? handleDelete : undefined}
         onImport={handleImport}
         showDuplicate
@@ -214,7 +246,9 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
         <Card className="m-4 animate-slide-up border-2 border-primary/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
-              {type === 'receipt' ? 'سند قبض جديد' : 'سند صرف جديد'}
+              {editingVoucher 
+                ? (type === 'receipt' ? 'تعديل سند قبض' : 'تعديل سند صرف')
+                : (type === 'receipt' ? 'سند قبض جديد' : 'سند صرف جديد')}
               <Button variant="ghost" size="icon-sm" onClick={resetForm}>
                 <X className="w-4 h-4" />
               </Button>
