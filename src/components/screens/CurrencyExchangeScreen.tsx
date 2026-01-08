@@ -18,10 +18,11 @@ import { toast } from 'sonner';
 import { CurrencyExchange } from '@/types/accounting';
 
 export function CurrencyExchangeScreen() {
-  const { accounts, groups, currencies, currencyExchanges, addCurrencyExchange, deleteCurrencyExchange } = useAccounting();
+  const { accounts, groups, currencies, currencyExchanges, addCurrencyExchange, updateCurrencyExchange, deleteCurrencyExchange } = useAccounting();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedExchange, setSelectedExchange] = useState<CurrencyExchange | null>(null);
+  const [editingExchange, setEditingExchange] = useState<CurrencyExchange | null>(null);
 
   const filteredExchanges = currencyExchanges.filter(e => 
     e.fromAccountName.includes(searchTerm) || 
@@ -53,23 +54,61 @@ export function CurrencyExchangeScreen() {
       return;
     }
 
-    addCurrencyExchange({
-      date: formData.date,
-      exchangeNumber: formData.exchangeNumber,
-      fromAccountName: formData.fromAccountName,
-      fromGroupName: formData.fromGroupName,
-      fromAmount: parseFloat(formData.fromAmount),
-      fromCurrency: formData.fromCurrency,
-      toAccountName: formData.toAccountName,
-      toGroupName: formData.toGroupName,
-      toAmount: parseFloat(formData.toAmount),
-      toCurrency: formData.toCurrency,
-      reference: formData.fromReference,
-      description: `مبتاع بقيمة ${formData.toAmount} ${formData.toCurrency} بصرف ${formData.fromCurrency}`,
-    });
-
-    toast.success('تم حفظ عملية الصرف بنجاح');
+    if (editingExchange) {
+      updateCurrencyExchange(editingExchange.id, {
+        date: formData.date,
+        exchangeNumber: formData.exchangeNumber,
+        fromAccountName: formData.fromAccountName,
+        fromGroupName: formData.fromGroupName,
+        fromAmount: parseFloat(formData.fromAmount),
+        fromCurrency: formData.fromCurrency,
+        toAccountName: formData.toAccountName,
+        toGroupName: formData.toGroupName,
+        toAmount: parseFloat(formData.toAmount),
+        toCurrency: formData.toCurrency,
+        reference: formData.fromReference,
+        description: `مبتاع بقيمة ${formData.toAmount} ${formData.toCurrency} بصرف ${formData.fromCurrency}`,
+      });
+      toast.success('تم تحديث عملية الصرف بنجاح');
+    } else {
+      addCurrencyExchange({
+        date: formData.date,
+        exchangeNumber: formData.exchangeNumber,
+        fromAccountName: formData.fromAccountName,
+        fromGroupName: formData.fromGroupName,
+        fromAmount: parseFloat(formData.fromAmount),
+        fromCurrency: formData.fromCurrency,
+        toAccountName: formData.toAccountName,
+        toGroupName: formData.toGroupName,
+        toAmount: parseFloat(formData.toAmount),
+        toCurrency: formData.toCurrency,
+        reference: formData.fromReference,
+        description: `مبتاع بقيمة ${formData.toAmount} ${formData.toCurrency} بصرف ${formData.fromCurrency}`,
+      });
+      toast.success('تم حفظ عملية الصرف بنجاح');
+    }
     resetForm();
+  };
+
+  const handleEdit = () => {
+    if (selectedExchange) {
+      setEditingExchange(selectedExchange);
+      setFormData({
+        date: selectedExchange.date,
+        exchangeNumber: selectedExchange.exchangeNumber,
+        fromGroupName: selectedExchange.fromGroupName,
+        fromAccountName: selectedExchange.fromAccountName,
+        fromAmount: selectedExchange.fromAmount.toString(),
+        fromCurrency: selectedExchange.fromCurrency,
+        fromReference: selectedExchange.reference || '',
+        toGroupName: selectedExchange.toGroupName,
+        toAccountName: selectedExchange.toAccountName,
+        toAmount: selectedExchange.toAmount.toString(),
+        toCurrency: selectedExchange.toCurrency,
+        toReference: '',
+      });
+      setIsAdding(true);
+    }
   };
 
   const handleDelete = () => {
@@ -96,6 +135,7 @@ export function CurrencyExchangeScreen() {
       toReference: '',
     });
     setIsAdding(false);
+    setEditingExchange(null);
   };
 
   const columns = [
@@ -149,6 +189,7 @@ export function CurrencyExchangeScreen() {
     <div className="flex flex-col h-full">
       <ActionToolbar
         onAdd={() => setIsAdding(true)}
+        onEdit={selectedExchange ? handleEdit : undefined}
         onDelete={selectedExchange ? handleDelete : undefined}
         onImport={() => toast.info('سيتم إضافة خاصية الاستيراد قريباً')}
         showDuplicate
@@ -165,7 +206,7 @@ export function CurrencyExchangeScreen() {
             <CardTitle className="text-lg flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ArrowLeftRight className="w-5 h-5" />
-                صرف عملة جديد
+                {editingExchange ? 'تعديل عملية صرف' : 'صرف عملة جديد'}
               </div>
               <Button variant="ghost" size="icon-sm" onClick={resetForm}>
                 <X className="w-4 h-4" />
