@@ -316,17 +316,40 @@ export function ReportsScreen() {
     }
     
     const title = reportType === 'analytical' ? 'كشف حساب تحليلي' : 'كشف حساب إجمالي';
+    const prevBalance = getPreviousBalance(selectedAccount, selectedCurrency);
+    
+    // Build transactions with previous balance row
+    let printTransactions = [...transactionsWithBalance];
+    
+    // Add previous balance row at the beginning if exists
+    if (prevBalance !== 0) {
+      const prevBalanceRow = {
+        date: '-',
+        type: 'رصيد افتتاحي',
+        description: 'الرصيد الافتتاحي',
+        reference: '-',
+        debit: prevBalance > 0 ? prevBalance : 0,
+        credit: prevBalance < 0 ? Math.abs(prevBalance) : 0,
+        balance: prevBalance,
+        isPreviousBalance: true,
+      };
+      printTransactions = [prevBalanceRow, ...transactionsWithBalance.map((t, index) => ({
+        ...t,
+        balance: t.balance + prevBalance
+      }))];
+    }
+    
     const totals = {
-      debit: transactionsWithBalance.reduce((sum, t) => sum + t.debit, 0),
-      credit: transactionsWithBalance.reduce((sum, t) => sum + t.credit, 0),
-      balance: runningBalance,
+      debit: transactionsWithBalance.reduce((sum, t) => sum + t.debit, 0) + (prevBalance > 0 ? prevBalance : 0),
+      credit: transactionsWithBalance.reduce((sum, t) => sum + t.credit, 0) + (prevBalance < 0 ? Math.abs(prevBalance) : 0),
+      balance: runningBalance + prevBalance,
     };
     
     printReport({
       title,
       accountName: selectedAccount,
       currency: selectedCurrency,
-      transactions: transactionsWithBalance,
+      transactions: printTransactions,
       settings,
       totals,
     });
@@ -549,8 +572,8 @@ export function ReportsScreen() {
                       return (
                         <div className="grid grid-cols-7 gap-1 p-3 text-xs border border-black bg-muted/50">
                           <div className="border-l border-black pl-1 text-muted-foreground">-</div>
-                          <div className="border-l border-black pl-1 font-bold text-destructive">رصيد سابق</div>
-                          <div className="border-l border-black pl-1 text-destructive">رصيد ما قبل {dateFrom}</div>
+                          <div className="border-l border-black pl-1 font-bold text-destructive">رصيد افتتاحي</div>
+                          <div className="border-l border-black pl-1 text-destructive">الرصيد الافتتاحي</div>
                           <div className="border-l border-black pl-1 text-muted-foreground">-</div>
                           <div className="border-l border-black pl-1 text-left font-bold text-destructive">
                             {prevBalance > 0 ? prevBalance.toLocaleString() : '-'}
