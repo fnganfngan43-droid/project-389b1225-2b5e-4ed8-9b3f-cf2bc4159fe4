@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { format } from 'date-fns';
+import { format, startOfYear } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,17 @@ import { toast } from 'sonner';
 type ReportType = 'analytical' | 'summary';
 type OperationType = 'all' | 'opening' | 'receipt' | 'payment' | 'invoices' | 'returns' | 'discount' | 'exchange';
 
+// Helper to get first day of current year
+const getFirstDayOfYear = () => {
+  const now = new Date();
+  return format(startOfYear(now), 'yyyy-MM-dd');
+};
+
+// Helper to get today's date
+const getToday = () => {
+  return format(new Date(), 'yyyy-MM-dd');
+};
+
 export function ReportsScreen() {
   const { accounts, groups, currencies, vouchers, invoices, openingBalances, currencyExchanges, settings } = useAccounting();
   const [reportType, setReportType] = useState<ReportType>('analytical');
@@ -27,8 +38,8 @@ export function ReportsScreen() {
   const [selectedAccount, setSelectedAccount] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('');
   const [showReport, setShowReport] = useState(false);
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [dateFrom, setDateFrom] = useState(getFirstDayOfYear());
+  const [dateTo, setDateTo] = useState(getToday());
 
   const filteredAccounts = accounts.filter(a => !selectedGroup || a.groupName === selectedGroup);
   const groupAccounts = accounts.filter(a => a.groupName === selectedGroup);
@@ -40,6 +51,60 @@ export function ReportsScreen() {
     if (dateFrom && d < new Date(dateFrom)) return false;
     if (dateTo && d > new Date(dateTo)) return false;
     return true;
+  };
+
+  // Check if transaction is before the date range (for previous balance)
+  const isBeforeDateRange = (date: string) => {
+    if (!dateFrom) return false;
+    const d = new Date(date);
+    return d < new Date(dateFrom);
+  };
+
+  // Get previous balance (transactions before dateFrom)
+  const getPreviousBalance = (accountName: string, currency: string) => {
+    let totalDebit = 0;
+    let totalCredit = 0;
+
+    // Opening balances before dateFrom
+    openingBalances
+      .filter(ob => ob.accountName === accountName && ob.currency === currency && isBeforeDateRange(ob.date))
+      .forEach(ob => {
+        totalDebit += ob.debit;
+        totalCredit += ob.credit;
+      });
+
+    // Vouchers before dateFrom
+    vouchers.filter(v => isBeforeDateRange(v.date)).forEach(v => {
+      if (v.debitAccountName === accountName && v.debitCurrency === currency) {
+        totalDebit += v.debitAmount;
+      }
+      if (v.creditAccountName === accountName && v.creditCurrency === currency) {
+        totalCredit += v.creditAmount;
+      }
+    });
+
+    // Currency exchanges before dateFrom
+    currencyExchanges.filter(ex => isBeforeDateRange(ex.date)).forEach(ex => {
+      if (ex.fromAccountName === accountName && ex.fromCurrency === currency) {
+        totalCredit += ex.fromAmount;
+      }
+      if (ex.toAccountName === accountName && ex.toCurrency === currency) {
+        totalDebit += ex.toAmount;
+      }
+    });
+
+    // Invoices before dateFrom
+    invoices
+      .filter(i => i.accountName === accountName && i.currency === currency && isBeforeDateRange(i.date))
+      .forEach(i => {
+        if (i.amount >= 0) {
+          totalDebit += i.amount;
+        } else {
+          totalCredit += Math.abs(i.amount);
+        }
+      });
+
+    return totalDebit - totalCredit;
   };
 
   const generateReport = () => {
@@ -459,57 +524,88 @@ export function ReportsScreen() {
             </CardHeader>
             <CardContent className="p-0">
               {/* Table header */}
-              <div className="grid grid-cols-7 gap-1 p-3 bg-secondary text-secondary-foreground text-xs font-semibold border-b">
-                <div>التاريخ</div>
-                <div>النوع</div>
-                <div>البيان</div>
-                <div>المرجع</div>
-                <div className="text-left">مدين</div>
-                <div className="text-left">دائن</div>
+              <div className="grid grid-cols-7 gap-1 p-3 bg-secondary text-secondary-foreground text-xs font-semibold border border-black">
+                <div className="border-l border-black pl-1">التاريخ</div>
+                <div className="border-l border-black pl-1">النوع</div>
+                <div className="border-l border-black pl-1">البيان</div>
+                <div className="border-l border-black pl-1">المرجع</div>
+                <div className="border-l border-black pl-1 text-left">مدين</div>
+                <div className="border-l border-black pl-1 text-left">دائن</div>
                 <div className="text-left">الرصيد</div>
               </div>
 
               {/* Table body */}
-              {transactionsWithBalance.length === 0 ? (
+              {transactionsWithBalance.length === 0 && getPreviousBalance(selectedAccount, selectedCurrency) === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-30" />
                   <p>لا توجد معاملات لهذا الحساب</p>
                 </div>
               ) : (
-                transactionsWithBalance.map((t, index) => (
-                  <div 
-                    key={index}
-                    className="grid grid-cols-7 gap-1 p-3 text-xs border-b border-border/50 hover:bg-secondary/30 transition-colors"
-                  >
-                    <div className="text-muted-foreground">{t.date}</div>
-                    <div>{t.type}</div>
-                    <div className="truncate">{t.description}</div>
-                    <div className="text-muted-foreground">{t.reference || '-'}</div>
-                    <div className="text-left text-success font-medium">
-                      {t.debit > 0 ? t.debit.toLocaleString() : '-'}
-                    </div>
-                    <div className="text-left text-destructive font-medium">
-                      {t.credit > 0 ? t.credit.toLocaleString() : '-'}
-                    </div>
-                    <div className={`text-left font-bold ${t.balance >= 0 ? 'text-success' : 'text-destructive'}`}>
-                      {t.balance.toLocaleString()}
-                    </div>
-                  </div>
-                ))
+                <>
+                  {/* Previous Balance Row */}
+                  {(() => {
+                    const prevBalance = getPreviousBalance(selectedAccount, selectedCurrency);
+                    if (prevBalance !== 0) {
+                      return (
+                        <div className="grid grid-cols-7 gap-1 p-3 text-xs border border-black bg-muted/50">
+                          <div className="border-l border-black pl-1 text-muted-foreground">-</div>
+                          <div className="border-l border-black pl-1 font-bold text-destructive">رصيد سابق</div>
+                          <div className="border-l border-black pl-1 text-destructive">رصيد ما قبل {dateFrom}</div>
+                          <div className="border-l border-black pl-1 text-muted-foreground">-</div>
+                          <div className="border-l border-black pl-1 text-left font-bold text-destructive">
+                            {prevBalance > 0 ? prevBalance.toLocaleString() : '-'}
+                          </div>
+                          <div className="border-l border-black pl-1 text-left font-bold text-destructive">
+                            {prevBalance < 0 ? Math.abs(prevBalance).toLocaleString() : '-'}
+                          </div>
+                          <div className="text-left font-bold text-destructive">
+                            {prevBalance.toLocaleString()}
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                  {/* Regular Transactions */}
+                  {transactionsWithBalance.map((t, index) => {
+                    const prevBalance = getPreviousBalance(selectedAccount, selectedCurrency);
+                    const adjustedBalance = t.balance + prevBalance;
+                    return (
+                      <div 
+                        key={index}
+                        className="grid grid-cols-7 gap-1 p-3 text-xs border-x border-b border-black hover:bg-secondary/30 transition-colors"
+                      >
+                        <div className="border-l border-black pl-1 text-muted-foreground">{t.date}</div>
+                        <div className="border-l border-black pl-1">{t.type}</div>
+                        <div className="border-l border-black pl-1 truncate">{t.description}</div>
+                        <div className="border-l border-black pl-1 text-muted-foreground">{t.reference || '-'}</div>
+                        <div className="border-l border-black pl-1 text-left text-success font-medium">
+                          {t.debit > 0 ? t.debit.toLocaleString() : '-'}
+                        </div>
+                        <div className="border-l border-black pl-1 text-left text-destructive font-medium">
+                          {t.credit > 0 ? t.credit.toLocaleString() : '-'}
+                        </div>
+                        <div className={`text-left font-bold ${adjustedBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
+                          {adjustedBalance.toLocaleString()}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
               )}
 
               {/* Summary footer */}
-              {transactionsWithBalance.length > 0 && (
-                <div className="grid grid-cols-7 gap-1 p-3 bg-muted text-sm font-bold border-t-2">
-                  <div className="col-span-4">الإجمالي</div>
-                  <div className="text-left text-success">
-                    {transactionsWithBalance.reduce((sum, t) => sum + t.debit, 0).toLocaleString()}
+              {(transactionsWithBalance.length > 0 || getPreviousBalance(selectedAccount, selectedCurrency) !== 0) && (
+                <div className="grid grid-cols-7 gap-1 p-3 bg-muted text-sm font-bold border border-black">
+                  <div className="col-span-4 border-l border-black pl-1">الإجمالي</div>
+                  <div className="border-l border-black pl-1 text-left text-success">
+                    {(transactionsWithBalance.reduce((sum, t) => sum + t.debit, 0) + (getPreviousBalance(selectedAccount, selectedCurrency) > 0 ? getPreviousBalance(selectedAccount, selectedCurrency) : 0)).toLocaleString()}
                   </div>
-                  <div className="text-left text-destructive">
-                    {transactionsWithBalance.reduce((sum, t) => sum + t.credit, 0).toLocaleString()}
+                  <div className="border-l border-black pl-1 text-left text-destructive">
+                    {(transactionsWithBalance.reduce((sum, t) => sum + t.credit, 0) + (getPreviousBalance(selectedAccount, selectedCurrency) < 0 ? Math.abs(getPreviousBalance(selectedAccount, selectedCurrency)) : 0)).toLocaleString()}
                   </div>
-                  <div className={`text-left ${runningBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
-                    {runningBalance.toLocaleString()}
+                  <div className={`text-left ${(runningBalance + getPreviousBalance(selectedAccount, selectedCurrency)) >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {(runningBalance + getPreviousBalance(selectedAccount, selectedCurrency)).toLocaleString()}
                   </div>
                 </div>
               )}
@@ -532,11 +628,11 @@ export function ReportsScreen() {
               </CardHeader>
               <CardContent className="p-0">
                 {/* Table header */}
-                <div className="grid grid-cols-5 gap-1 p-3 bg-secondary text-secondary-foreground text-xs font-semibold border-b">
-                  <div>رقم الحساب</div>
-                  <div>اسم الحساب</div>
-                  <div className="text-left">مدين</div>
-                  <div className="text-left">دائن</div>
+                <div className="grid grid-cols-5 gap-1 p-3 bg-secondary text-secondary-foreground text-xs font-semibold border border-black">
+                  <div className="border-l border-black pl-1">رقم الحساب</div>
+                  <div className="border-l border-black pl-1">اسم الحساب</div>
+                  <div className="border-l border-black pl-1 text-left">مدين</div>
+                  <div className="border-l border-black pl-1 text-left">دائن</div>
                   <div className="text-left">الرصيد</div>
                 </div>
 
@@ -550,14 +646,14 @@ export function ReportsScreen() {
                   currencyData.accounts.map((acc, index) => (
                     <div 
                       key={index}
-                      className="grid grid-cols-5 gap-1 p-3 text-xs border-b border-border/50 hover:bg-secondary/30 transition-colors"
+                      className="grid grid-cols-5 gap-1 p-3 text-xs border-x border-b border-black hover:bg-secondary/30 transition-colors"
                     >
-                      <div className="text-muted-foreground">{acc.accountNumber}</div>
-                      <div className="font-medium">{acc.accountName}</div>
-                      <div className="text-left text-success font-medium">
+                      <div className="border-l border-black pl-1 text-muted-foreground">{acc.accountNumber}</div>
+                      <div className="border-l border-black pl-1 font-medium">{acc.accountName}</div>
+                      <div className="border-l border-black pl-1 text-left text-success font-medium">
                         {acc.totalDebit > 0 ? acc.totalDebit.toLocaleString() : '-'}
                       </div>
-                      <div className="text-left text-destructive font-medium">
+                      <div className="border-l border-black pl-1 text-left text-destructive font-medium">
                         {acc.totalCredit > 0 ? acc.totalCredit.toLocaleString() : '-'}
                       </div>
                       <div className={`text-left font-bold ${acc.balance >= 0 ? 'text-success' : 'text-destructive'}`}>
@@ -569,12 +665,12 @@ export function ReportsScreen() {
 
                 {/* Summary footer */}
                 {currencyData.accounts.length > 0 && (
-                  <div className="grid grid-cols-5 gap-1 p-3 bg-muted text-sm font-bold border-t-2">
-                    <div className="col-span-2">الإجمالي</div>
-                    <div className="text-left text-success">
+                  <div className="grid grid-cols-5 gap-1 p-3 bg-muted text-sm font-bold border border-black">
+                    <div className="col-span-2 border-l border-black pl-1">الإجمالي</div>
+                    <div className="border-l border-black pl-1 text-left text-success">
                       {currencyData.totalDebit.toLocaleString()}
                     </div>
-                    <div className="text-left text-destructive">
+                    <div className="border-l border-black pl-1 text-left text-destructive">
                       {currencyData.totalCredit.toLocaleString()}
                     </div>
                     <div className={`text-left ${currencyData.totalBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
