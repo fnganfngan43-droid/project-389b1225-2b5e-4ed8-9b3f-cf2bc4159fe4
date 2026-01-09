@@ -17,6 +17,7 @@ interface PrintReportData {
     debit: number;
     credit: number;
     balance: number;
+    isPreviousBalance?: boolean;
   }>;
   settings: Settings;
   totals: {
@@ -212,6 +213,12 @@ const getCommonStyles = () => `
     color: #dc2626;
     font-weight: bold;
   }
+  .previous-balance-row {
+    background: #fef3f2 !important;
+  }
+  .previous-balance-row td {
+    color: #dc2626;
+  }
   .totals-row {
     background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%) !important;
     font-weight: bold;
@@ -348,14 +355,14 @@ export function printVoucher({ voucher, settings }: PrintVoucherData) {
 
 export function printReport({ title, accountName, currency, transactions, settings, totals }: PrintReportData) {
   const transactionsRows = transactions.map(t => `
-    <tr>
+    <tr${t.isPreviousBalance ? ' class="previous-balance-row"' : ''}>
       <td>${t.date}</td>
-      <td>${t.type}</td>
-      <td>${t.description}</td>
+      <td${t.isPreviousBalance ? ' style="color: #dc2626; font-weight: bold;"' : ''}>${t.type}</td>
+      <td${t.isPreviousBalance ? ' style="color: #dc2626;"' : ''}>${t.description}</td>
       <td>${t.reference || '-'}</td>
-      <td class="debit">${t.debit > 0 ? t.debit.toLocaleString() : '-'}</td>
-      <td class="credit">${t.credit > 0 ? t.credit.toLocaleString() : '-'}</td>
-      <td class="${t.balance >= 0 ? 'balance-positive' : 'balance-negative'}">${t.balance.toLocaleString()}</td>
+      <td class="debit"${t.isPreviousBalance ? ' style="color: #dc2626; font-weight: bold;"' : ''}>${t.debit > 0 ? t.debit.toLocaleString() : '-'}</td>
+      <td class="credit"${t.isPreviousBalance ? ' style="color: #dc2626; font-weight: bold;"' : ''}>${t.credit > 0 ? t.credit.toLocaleString() : '-'}</td>
+      <td class="${t.balance >= 0 ? 'balance-positive' : 'balance-negative'}"${t.isPreviousBalance ? ' style="color: #dc2626; font-weight: bold;"' : ''}>${t.balance.toLocaleString()}</td>
     </tr>
   `).join('');
 
