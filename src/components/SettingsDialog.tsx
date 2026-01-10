@@ -9,8 +9,9 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Save, User, FileText, Image, Upload, X } from 'lucide-react';
+import { Save, User, FileText, Image, Upload, X, Download, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { downloadProjectAsZip } from '@/utils/downloadService';
 
 interface SettingsDialogProps {
   open: boolean;
@@ -19,6 +20,7 @@ interface SettingsDialogProps {
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const { settings, updateSettings } = useAccounting();
+  const [isDownloading, setIsDownloading] = useState(false);
   
   const [formData, setFormData] = useState({
     userName: settings.userName,
@@ -29,6 +31,19 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDownloadCode = async () => {
+    setIsDownloading(true);
+    try {
+      await downloadProjectAsZip();
+      toast.success('تم تحميل ملف الكود بنجاح');
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('فشل في تحميل الملف');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -229,6 +244,36 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 onChange={(e) => setFormData(prev => ({ ...prev, footerNote: e.target.value }))}
                 placeholder="حقل إضافي يظهر في نهاية التقرير"
               />
+            </CardContent>
+          </Card>
+
+          {/* Download Code Button */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Download className="w-4 h-4" />
+                تحميل الكود المصدري
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={handleDownloadCode} 
+                variant="outline" 
+                className="w-full"
+                disabled={isDownloading}
+              >
+                {isDownloading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    جاري التحميل...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    تحميل ملف ZIP
+                  </>
+                )}
+              </Button>
             </CardContent>
           </Card>
 
