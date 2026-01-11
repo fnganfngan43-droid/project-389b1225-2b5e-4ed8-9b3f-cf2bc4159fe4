@@ -287,7 +287,26 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
                 <label className="text-sm text-muted-foreground mb-1 block">النوع</label>
                 <Select 
                   value={formData.type} 
-                  onValueChange={(val) => setFormData(prev => ({ ...prev, type: val as 'cash' | 'credit' }))}
+                  onValueChange={(val) => {
+                    const newType = val as 'cash' | 'credit';
+                    if (newType === 'cash') {
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        type: newType,
+                        groupName: 'الصندوق',
+                        accountName: '',
+                        description: isReturn ? 'مرتجع مبيعات نقدية' : 'مبيعات نقدية'
+                      }));
+                    } else {
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        type: newType,
+                        groupName: 'العملاء',
+                        accountName: '',
+                        description: isReturn ? 'مرتجع فاتورة آجلة' : 'عليكم جملة فاتورة آجلة'
+                      }));
+                    }
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue />
