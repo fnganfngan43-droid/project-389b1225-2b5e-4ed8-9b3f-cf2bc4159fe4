@@ -51,10 +51,10 @@ export function ScrollableTable<T>({
     <ScrollArea className="flex-1 w-full">
       <div className="min-w-max">
         <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/50">
+          <TableHeader className="sticky top-0 z-10">
+            <TableRow className="bg-muted">
               {columns.map((col) => (
-                <TableHead key={col.key} className={`whitespace-nowrap text-right ${col.className || ''}`}>
+                <TableHead key={col.key} className={`whitespace-nowrap text-right bg-muted ${col.className || ''}`}>
                   {col.header}
                 </TableHead>
               ))}
