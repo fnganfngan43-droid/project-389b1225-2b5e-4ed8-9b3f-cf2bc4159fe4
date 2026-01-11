@@ -207,25 +207,27 @@ export function ChartOfAccountsScreen() {
   ];
 
   return (
-    <div className="flex flex-col h-full">
-      <ActionToolbar
-        onAdd={() => setIsAdding(true)}
-        onEdit={selectedAccount ? handleEdit : undefined}
-        onDelete={selectedAccount ? handleDelete : undefined}
-        onImport={handleImport}
-        searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
-        searchPlaceholder="بحث في الحسابات..."
-        importTitle="استيراد دليل الحسابات"
-        importColumns={[
-          'اسم المجموعة',
-          'رقم الحساب',
-          'اسم الحساب',
-          'رقم الجوال',
-          'العملة',
-          'المحافظة',
-        ]}
-      />
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="shrink-0">
+        <ActionToolbar
+          onAdd={() => setIsAdding(true)}
+          onEdit={selectedAccount ? handleEdit : undefined}
+          onDelete={selectedAccount ? handleDelete : undefined}
+          onImport={handleImport}
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="بحث في الحسابات..."
+          importTitle="استيراد دليل الحسابات"
+          importColumns={[
+            'اسم المجموعة',
+            'رقم الحساب',
+            'اسم الحساب',
+            'رقم الجوال',
+            'العملة',
+            'المحافظة',
+          ]}
+        />
+      </div>
 
       {/* Add/Edit Form */}
       {isAdding && (

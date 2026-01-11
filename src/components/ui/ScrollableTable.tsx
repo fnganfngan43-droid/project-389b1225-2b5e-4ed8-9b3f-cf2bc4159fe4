@@ -48,10 +48,11 @@ export function ScrollableTable<T>({
   }
 
   return (
-    <ScrollArea className="flex-1 w-full">
-      <div className="min-w-max">
+    <div className="flex flex-col flex-1 overflow-hidden">
+      {/* Fixed Table Header */}
+      <div className="min-w-max shrink-0">
         <Table>
-          <TableHeader className="sticky top-0 z-10">
+          <TableHeader>
             <TableRow className="bg-muted">
               {columns.map((col) => (
                 <TableHead key={col.key} className={`whitespace-nowrap text-right bg-muted ${col.className || ''}`}>
@@ -60,28 +61,36 @@ export function ScrollableTable<T>({
               ))}
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {data.map((item, index) => (
-              <TableRow
-                key={getItemId(item)}
-                onClick={() => onRowClick?.(item)}
-                className={`cursor-pointer transition-colors ${
-                  selectedId === getItemId(item)
-                    ? 'bg-primary/10 border-primary'
-                    : 'hover:bg-muted/50'
-                }`}
-              >
-                {columns.map((col) => (
-                  <TableCell key={col.key} className={`whitespace-nowrap ${col.className || ''}`}>
-                    {col.render(item, index)}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
         </Table>
       </div>
-      <ScrollBar orientation="horizontal" />
-    </ScrollArea>
+      
+      {/* Scrollable Table Body */}
+      <ScrollArea className="flex-1 w-full">
+        <div className="min-w-max">
+          <Table>
+            <TableBody>
+              {data.map((item, index) => (
+                <TableRow
+                  key={getItemId(item)}
+                  onClick={() => onRowClick?.(item)}
+                  className={`cursor-pointer transition-colors ${
+                    selectedId === getItemId(item)
+                      ? 'bg-primary/10 border-primary'
+                      : 'hover:bg-muted/50'
+                  }`}
+                >
+                  {columns.map((col) => (
+                    <TableCell key={col.key} className={`whitespace-nowrap ${col.className || ''}`}>
+                      {col.render(item, index)}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
+    </div>
   );
 }

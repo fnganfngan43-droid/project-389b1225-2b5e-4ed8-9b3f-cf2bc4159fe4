@@ -173,25 +173,27 @@ export function OpeningBalanceScreen() {
   ];
 
   return (
-    <div className="flex flex-col h-full">
-      <ActionToolbar
-        onAdd={() => setIsAdding(true)}
-        onEdit={selectedBalance ? handleEdit : undefined}
-        onDelete={selectedBalance ? handleDelete : undefined}
-        onImport={handleImport}
-        searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
-        searchPlaceholder="بحث في الأرصدة..."
-        importTitle="استيراد الأرصدة الافتتاحية"
-        importColumns={[
-          'التاريخ',
-          'رمز العملة',
-          'اسم المجموعة',
-          'اسم الحساب',
-          'مدين',
-          'دائن',
-        ]}
-      />
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="shrink-0">
+        <ActionToolbar
+          onAdd={() => setIsAdding(true)}
+          onEdit={selectedBalance ? handleEdit : undefined}
+          onDelete={selectedBalance ? handleDelete : undefined}
+          onImport={handleImport}
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="بحث في الأرصدة..."
+          importTitle="استيراد الأرصدة الافتتاحية"
+          importColumns={[
+            'التاريخ',
+            'رمز العملة',
+            'اسم المجموعة',
+            'اسم الحساب',
+            'مدين',
+            'دائن',
+          ]}
+        />
+      </div>
 
       {/* Add Form */}
       {isAdding && (

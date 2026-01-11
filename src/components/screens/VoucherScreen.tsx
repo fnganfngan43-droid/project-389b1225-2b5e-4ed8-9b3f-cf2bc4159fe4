@@ -211,35 +211,37 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <ActionToolbar
-        onAdd={() => setIsAdding(true)}
-        onEdit={selectedVoucher ? handleEdit : undefined}
-        onDelete={selectedVoucher ? handleDelete : undefined}
-        onImport={handleImport}
-        showDuplicate
-        onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
-        searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
-        searchPlaceholder="بحث في السندات..."
-        importTitle={type === 'receipt' ? 'استيراد سندات القبض' : 'استيراد سندات الصرف'}
-        importColumns={[
-          'رقم السند',
-          'التاريخ',
-          'اسم المجموعة (مدين)',
-          'اسم الحساب (مدين)',
-          'رمز العملة (مدين)',
-          'المبلغ (مدين)',
-          'البيان (مدين)',
-          'رقم المرجع (مدين)',
-          'اسم المجموعة (دائن)',
-          'اسم الحساب (دائن)',
-          'رمز العملة (دائن)',
-          'المبلغ (دائن)',
-          'البيان (دائن)',
-          'رقم المرجع (دائن)',
-        ]}
-      />
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="shrink-0">
+        <ActionToolbar
+          onAdd={() => setIsAdding(true)}
+          onEdit={selectedVoucher ? handleEdit : undefined}
+          onDelete={selectedVoucher ? handleDelete : undefined}
+          onImport={handleImport}
+          showDuplicate
+          onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="بحث في السندات..."
+          importTitle={type === 'receipt' ? 'استيراد سندات القبض' : 'استيراد سندات الصرف'}
+          importColumns={[
+            'رقم السند',
+            'التاريخ',
+            'اسم المجموعة (مدين)',
+            'اسم الحساب (مدين)',
+            'رمز العملة (مدين)',
+            'المبلغ (مدين)',
+            'البيان (مدين)',
+            'رقم المرجع (مدين)',
+            'اسم المجموعة (دائن)',
+            'اسم الحساب (دائن)',
+            'رمز العملة (دائن)',
+            'المبلغ (دائن)',
+            'البيان (دائن)',
+            'رقم المرجع (دائن)',
+          ]}
+        />
+      </div>
 
       {/* Add Form */}
       {isAdding && (
