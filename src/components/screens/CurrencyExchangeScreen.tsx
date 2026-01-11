@@ -186,18 +186,20 @@ export function CurrencyExchangeScreen() {
   ];
 
   return (
-    <div className="flex flex-col h-full">
-      <ActionToolbar
-        onAdd={() => setIsAdding(true)}
-        onEdit={selectedExchange ? handleEdit : undefined}
-        onDelete={selectedExchange ? handleDelete : undefined}
-        onImport={() => toast.info('سيتم إضافة خاصية الاستيراد قريباً')}
-        showDuplicate
-        onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
-        searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
-        searchPlaceholder="بحث في عمليات الصرف..."
-      />
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="shrink-0">
+        <ActionToolbar
+          onAdd={() => setIsAdding(true)}
+          onEdit={selectedExchange ? handleEdit : undefined}
+          onDelete={selectedExchange ? handleDelete : undefined}
+          onImport={() => toast.info('سيتم إضافة خاصية الاستيراد قريباً')}
+          showDuplicate
+          onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="بحث في عمليات الصرف..."
+        />
+      </div>
 
       {/* Add Form */}
       {isAdding && (

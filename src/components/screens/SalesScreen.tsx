@@ -220,15 +220,16 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
   ];
 
   return (
-    <div className="flex flex-col h-full">
-      <ActionToolbar
-        onAdd={() => setIsAdding(true)}
-        onEdit={selectedInvoice ? handleEdit : undefined}
-        onDelete={selectedInvoice ? handleDelete : undefined}
-        onImport={handleImport}
-        showDuplicate
-        onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
-        searchValue={searchTerm}
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="shrink-0">
+        <ActionToolbar
+          onAdd={() => setIsAdding(true)}
+          onEdit={selectedInvoice ? handleEdit : undefined}
+          onDelete={selectedInvoice ? handleDelete : undefined}
+          onImport={handleImport}
+          showDuplicate
+          onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
+          searchValue={searchTerm}
         onSearchChange={setSearchTerm}
         searchPlaceholder={isReturn ? "بحث في المرتجعات..." : "بحث في الفواتير..."}
         importTitle={isReturn ? 'استيراد المرتجعات' : 'استيراد الفواتير'}
@@ -244,6 +245,7 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
           'البيان',
         ]}
       />
+      </div>
 
       {/* Add Form */}
       {isAdding && (

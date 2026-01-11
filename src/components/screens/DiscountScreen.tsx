@@ -232,30 +232,32 @@ export function DiscountScreen() {
   ];
 
   return (
-    <div className="flex flex-col h-full">
-      <ActionToolbar
-        onAdd={() => setIsAdding(true)}
-        onEdit={selectedDiscount ? handleEdit : undefined}
-        onDelete={selectedDiscount ? handleDelete : undefined}
-        onImport={handleImport}
-        showDuplicate
-        onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
-        searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
-        searchPlaceholder="بحث في الخصومات..."
-        importTitle="استيراد الخصومات"
-        importColumns={[
-          'التاريخ',
-          'رقم الخصم',
-          'النوع (نقدي/آجل)',
-          'اسم المجموعة',
-          'اسم الحساب',
-          'المبلغ',
-          'رمز العملة',
-          'رقم المرجع',
-          'البيان',
-        ]}
-      />
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="shrink-0">
+        <ActionToolbar
+          onAdd={() => setIsAdding(true)}
+          onEdit={selectedDiscount ? handleEdit : undefined}
+          onDelete={selectedDiscount ? handleDelete : undefined}
+          onImport={handleImport}
+          showDuplicate
+          onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="بحث في الخصومات..."
+          importTitle="استيراد الخصومات"
+          importColumns={[
+            'التاريخ',
+            'رقم الخصم',
+            'النوع (نقدي/آجل)',
+            'اسم المجموعة',
+            'اسم الحساب',
+            'المبلغ',
+            'رمز العملة',
+            'رقم المرجع',
+            'البيان',
+          ]}
+        />
+      </div>
 
       {/* Add Form */}
       {isAdding && (
