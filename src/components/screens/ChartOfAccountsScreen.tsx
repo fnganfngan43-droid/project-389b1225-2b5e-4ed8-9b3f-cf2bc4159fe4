@@ -208,6 +208,7 @@ export function ChartOfAccountsScreen() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
+      {/* Fixed Section - Toolbar and Form */}
       <div className="shrink-0">
         <ActionToolbar
           onAdd={() => setIsAdding(true)}
@@ -227,11 +228,10 @@ export function ChartOfAccountsScreen() {
             'المحافظة',
           ]}
         />
-      </div>
 
-      {/* Add/Edit Form */}
-      {isAdding && (
-        <Card className="m-4 animate-slide-up border-2 border-primary/20">
+        {/* Add/Edit Form - Also Fixed */}
+        {isAdding && (
+          <Card className="mx-4 mb-2 animate-slide-up border-2 border-primary/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
               {editingAccount ? 'تعديل حساب' : 'إضافة حساب جديد'}
@@ -335,11 +335,12 @@ export function ChartOfAccountsScreen() {
               حفظ
             </Button>
           </CardContent>
-        </Card>
-      )}
+          </Card>
+        )}
+      </div>
 
-      {/* Accounts Table */}
-      <div className="flex-1 overflow-hidden p-4">
+      {/* Accounts Table - Scrollable */}
+      <div className="flex-1 overflow-hidden px-4 pb-4">
         <ScrollableTable
           data={filteredAccounts}
           columns={columns}
