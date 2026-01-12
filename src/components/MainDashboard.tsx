@@ -58,7 +58,7 @@ export function MainDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       <MainHeader 
         title={getScreenTitle()}
         onSettingsClick={() => setSettingsOpen(true)}
@@ -68,7 +68,7 @@ export function MainDashboard() {
         activeScreen={activeScreen}
         onScreenChange={setActiveScreen}
       />
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 flex flex-col overflow-hidden min-h-0">
         {renderScreen()}
       </main>
       <SettingsDialog 

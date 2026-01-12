@@ -207,7 +207,7 @@ export function ChartOfAccountsScreen() {
   ];
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden min-h-0">
       {/* Fixed Section - Toolbar and Form */}
       <div className="shrink-0">
         <ActionToolbar

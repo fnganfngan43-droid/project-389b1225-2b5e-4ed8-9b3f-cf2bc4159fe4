@@ -358,7 +358,7 @@ export function ReportsScreen() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden min-h-0">
       {/* Report toolbar */}
       <div className="bg-card border-b border-border p-4">
         <div className="flex flex-wrap gap-2 mb-4">
