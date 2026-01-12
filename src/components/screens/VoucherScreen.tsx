@@ -93,6 +93,23 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
       }
     }
 
+    // Check for duplicate reference (debit or credit)
+    const existingDebitRef = formData.debitReference && vouchers.find(v => 
+      v.id !== editingVoucher?.id && 
+      (v.debitReference === formData.debitReference || v.creditReference === formData.debitReference)
+    );
+    const existingCreditRef = formData.creditReference && vouchers.find(v => 
+      v.id !== editingVoucher?.id && 
+      (v.debitReference === formData.creditReference || v.creditReference === formData.creditReference)
+    );
+
+    if (existingDebitRef) {
+      toast.warning(`تنبيه: رقم المرجع "${formData.debitReference}" مستخدم مسبقاً في سند آخر`);
+    }
+    if (existingCreditRef && formData.creditReference !== formData.debitReference) {
+      toast.warning(`تنبيه: رقم المرجع "${formData.creditReference}" مستخدم مسبقاً في سند آخر`);
+    }
+
     const voucherData = {
       date: formData.date,
       voucherNumber: formData.voucherNumber,
@@ -213,8 +230,30 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
   return (
     <div className="flex flex-col h-full overflow-hidden min-h-0">
       <div className="shrink-0">
-        <ActionToolbar
-          onAdd={() => setIsAdding(true)}
+      <ActionToolbar
+          onAdd={() => {
+            if (selectedVoucher) {
+              // Copy selected voucher data to form (duplicate functionality)
+              setFormData({
+                date: new Date().toISOString().split('T')[0],
+                voucherNumber: String(filteredVouchers.length + 1).padStart(4, '0'),
+                debitGroupName: selectedVoucher.debitGroupName,
+                debitAccountName: selectedVoucher.debitAccountName,
+                debitCurrency: selectedVoucher.debitCurrency,
+                debitAmount: selectedVoucher.debitAmount.toString(),
+                debitDescription: selectedVoucher.debitDescription || '',
+                debitReference: selectedVoucher.debitReference || '',
+                creditGroupName: selectedVoucher.creditGroupName,
+                creditAccountName: selectedVoucher.creditAccountName,
+                creditCurrency: selectedVoucher.creditCurrency,
+                creditAmount: selectedVoucher.creditAmount.toString(),
+                creditDescription: selectedVoucher.creditDescription || '',
+                creditReference: selectedVoucher.creditReference || '',
+              });
+              setEditingVoucher(null);
+            }
+            setIsAdding(true);
+          }}
           onEdit={selectedVoucher ? handleEdit : undefined}
           onDelete={selectedVoucher ? handleDelete : undefined}
           onImport={handleImport}
