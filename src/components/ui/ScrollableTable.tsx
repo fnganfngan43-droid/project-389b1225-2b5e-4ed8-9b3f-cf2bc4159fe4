@@ -48,9 +48,9 @@ export function ScrollableTable<T>({
   }
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden">
+    <div className="flex flex-col flex-1 overflow-hidden border rounded-lg">
       {/* Fixed Table Header */}
-      <div className="min-w-max shrink-0">
+      <div className="shrink-0 overflow-hidden bg-muted">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted">
@@ -64,8 +64,8 @@ export function ScrollableTable<T>({
         </Table>
       </div>
       
-      {/* Scrollable Table Body */}
-      <ScrollArea className="flex-1 w-full">
+      {/* Scrollable Table Body - Both vertical and horizontal */}
+      <ScrollArea className="flex-1">
         <div className="min-w-max">
           <Table>
             <TableBody>
@@ -90,6 +90,7 @@ export function ScrollableTable<T>({
           </Table>
         </div>
         <ScrollBar orientation="horizontal" />
+        <ScrollBar orientation="vertical" />
       </ScrollArea>
     </div>
   );
