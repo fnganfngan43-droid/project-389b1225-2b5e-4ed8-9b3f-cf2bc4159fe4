@@ -250,8 +250,26 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                 creditDescription: selectedVoucher.creditDescription || '',
                 creditReference: selectedVoucher.creditReference || '',
               });
-              setEditingVoucher(null);
+            } else {
+              // Reset form for new entry
+              setFormData({
+                date: new Date().toISOString().split('T')[0],
+                voucherNumber: String(filteredVouchers.length + 1).padStart(4, '0'),
+                debitGroupName: '',
+                debitAccountName: '',
+                debitCurrency: '',
+                debitAmount: '',
+                debitDescription: '',
+                debitReference: '',
+                creditGroupName: '',
+                creditAccountName: '',
+                creditCurrency: '',
+                creditAmount: '',
+                creditDescription: '',
+                creditReference: '',
+              });
             }
+            setEditingVoucher(null);
             setIsAdding(true);
           }}
           onEdit={selectedVoucher ? handleEdit : undefined}
