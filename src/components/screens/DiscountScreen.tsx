@@ -233,7 +233,7 @@ export function DiscountScreen() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden min-h-0">
-      <div className="shrink-0">
+      <div className="shrink-0 px-4 pt-2">
         <ActionToolbar
           onAdd={() => setIsAdding(true)}
           onEdit={selectedDiscount ? handleEdit : undefined}
@@ -259,9 +259,11 @@ export function DiscountScreen() {
         />
       </div>
 
-      {/* Add Form */}
-      {isAdding && (
-        <Card className="m-4 animate-slide-up border-2 border-primary/20">
+      {/* Scrollable Content Area - Form + Table */}
+      <div className="flex-1 overflow-auto p-4 space-y-4">
+        {/* Add Form */}
+        {isAdding && (
+          <Card className="animate-slide-up border-2 border-primary/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -409,20 +411,21 @@ export function DiscountScreen() {
             </Button>
           </CardContent>
         </Card>
-      )}
+        )}
 
-      {/* Discounts Table */}
-      <div className="flex-1 overflow-hidden p-4">
-        <ScrollableTable
+        {/* Discounts Table */}
+        <div className="min-h-[300px]">
+          <ScrollableTable
           data={filteredDiscounts}
           columns={columns}
           onRowClick={(discount) => setSelectedDiscount(selectedDiscount?.id === discount.id ? null : discount)}
           selectedId={selectedDiscount?.id}
           getItemId={(discount) => discount.id}
           emptyIcon={<Percent className="w-12 h-12 mx-auto mb-3 opacity-30" />}
-          emptyTitle="لا توجد خصومات"
-          emptyDescription="اضغط على 'إضافة' لإنشاء خصم جديد"
-        />
+            emptyTitle="لا توجد خصومات"
+            emptyDescription="اضغط على 'إضافة' لإنشاء خصم جديد"
+          />
+        </div>
       </div>
     </div>
   );

@@ -208,8 +208,8 @@ export function ChartOfAccountsScreen() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden min-h-0">
-      {/* Fixed Section - Toolbar and Form */}
-      <div className="shrink-0">
+      {/* Fixed Section - Toolbar */}
+      <div className="shrink-0 px-4 pt-2">
         <ActionToolbar
           onAdd={() => setIsAdding(true)}
           onEdit={selectedAccount ? handleEdit : undefined}
@@ -228,10 +228,13 @@ export function ChartOfAccountsScreen() {
             'المحافظة',
           ]}
         />
+      </div>
 
-        {/* Add/Edit Form - Also Fixed */}
+      {/* Scrollable Content Area - Form + Table */}
+      <div className="flex-1 overflow-auto p-4 space-y-4">
+        {/* Add/Edit Form */}
         {isAdding && (
-          <Card className="mx-4 mb-2 animate-slide-up border-2 border-primary/20">
+          <Card className="animate-slide-up border-2 border-primary/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
               {editingAccount ? 'تعديل حساب' : 'إضافة حساب جديد'}
@@ -334,23 +337,23 @@ export function ChartOfAccountsScreen() {
               <Save className="w-4 h-4" />
               حفظ
             </Button>
-          </CardContent>
+            </CardContent>
           </Card>
         )}
-      </div>
 
-      {/* Accounts Table - Scrollable */}
-      <div className="flex-1 overflow-hidden px-4 pb-4">
-        <ScrollableTable
+        {/* Accounts Table */}
+        <div className="min-h-[300px]">
+          <ScrollableTable
           data={filteredAccounts}
           columns={columns}
           onRowClick={(account) => setSelectedAccount(selectedAccount?.id === account.id ? null : account)}
           selectedId={selectedAccount?.id}
           getItemId={(account) => account.id}
           emptyIcon={<Users className="w-12 h-12 mx-auto mb-3 opacity-30" />}
-          emptyTitle="لا توجد حسابات"
-          emptyDescription="اضغط على 'إضافة' لإنشاء حساب جديد"
-        />
+            emptyTitle="لا توجد حسابات"
+            emptyDescription="اضغط على 'إضافة' لإنشاء حساب جديد"
+          />
+        </div>
       </div>
     </div>
   );
