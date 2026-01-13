@@ -27,6 +27,27 @@ interface PrintReportData {
   };
 }
 
+interface PrintSummaryReportData {
+  title: string;
+  groupName: string;
+  dateFrom: string;
+  dateTo: string;
+  currencyData: Array<{
+    currency: string;
+    accounts: Array<{
+      accountName: string;
+      accountNumber: string;
+      totalDebit: number;
+      totalCredit: number;
+      balance: number;
+    }>;
+    totalDebit: number;
+    totalCredit: number;
+    totalBalance: number;
+  }>;
+  settings: Settings;
+}
+
 const getCommonStyles = () => `
   * {
     margin: 0;
@@ -448,6 +469,115 @@ export function printReport({ title, accountName, currency, transactions, settin
           ` : `
           <div style="text-align: center; padding: 40px; color: #666;">
             لا توجد معاملات لهذا الحساب
+          </div>
+          `}
+          
+          <div class="footer">
+            <div class="signature-box">
+              <div class="signature-line">توقيع المدير</div>
+            </div>
+            <div class="signature-box">
+              <div class="signature-line">توقيع المحاسب</div>
+            </div>
+          </div>
+          
+          <div class="print-date">
+            تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  openPrintWindow(printContent);
+}
+
+export function printSummaryReport({ title, groupName, dateFrom, dateTo, currencyData, settings }: PrintSummaryReportData) {
+  const currencyTables = currencyData.map(cd => {
+    const accountRows = cd.accounts.map(acc => `
+      <tr>
+        <td>${acc.accountNumber}</td>
+        <td style="text-align: right;">${acc.accountName}</td>
+        <td class="debit">${acc.totalDebit > 0 ? acc.totalDebit.toLocaleString() : '-'}</td>
+        <td class="credit">${acc.totalCredit > 0 ? acc.totalCredit.toLocaleString() : '-'}</td>
+        <td class="${acc.balance >= 0 ? 'balance-positive' : 'balance-negative'}">${acc.balance.toLocaleString()}</td>
+      </tr>
+    `).join('');
+
+    return `
+      <div style="margin-bottom: 30px;">
+        <h3 style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 10px 15px; border-radius: 8px; margin-bottom: 10px;">
+          العملة: ${cd.currency}
+        </h3>
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>رقم الحساب</th>
+              <th>اسم الحساب</th>
+              <th>مدين</th>
+              <th>دائن</th>
+              <th>الرصيد</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${accountRows}
+            <tr class="totals-row">
+              <td colspan="2">الإجمالي</td>
+              <td class="debit">${cd.totalDebit.toLocaleString()}</td>
+              <td class="credit">${cd.totalCredit.toLocaleString()}</td>
+              <td class="${cd.totalBalance >= 0 ? 'balance-positive' : 'balance-negative'}">${cd.totalBalance.toLocaleString()}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+  }).join('');
+
+  const printContent = `
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${title} - ${groupName}</title>
+      <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+      <style>${getCommonStyles()}</style>
+    </head>
+    <body>
+      <div class="print-container">
+        <div class="header">
+          <div class="header-right">
+            <h1>${settings.headerArabic[0]}</h1>
+            <h2>${settings.headerArabic[1]}</h2>
+            <p>${settings.headerArabic[2]}</p>
+          </div>
+          <div class="header-center">
+            ${settings.logo ? `<img src="${settings.logo}" alt="Logo" />` : ''}
+          </div>
+          <div class="header-left">
+            <h1>${settings.headerEnglish[0]}</h1>
+            <h2>${settings.headerEnglish[1]}</h2>
+            <p>${settings.headerEnglish[2]}</p>
+          </div>
+        </div>
+        
+        <div class="content">
+          <div class="voucher-type">${title}</div>
+          
+          <div class="info-row">
+            <span class="info-label">المجموعة:</span>
+            <span class="info-value">${groupName}</span>
+          </div>
+          
+          <div class="info-row">
+            <span class="info-label">الفترة:</span>
+            <span class="info-value">من ${dateFrom} إلى ${dateTo}</span>
+          </div>
+          
+          ${currencyData.length > 0 ? currencyTables : `
+          <div style="text-align: center; padding: 40px; color: #666;">
+            لا توجد حسابات لهذه المجموعة
           </div>
           `}
           
