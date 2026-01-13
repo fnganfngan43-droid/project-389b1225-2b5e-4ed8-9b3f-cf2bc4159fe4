@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAccounting } from '@/contexts/AccountingContext';
-import { printReport } from '@/utils/printService';
+import { printReport, printSummaryReport } from '@/utils/printService';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { 
   Select,
@@ -310,12 +310,38 @@ export function ReportsScreen() {
   });
 
   const handlePrintReport = () => {
-    if (!showReport || !selectedAccount || !selectedCurrency) {
+    if (!showReport) {
       toast.error('يرجى إنشاء التقرير أولاً');
       return;
     }
+
+    if (reportType === 'summary') {
+      // Print summary report
+      if (!selectedGroup) {
+        toast.error('يرجى اختيار المجموعة');
+        return;
+      }
+      
+      const summaryData = getSummaryData();
+      printSummaryReport({
+        title: 'كشف حساب إجمالي',
+        groupName: selectedGroup,
+        dateFrom,
+        dateTo,
+        currencyData: summaryData,
+        settings,
+      });
+      toast.success('جاري طباعة التقرير...');
+      return;
+    }
+
+    // Print analytical report
+    if (!selectedAccount || !selectedCurrency) {
+      toast.error('يرجى اختيار الحساب والعملة');
+      return;
+    }
     
-    const title = reportType === 'analytical' ? 'كشف حساب تحليلي' : 'كشف حساب إجمالي';
+    const title = 'كشف حساب تحليلي';
     const prevBalance = getPreviousBalance(selectedAccount, selectedCurrency);
     
     // Build transactions with previous balance row
