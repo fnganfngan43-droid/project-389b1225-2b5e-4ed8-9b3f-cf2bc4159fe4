@@ -174,7 +174,7 @@ export function OpeningBalanceScreen() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden min-h-0">
-      <div className="shrink-0">
+      <div className="shrink-0 px-4 pt-2">
         <ActionToolbar
           onAdd={() => setIsAdding(true)}
           onEdit={selectedBalance ? handleEdit : undefined}
@@ -195,9 +195,11 @@ export function OpeningBalanceScreen() {
         />
       </div>
 
-      {/* Add Form */}
-      {isAdding && (
-        <Card className="m-4 animate-slide-up border-2 border-primary/20">
+      {/* Scrollable Content Area - Form + Table */}
+      <div className="flex-1 overflow-auto p-4 space-y-4">
+        {/* Add Form */}
+        {isAdding && (
+          <Card className="animate-slide-up border-2 border-primary/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -304,20 +306,21 @@ export function OpeningBalanceScreen() {
             </Button>
           </CardContent>
         </Card>
-      )}
+        )}
 
-      {/* Balances Table */}
-      <div className="flex-1 overflow-hidden p-4">
-        <ScrollableTable
+        {/* Balances Table */}
+        <div className="min-h-[300px]">
+          <ScrollableTable
           data={filteredBalances}
           columns={columns}
           onRowClick={(balance) => setSelectedBalance(selectedBalance?.id === balance.id ? null : balance)}
           selectedId={selectedBalance?.id}
           getItemId={(balance) => balance.id}
           emptyIcon={<BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />}
-          emptyTitle="لا توجد أرصدة افتتاحية"
-          emptyDescription="اضغط على 'إضافة' لإنشاء رصيد افتتاحي جديد"
-        />
+            emptyTitle="لا توجد أرصدة افتتاحية"
+            emptyDescription="اضغط على 'إضافة' لإنشاء رصيد افتتاحي جديد"
+          />
+        </div>
       </div>
     </div>
   );

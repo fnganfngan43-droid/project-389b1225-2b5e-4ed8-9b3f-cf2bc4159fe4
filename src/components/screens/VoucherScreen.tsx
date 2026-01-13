@@ -229,8 +229,8 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden min-h-0">
-      <div className="shrink-0">
-      <ActionToolbar
+      <div className="shrink-0 px-4 pt-2">
+        <ActionToolbar
           onAdd={() => {
             if (selectedVoucher) {
               // Copy selected voucher data to form (duplicate functionality)
@@ -300,9 +300,11 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
         />
       </div>
 
-      {/* Add Form */}
-      {isAdding && (
-        <Card className="m-4 animate-slide-up border-2 border-primary/20">
+      {/* Scrollable Content Area - Form + Table */}
+      <div className="flex-1 overflow-auto p-4 space-y-4">
+        {/* Add Form */}
+        {isAdding && (
+          <Card className="animate-slide-up border-2 border-primary/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
               {editingVoucher 
@@ -715,11 +717,11 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
             </Button>
           </CardContent>
         </Card>
-      )}
+        )}
 
-      {/* Vouchers Table */}
-      <div className="flex-1 overflow-hidden p-4">
-        <ScrollableTable
+        {/* Vouchers Table */}
+        <div className="min-h-[300px]">
+          <ScrollableTable
           data={filteredVouchers}
           columns={[
             {
@@ -790,9 +792,10 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
           selectedId={selectedVoucher?.id}
           getItemId={(voucher) => voucher.id}
           emptyIcon={<Receipt className="w-12 h-12 mx-auto mb-3 opacity-30" />}
-          emptyTitle="لا توجد سندات"
-          emptyDescription="اضغط على 'إضافة' لإنشاء سند جديد"
-        />
+            emptyTitle="لا توجد سندات"
+            emptyDescription="اضغط على 'إضافة' لإنشاء سند جديد"
+          />
+        </div>
       </div>
     </div>
   );

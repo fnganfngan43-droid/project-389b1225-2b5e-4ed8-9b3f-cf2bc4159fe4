@@ -221,7 +221,7 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden min-h-0">
-      <div className="shrink-0">
+      <div className="shrink-0 px-4 pt-2">
         <ActionToolbar
           onAdd={() => setIsAdding(true)}
           onEdit={selectedInvoice ? handleEdit : undefined}
@@ -244,12 +244,14 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
           'رقم المرجع',
           'البيان',
         ]}
-      />
+        />
       </div>
 
-      {/* Add Form */}
-      {isAdding && (
-        <Card className="m-4 animate-slide-up border-2 border-primary/20">
+      {/* Scrollable Content Area - Form + Table */}
+      <div className="flex-1 overflow-auto p-4 space-y-4">
+        {/* Add Form */}
+        {isAdding && (
+          <Card className="animate-slide-up border-2 border-primary/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -414,20 +416,21 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
             </Button>
           </CardContent>
         </Card>
-      )}
+        )}
 
-      {/* Invoices Table */}
-      <div className="flex-1 overflow-hidden p-4">
-        <ScrollableTable
+        {/* Invoices Table */}
+        <div className="min-h-[300px]">
+          <ScrollableTable
           data={filteredInvoices}
           columns={columns}
           onRowClick={(invoice) => setSelectedInvoice(selectedInvoice?.id === invoice.id ? null : invoice)}
           selectedId={selectedInvoice?.id}
           getItemId={(invoice) => invoice.id}
           emptyIcon={<ShoppingCart className="w-12 h-12 mx-auto mb-3 opacity-30" />}
-          emptyTitle={isReturn ? 'لا توجد مرتجعات' : 'لا توجد فواتير'}
-          emptyDescription={`اضغط على 'إضافة' لإنشاء ${isReturn ? 'مرتجع' : 'فاتورة'} جديدة`}
-        />
+            emptyTitle={isReturn ? 'لا توجد مرتجعات' : 'لا توجد فواتير'}
+            emptyDescription={`اضغط على 'إضافة' لإنشاء ${isReturn ? 'مرتجع' : 'فاتورة'} جديدة`}
+          />
+        </div>
       </div>
     </div>
   );
