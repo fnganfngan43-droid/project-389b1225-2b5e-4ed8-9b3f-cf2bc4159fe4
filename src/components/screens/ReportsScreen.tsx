@@ -108,9 +108,17 @@ export function ReportsScreen() {
   };
 
   const generateReport = () => {
-    if (reportType === 'analytical' && (!selectedAccount || !selectedCurrency)) {
-      toast.error('يرجى اختيار الحساب والعملة');
-      return;
+    if (reportType === 'analytical') {
+      // For analytical report with "all" currencies, we need group and account
+      if (selectedCurrency === 'all') {
+        if (!selectedGroup || !selectedAccount) {
+          toast.error('يرجى اختيار المجموعة والحساب');
+          return;
+        }
+      } else if (!selectedAccount || !selectedCurrency) {
+        toast.error('يرجى اختيار الحساب والعملة');
+        return;
+      }
     }
     if (reportType === 'summary' && !selectedGroup) {
       toast.error('يرجى اختيار المجموعة');
@@ -383,11 +391,32 @@ export function ReportsScreen() {
     toast.success('جاري طباعة التقرير...');
   };
 
+  // Get all currencies for "all" selection in analytical report
+  const getAnalyticalDataForAllCurrencies = () => {
+    return currencies.map(currency => {
+      const transactions = getTransactionsForAccount(selectedAccount, currency.symbol);
+      const prevBalance = getPreviousBalance(selectedAccount, currency.symbol);
+      
+      let runningBal = 0;
+      const transactionsWithBal = transactions.map(t => {
+        runningBal += t.debit - t.credit;
+        return { ...t, balance: runningBal };
+      });
+      
+      return {
+        currency: currency.symbol,
+        prevBalance,
+        transactions: transactionsWithBal,
+        runningBalance: runningBal,
+      };
+    }).filter(c => c.transactions.length > 0 || c.prevBalance !== 0);
+  };
+
   return (
     <div className="flex flex-col h-full overflow-hidden min-h-0">
-      {/* Report toolbar */}
-      <div className="bg-card border-b border-border p-4">
-        <div className="flex flex-wrap gap-2 mb-4">
+      {/* Report toolbar - Fixed */}
+      <div className="shrink-0 bg-card border-b border-border p-4">
+        <div className="flex flex-wrap gap-2">
           <Button 
             variant="secondary" 
             size="sm"
@@ -427,9 +456,12 @@ export function ReportsScreen() {
           </Button>
         </div>
       </div>
+      
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-auto p-4 space-y-4">
 
-      {/* Report filters */}
-      <Card className="m-4 animate-slide-up">
+        {/* Report filters */}
+        <Card className="animate-slide-up">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
             <BarChart3 className="w-5 h-5" />
@@ -482,9 +514,7 @@ export function ReportsScreen() {
                   <SelectValue placeholder="العملة" />
                 </SelectTrigger>
                 <SelectContent>
-                  {reportType === 'summary' && (
-                    <SelectItem value="all">الكل</SelectItem>
-                  )}
+                  <SelectItem value="all">الكل</SelectItem>
                   {currencies.map(curr => (
                     <SelectItem key={curr.id} value={curr.symbol}>
                       {curr.symbol}
@@ -560,10 +590,116 @@ export function ReportsScreen() {
         </CardContent>
       </Card>
 
-      {/* Report display */}
-      {showReport && reportType === 'analytical' && (
-        <div className="flex-1 overflow-auto p-4 animate-fade-in">
-          <Card>
+      {/* Analytical Report display - All currencies */}
+      {showReport && reportType === 'analytical' && selectedCurrency === 'all' && (
+        <div className="space-y-4 animate-fade-in">
+          {getAnalyticalDataForAllCurrencies().map((currData, idx) => (
+            <Card key={idx}>
+              <CardHeader className="gradient-primary text-primary-foreground rounded-t-2xl">
+                <CardTitle className="text-center">
+                  <p className="text-lg font-bold">كشف حساب تحليلي</p>
+                  <p className="text-sm opacity-80 mt-1">{selectedAccount}</p>
+                  <p className="text-xs opacity-60 mt-1">العملة: {currData.currency}</p>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {/* Table header */}
+                <div className="grid grid-cols-7 gap-1 p-3 bg-secondary text-secondary-foreground text-xs font-semibold border border-black">
+                  <div className="border-l border-black pl-1">التاريخ</div>
+                  <div className="border-l border-black pl-1">النوع</div>
+                  <div className="border-l border-black pl-1">البيان</div>
+                  <div className="border-l border-black pl-1">المرجع</div>
+                  <div className="border-l border-black pl-1 text-left">مدين</div>
+                  <div className="border-l border-black pl-1 text-left">دائن</div>
+                  <div className="text-left">الرصيد</div>
+                </div>
+
+                {/* Table body */}
+                {currData.transactions.length === 0 && currData.prevBalance === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                    <p>لا توجد معاملات لهذا الحساب</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Previous Balance Row */}
+                    {currData.prevBalance !== 0 && (
+                      <div className="grid grid-cols-7 gap-1 p-3 text-xs border border-black bg-muted/50">
+                        <div className="border-l border-black pl-1 text-muted-foreground">-</div>
+                        <div className="border-l border-black pl-1 font-bold text-destructive">رصيد افتتاحي</div>
+                        <div className="border-l border-black pl-1 text-destructive">الرصيد الافتتاحي</div>
+                        <div className="border-l border-black pl-1 text-muted-foreground">-</div>
+                        <div className="border-l border-black pl-1 text-left font-bold text-destructive">
+                          {currData.prevBalance > 0 ? currData.prevBalance.toLocaleString() : '-'}
+                        </div>
+                        <div className="border-l border-black pl-1 text-left font-bold text-destructive">
+                          {currData.prevBalance < 0 ? Math.abs(currData.prevBalance).toLocaleString() : '-'}
+                        </div>
+                        <div className="text-left font-bold text-destructive">
+                          {currData.prevBalance.toLocaleString()}
+                        </div>
+                      </div>
+                    )}
+                    {/* Regular Transactions */}
+                    {currData.transactions.map((t, index) => {
+                      const adjustedBalance = t.balance + currData.prevBalance;
+                      return (
+                        <div 
+                          key={index}
+                          className="grid grid-cols-7 gap-1 p-3 text-xs border-x border-b border-black hover:bg-secondary/30 transition-colors"
+                        >
+                          <div className="border-l border-black pl-1 text-muted-foreground">{t.date}</div>
+                          <div className="border-l border-black pl-1">{t.type}</div>
+                          <div className="border-l border-black pl-1 truncate">{t.description}</div>
+                          <div className="border-l border-black pl-1 text-muted-foreground">{t.reference || '-'}</div>
+                          <div className="border-l border-black pl-1 text-left text-success font-medium">
+                            {t.debit > 0 ? t.debit.toLocaleString() : '-'}
+                          </div>
+                          <div className="border-l border-black pl-1 text-left text-destructive font-medium">
+                            {t.credit > 0 ? t.credit.toLocaleString() : '-'}
+                          </div>
+                          <div className={`text-left font-bold ${adjustedBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
+                            {adjustedBalance.toLocaleString()}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </>
+                )}
+
+                {/* Summary footer */}
+                {(currData.transactions.length > 0 || currData.prevBalance !== 0) && (
+                  <div className="grid grid-cols-7 gap-1 p-3 bg-muted text-sm font-bold border border-black">
+                    <div className="col-span-4 border-l border-black pl-1">الإجمالي</div>
+                    <div className="border-l border-black pl-1 text-left text-success">
+                      {(currData.transactions.reduce((sum, t) => sum + t.debit, 0) + (currData.prevBalance > 0 ? currData.prevBalance : 0)).toLocaleString()}
+                    </div>
+                    <div className="border-l border-black pl-1 text-left text-destructive">
+                      {(currData.transactions.reduce((sum, t) => sum + t.credit, 0) + (currData.prevBalance < 0 ? Math.abs(currData.prevBalance) : 0)).toLocaleString()}
+                    </div>
+                    <div className={`text-left ${(currData.runningBalance + currData.prevBalance) >= 0 ? 'text-success' : 'text-destructive'}`}>
+                      {(currData.runningBalance + currData.prevBalance).toLocaleString()}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+          
+          {getAnalyticalDataForAllCurrencies().length === 0 && (
+            <Card>
+              <CardContent className="text-center py-8 text-muted-foreground">
+                <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p>لا توجد معاملات لهذا الحساب بأي عملة</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* Analytical Report display - Single currency */}
+      {showReport && reportType === 'analytical' && selectedCurrency !== 'all' && (
+        <Card className="animate-fade-in">
             <CardHeader className="gradient-primary text-primary-foreground rounded-t-2xl">
               <CardTitle className="text-center">
                 <p className="text-lg font-bold">كشف حساب تحليلي</p>
@@ -660,12 +796,11 @@ export function ReportsScreen() {
               )}
             </CardContent>
           </Card>
-        </div>
       )}
 
       {/* Summary Report display */}
       {showReport && reportType === 'summary' && (
-        <div className="flex-1 overflow-auto p-4 animate-fade-in space-y-4">
+        <div className="space-y-4 animate-fade-in">
           {getSummaryData().map((currencyData, idx) => (
             <Card key={idx}>
               <CardHeader className="gradient-primary text-primary-foreground rounded-t-2xl">
@@ -741,6 +876,7 @@ export function ReportsScreen() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }
