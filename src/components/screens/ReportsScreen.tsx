@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { printReport, printSummaryReport } from '@/utils/printService';
+import { shareViaWhatsApp, downloadPDF } from '@/utils/pdfService';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { 
   Select,
@@ -13,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BarChart3, Eye, Printer, Share2, FileText, ArrowRight, CalendarIcon } from 'lucide-react';
+import { BarChart3, Eye, Printer, Share2, FileText, ArrowRight, CalendarIcon, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 type ReportType = 'analytical' | 'summary';
@@ -40,6 +41,8 @@ export function ReportsScreen() {
   const [showReport, setShowReport] = useState(false);
   const [dateFrom, setDateFrom] = useState(getFirstDayOfYear());
   const [dateTo, setDateTo] = useState(getToday());
+  const [isSharing, setIsSharing] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const filteredAccounts = accounts.filter(a => !selectedGroup || a.groupName === selectedGroup);
   const groupAccounts = accounts.filter(a => a.groupName === selectedGroup);
@@ -391,6 +394,60 @@ export function ReportsScreen() {
     toast.success('جاري طباعة التقرير...');
   };
 
+  // Handle share via WhatsApp
+  const handleShareWhatsApp = async () => {
+    if (!showReport) {
+      toast.error('يرجى إنشاء التقرير أولاً');
+      return;
+    }
+
+    setIsSharing(true);
+    try {
+      const reportTitle = reportType === 'analytical' 
+        ? `كشف_حساب_تحليلي_${selectedAccount}`
+        : `كشف_حساب_إجمالي_${selectedGroup}`;
+      
+      const success = await shareViaWhatsApp('report-container', reportTitle);
+      if (success) {
+        toast.success('تم مشاركة التقرير عبر الواتساب');
+      } else {
+        toast.error('حدث خطأ أثناء المشاركة');
+      }
+    } catch (error) {
+      console.error('Share error:', error);
+      toast.error('حدث خطأ أثناء المشاركة');
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  // Handle PDF download
+  const handleDownloadPDF = async () => {
+    if (!showReport) {
+      toast.error('يرجى إنشاء التقرير أولاً');
+      return;
+    }
+
+    setIsDownloading(true);
+    try {
+      const fileName = reportType === 'analytical' 
+        ? `كشف_حساب_تحليلي_${selectedAccount}`
+        : `كشف_حساب_إجمالي_${selectedGroup}`;
+      
+      const success = await downloadPDF('report-container', fileName);
+      if (success) {
+        toast.success('تم تحميل ملف PDF بنجاح');
+      } else {
+        toast.error('حدث خطأ أثناء إنشاء الملف');
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('حدث خطأ أثناء إنشاء الملف');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   // Get all currencies for "all" selection in analytical report
   const getAnalyticalDataForAllCurrencies = () => {
     return currencies.map(currency => {
@@ -429,17 +486,27 @@ export function ReportsScreen() {
           <Button 
             variant="secondary" 
             size="sm"
-            onClick={() => toast.info('سيتم إضافة خاصية المشاركة قريباً')}
+            onClick={handleShareWhatsApp}
+            disabled={!showReport || isSharing}
           >
-            <Share2 className="w-4 h-4" />
-            مشاركة
+            {isSharing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Share2 className="w-4 h-4" />
+            )}
+            واتساب
           </Button>
           <Button 
             variant="secondary" 
             size="sm"
-            onClick={() => toast.info('سيتم إضافة خاصية التصدير قريباً')}
+            onClick={handleDownloadPDF}
+            disabled={!showReport || isDownloading}
           >
-            <FileText className="w-4 h-4" />
+            {isDownloading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <FileText className="w-4 h-4" />
+            )}
             PDF
           </Button>
           <Button 
@@ -592,7 +659,7 @@ export function ReportsScreen() {
 
       {/* Analytical Report display - All currencies */}
       {showReport && reportType === 'analytical' && selectedCurrency === 'all' && (
-        <div className="space-y-4 animate-fade-in">
+        <div id="report-container" className="space-y-4 animate-fade-in">
           {getAnalyticalDataForAllCurrencies().map((currData, idx) => (
             <Card key={idx}>
               <CardHeader className="gradient-primary text-primary-foreground rounded-t-2xl">
@@ -699,7 +766,7 @@ export function ReportsScreen() {
 
       {/* Analytical Report display - Single currency */}
       {showReport && reportType === 'analytical' && selectedCurrency !== 'all' && (
-        <Card className="animate-fade-in">
+        <Card id="report-container" className="animate-fade-in">
             <CardHeader className="gradient-primary text-primary-foreground rounded-t-2xl">
               <CardTitle className="text-center">
                 <p className="text-lg font-bold">كشف حساب تحليلي</p>
@@ -800,7 +867,7 @@ export function ReportsScreen() {
 
       {/* Summary Report display */}
       {showReport && reportType === 'summary' && (
-        <div className="space-y-4 animate-fade-in">
+        <div id="report-container" className="space-y-4 animate-fade-in">
           {getSummaryData().map((currencyData, idx) => (
             <Card key={idx}>
               <CardHeader className="gradient-primary text-primary-foreground rounded-t-2xl">
