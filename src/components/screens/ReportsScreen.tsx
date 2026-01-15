@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BarChart3, Eye, Printer, Share2, FileText, ArrowRight, CalendarIcon } from 'lucide-react';
+import { BarChart3, Eye, Printer, Share2, FileText, ArrowRight, CalendarIcon, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 type ReportType = 'analytical' | 'summary';
@@ -391,6 +391,80 @@ export function ReportsScreen() {
     toast.success('جاري طباعة التقرير...');
   };
 
+  // Generate WhatsApp message content from report data
+  const generateWhatsAppMessage = () => {
+    if (reportType === 'summary') {
+      const summaryData = getSummaryData();
+      let message = `📊 *${settings.headerArabic[0]}*\n`;
+      message += `*كشف حساب إجمالي*\n`;
+      message += `المجموعة: ${selectedGroup}\n`;
+      message += `من: ${dateFrom} إلى: ${dateTo}\n`;
+      message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+      
+      summaryData.forEach(currData => {
+        message += `💰 *العملة: ${currData.currency}*\n`;
+        currData.accounts.forEach(acc => {
+          message += `• ${acc.accountName}: ${acc.balance.toLocaleString()}\n`;
+        });
+        message += `\n📈 إجمالي مدين: ${currData.totalDebit.toLocaleString()}\n`;
+        message += `📉 إجمالي دائن: ${currData.totalCredit.toLocaleString()}\n`;
+        message += `💵 صافي الرصيد: ${currData.totalBalance.toLocaleString()}\n`;
+        message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+      });
+      
+      return message;
+    } else {
+      // Analytical report
+      const prevBalance = getPreviousBalance(selectedAccount, selectedCurrency);
+      const finalBalance = runningBalance + prevBalance;
+      
+      let message = `📊 *${settings.headerArabic[0]}*\n`;
+      message += `*كشف حساب تحليلي*\n`;
+      message += `الحساب: ${selectedAccount}\n`;
+      message += `العملة: ${selectedCurrency}\n`;
+      message += `من: ${dateFrom} إلى: ${dateTo}\n`;
+      message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+      
+      if (prevBalance !== 0) {
+        message += `📌 الرصيد الافتتاحي: ${prevBalance.toLocaleString()}\n\n`;
+      }
+      
+      const totalDebit = transactionsWithBalance.reduce((sum, t) => sum + t.debit, 0);
+      const totalCredit = transactionsWithBalance.reduce((sum, t) => sum + t.credit, 0);
+      
+      message += `📈 إجمالي مدين: ${(totalDebit + (prevBalance > 0 ? prevBalance : 0)).toLocaleString()}\n`;
+      message += `📉 إجمالي دائن: ${(totalCredit + (prevBalance < 0 ? Math.abs(prevBalance) : 0)).toLocaleString()}\n`;
+      message += `💵 صافي الرصيد: ${finalBalance.toLocaleString()}\n`;
+      message += `━━━━━━━━━━━━━━━━━━━━\n`;
+      message += `عدد العمليات: ${transactionsWithBalance.length}\n`;
+      
+      return message;
+    }
+  };
+
+  // Handle WhatsApp share
+  const handleWhatsAppShare = () => {
+    if (!showReport) {
+      toast.error('يرجى إنشاء التقرير أولاً');
+      return;
+    }
+
+    // First print the report
+    handlePrintReport();
+    
+    // Generate WhatsApp message
+    const message = generateWhatsAppMessage();
+    
+    // Encode message for WhatsApp URL
+    const encodedMessage = encodeURIComponent(message);
+    
+    // Open WhatsApp with the message
+    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+    window.open(whatsappUrl, '_blank');
+    
+    toast.success('تم فتح واتساب للمشاركة');
+  };
+
   // Get all currencies for "all" selection in analytical report
   const getAnalyticalDataForAllCurrencies = () => {
     return currencies.map(currency => {
@@ -429,10 +503,12 @@ export function ReportsScreen() {
           <Button 
             variant="secondary" 
             size="sm"
-            onClick={() => toast.info('سيتم إضافة خاصية المشاركة قريباً')}
+            onClick={handleWhatsAppShare}
+            disabled={!showReport}
+            className="bg-green-600 hover:bg-green-700 text-white"
           >
-            <Share2 className="w-4 h-4" />
-            مشاركة
+            <MessageCircle className="w-4 h-4" />
+            واتساب
           </Button>
           <Button 
             variant="secondary" 
