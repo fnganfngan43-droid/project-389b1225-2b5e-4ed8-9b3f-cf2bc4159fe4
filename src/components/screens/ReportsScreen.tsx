@@ -19,6 +19,63 @@ import { toast } from 'sonner';
 type ReportType = 'analytical' | 'summary';
 type OperationType = 'all' | 'opening' | 'receipt' | 'payment' | 'invoices' | 'returns' | 'discount' | 'exchange';
 
+// Convert number to Arabic words
+const numberToArabicWords = (num: number): string => {
+  if (num === 0) return 'صفر';
+  
+  const ones = ['', 'واحد', 'اثنان', 'ثلاثة', 'أربعة', 'خمسة', 'ستة', 'سبعة', 'ثمانية', 'تسعة', 'عشرة', 
+    'أحد عشر', 'اثنا عشر', 'ثلاثة عشر', 'أربعة عشر', 'خمسة عشر', 'ستة عشر', 'سبعة عشر', 'ثمانية عشر', 'تسعة عشر'];
+  const tens = ['', '', 'عشرون', 'ثلاثون', 'أربعون', 'خمسون', 'ستون', 'سبعون', 'ثمانون', 'تسعون'];
+  const hundreds = ['', 'مائة', 'مائتان', 'ثلاثمائة', 'أربعمائة', 'خمسمائة', 'ستمائة', 'سبعمائة', 'ثمانمائة', 'تسعمائة'];
+  
+  const absNum = Math.abs(Math.floor(num));
+  
+  if (absNum < 20) return ones[absNum];
+  
+  if (absNum < 100) {
+    const ten = Math.floor(absNum / 10);
+    const one = absNum % 10;
+    if (one === 0) return tens[ten];
+    return ones[one] + ' و' + tens[ten];
+  }
+  
+  if (absNum < 1000) {
+    const hundred = Math.floor(absNum / 100);
+    const remainder = absNum % 100;
+    if (remainder === 0) return hundreds[hundred];
+    return hundreds[hundred] + ' و' + numberToArabicWords(remainder);
+  }
+  
+  if (absNum < 1000000) {
+    const thousand = Math.floor(absNum / 1000);
+    const remainder = absNum % 1000;
+    let result = '';
+    if (thousand === 1) result = 'ألف';
+    else if (thousand === 2) result = 'ألفان';
+    else if (thousand >= 3 && thousand <= 10) result = numberToArabicWords(thousand) + ' آلاف';
+    else result = numberToArabicWords(thousand) + ' ألف';
+    
+    if (remainder === 0) return result;
+    return result + ' و' + numberToArabicWords(remainder);
+  }
+  
+  if (absNum < 1000000000) {
+    const million = Math.floor(absNum / 1000000);
+    const remainder = absNum % 1000000;
+    let result = '';
+    if (million === 1) result = 'مليون';
+    else if (million === 2) result = 'مليونان';
+    else if (million >= 3 && million <= 10) result = numberToArabicWords(million) + ' ملايين';
+    else result = numberToArabicWords(million) + ' مليون';
+    
+    if (remainder === 0) return result;
+    return result + ' و' + numberToArabicWords(remainder);
+  }
+  
+  // For very large numbers, just return the formatted number
+  return absNum.toLocaleString('ar-EG');
+};
+
 // Helper to get first day of current year
 const getFirstDayOfYear = () => {
   const now = new Date();
@@ -744,20 +801,43 @@ export function ReportsScreen() {
                 )}
 
                 {/* Summary footer */}
-                {(currData.transactions.length > 0 || currData.prevBalance !== 0) && (
-                  <div className="grid grid-cols-7 gap-1 p-3 bg-muted text-sm font-bold border border-black">
-                    <div className="col-span-4 border-l border-black pl-1">الإجمالي</div>
-                    <div className="border-l border-black pl-1 text-left text-success">
-                      {(currData.transactions.reduce((sum, t) => sum + t.debit, 0) + (currData.prevBalance > 0 ? currData.prevBalance : 0)).toLocaleString()}
-                    </div>
-                    <div className="border-l border-black pl-1 text-left text-destructive">
-                      {(currData.transactions.reduce((sum, t) => sum + t.credit, 0) + (currData.prevBalance < 0 ? Math.abs(currData.prevBalance) : 0)).toLocaleString()}
-                    </div>
-                    <div className={`text-left ${(currData.runningBalance + currData.prevBalance) >= 0 ? 'text-success' : 'text-destructive'}`}>
-                      {(currData.runningBalance + currData.prevBalance).toLocaleString()}
-                    </div>
-                  </div>
-                )}
+                {(currData.transactions.length > 0 || currData.prevBalance !== 0) && (() => {
+                  const finalBalance = currData.runningBalance + currData.prevBalance;
+                  const isDebit = finalBalance >= 0;
+                  const balanceLabel = isDebit ? 'عليكم رصيد' : 'لكم رصيد';
+                  const absBalance = Math.abs(finalBalance);
+                  
+                  return (
+                    <>
+                      <div className="grid grid-cols-7 gap-1 p-3 bg-muted text-sm font-bold border border-black">
+                        <div className="col-span-4 border-l border-black pl-1">الإجمالي</div>
+                        <div className="border-l border-black pl-1 text-left text-success">
+                          {(currData.transactions.reduce((sum, t) => sum + t.debit, 0) + (currData.prevBalance > 0 ? currData.prevBalance : 0)).toLocaleString()}
+                        </div>
+                        <div className="border-l border-black pl-1 text-left text-destructive">
+                          {(currData.transactions.reduce((sum, t) => sum + t.credit, 0) + (currData.prevBalance < 0 ? Math.abs(currData.prevBalance) : 0)).toLocaleString()}
+                        </div>
+                        <div className={`text-left ${finalBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
+                          {finalBalance.toLocaleString()}
+                        </div>
+                      </div>
+                      
+                      {/* Balance in numbers row */}
+                      <div className="p-3 bg-primary/10 border-x border-b border-black text-sm font-bold text-center">
+                        <span className={finalBalance >= 0 ? 'text-success' : 'text-destructive'}>
+                          {balanceLabel}: {absBalance.toLocaleString()} {currData.currency}
+                        </span>
+                      </div>
+                      
+                      {/* Balance in Arabic words row */}
+                      <div className="p-3 bg-primary/5 border-x border-b border-black text-sm font-bold text-center rounded-b-lg">
+                        <span className={finalBalance >= 0 ? 'text-success' : 'text-destructive'}>
+                          {balanceLabel}: {numberToArabicWords(absBalance)} {currData.currency}
+                        </span>
+                      </div>
+                    </>
+                  );
+                })()}
               </CardContent>
             </Card>
           ))}
@@ -856,20 +936,44 @@ export function ReportsScreen() {
               )}
 
               {/* Summary footer */}
-              {(transactionsWithBalance.length > 0 || getPreviousBalance(selectedAccount, selectedCurrency) !== 0) && (
-                <div className="grid grid-cols-7 gap-1 p-3 bg-muted text-sm font-bold border border-black">
-                  <div className="col-span-4 border-l border-black pl-1">الإجمالي</div>
-                  <div className="border-l border-black pl-1 text-left text-success">
-                    {(transactionsWithBalance.reduce((sum, t) => sum + t.debit, 0) + (getPreviousBalance(selectedAccount, selectedCurrency) > 0 ? getPreviousBalance(selectedAccount, selectedCurrency) : 0)).toLocaleString()}
-                  </div>
-                  <div className="border-l border-black pl-1 text-left text-destructive">
-                    {(transactionsWithBalance.reduce((sum, t) => sum + t.credit, 0) + (getPreviousBalance(selectedAccount, selectedCurrency) < 0 ? Math.abs(getPreviousBalance(selectedAccount, selectedCurrency)) : 0)).toLocaleString()}
-                  </div>
-                  <div className={`text-left ${(runningBalance + getPreviousBalance(selectedAccount, selectedCurrency)) >= 0 ? 'text-success' : 'text-destructive'}`}>
-                    {(runningBalance + getPreviousBalance(selectedAccount, selectedCurrency)).toLocaleString()}
-                  </div>
-                </div>
-              )}
+              {(transactionsWithBalance.length > 0 || getPreviousBalance(selectedAccount, selectedCurrency) !== 0) && (() => {
+                const prevBalance = getPreviousBalance(selectedAccount, selectedCurrency);
+                const finalBalance = runningBalance + prevBalance;
+                const isDebit = finalBalance >= 0;
+                const balanceLabel = isDebit ? 'عليكم رصيد' : 'لكم رصيد';
+                const absBalance = Math.abs(finalBalance);
+                
+                return (
+                  <>
+                    <div className="grid grid-cols-7 gap-1 p-3 bg-muted text-sm font-bold border border-black">
+                      <div className="col-span-4 border-l border-black pl-1">الإجمالي</div>
+                      <div className="border-l border-black pl-1 text-left text-success">
+                        {(transactionsWithBalance.reduce((sum, t) => sum + t.debit, 0) + (prevBalance > 0 ? prevBalance : 0)).toLocaleString()}
+                      </div>
+                      <div className="border-l border-black pl-1 text-left text-destructive">
+                        {(transactionsWithBalance.reduce((sum, t) => sum + t.credit, 0) + (prevBalance < 0 ? Math.abs(prevBalance) : 0)).toLocaleString()}
+                      </div>
+                      <div className={`text-left ${finalBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
+                        {finalBalance.toLocaleString()}
+                      </div>
+                    </div>
+                    
+                    {/* Balance in numbers row */}
+                    <div className="p-3 bg-primary/10 border-x border-b border-black text-sm font-bold text-center">
+                      <span className={finalBalance >= 0 ? 'text-success' : 'text-destructive'}>
+                        {balanceLabel}: {absBalance.toLocaleString()} {selectedCurrency}
+                      </span>
+                    </div>
+                    
+                    {/* Balance in Arabic words row */}
+                    <div className="p-3 bg-primary/5 border-x border-b border-black text-sm font-bold text-center rounded-b-lg">
+                      <span className={finalBalance >= 0 ? 'text-success' : 'text-destructive'}>
+                        {balanceLabel}: {numberToArabicWords(absBalance)} {selectedCurrency}
+                      </span>
+                    </div>
+                  </>
+                );
+              })()}
             </CardContent>
           </Card>
       )}
