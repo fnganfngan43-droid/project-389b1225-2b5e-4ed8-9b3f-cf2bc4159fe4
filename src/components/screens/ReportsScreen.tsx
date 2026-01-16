@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { printReport, printSummaryReport } from '@/utils/printService';
+import { generateReportPDF, generateSummaryReportPDF, sharePDFViaWhatsApp } from '@/utils/pdfService';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { 
   Select,
@@ -499,27 +500,89 @@ export function ReportsScreen() {
     }
   };
 
-  // Handle WhatsApp share
-  const handleWhatsAppShare = () => {
+  // Handle WhatsApp share with PDF
+  const handleWhatsAppShare = async () => {
     if (!showReport) {
       toast.error('يرجى إنشاء التقرير أولاً');
       return;
     }
 
-    // First print the report
-    handlePrintReport();
-    
-    // Generate WhatsApp message
-    const message = generateWhatsAppMessage();
-    
-    // Encode message for WhatsApp URL
-    const encodedMessage = encodeURIComponent(message);
-    
-    // Open WhatsApp with the message
-    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-    window.open(whatsappUrl, '_blank');
-    
-    toast.success('تم فتح واتساب للمشاركة');
+    toast.info('جاري إنشاء ملف PDF...');
+
+    try {
+      if (reportType === 'summary') {
+        // Generate summary report PDF
+        if (!selectedGroup) {
+          toast.error('يرجى اختيار المجموعة');
+          return;
+        }
+        
+        const summaryData = getSummaryData();
+        const pdfBlob = await generateSummaryReportPDF({
+          title: 'كشف حساب إجمالي',
+          groupName: selectedGroup,
+          dateFrom,
+          dateTo,
+          currencyData: summaryData,
+          settings,
+        });
+        
+        const filename = `كشف_إجمالي_${selectedGroup}_${new Date().toISOString().split('T')[0]}.pdf`;
+        await sharePDFViaWhatsApp(pdfBlob, filename);
+        toast.success('تم إنشاء ملف PDF وفتح واتساب');
+      } else {
+        // Generate analytical report PDF
+        if (!selectedAccount || !selectedCurrency) {
+          toast.error('يرجى اختيار الحساب والعملة');
+          return;
+        }
+        
+        const prevBalance = getPreviousBalance(selectedAccount, selectedCurrency);
+        
+        // Build transactions with previous balance row
+        let printTransactions = [...transactionsWithBalance];
+        
+        // Add previous balance row at the beginning if exists
+        if (prevBalance !== 0) {
+          const prevBalanceRow = {
+            date: '-',
+            type: 'رصيد افتتاحي',
+            description: 'الرصيد الافتتاحي',
+            reference: '-',
+            debit: prevBalance > 0 ? prevBalance : 0,
+            credit: prevBalance < 0 ? Math.abs(prevBalance) : 0,
+            balance: prevBalance,
+            isPreviousBalance: true,
+          };
+          printTransactions = [prevBalanceRow, ...transactionsWithBalance.map((t) => ({
+            ...t,
+            balance: t.balance + prevBalance
+          }))];
+        }
+        
+        const totals = {
+          debit: transactionsWithBalance.reduce((sum, t) => sum + t.debit, 0) + (prevBalance > 0 ? prevBalance : 0),
+          credit: transactionsWithBalance.reduce((sum, t) => sum + t.credit, 0) + (prevBalance < 0 ? Math.abs(prevBalance) : 0),
+          balance: runningBalance + prevBalance,
+        };
+        
+        const pdfBlob = await generateReportPDF({
+          title: 'كشف حساب تحليلي',
+          accountName: selectedAccount,
+          currency: selectedCurrency,
+          transactions: printTransactions,
+          settings,
+          totals,
+        });
+        
+        const filename = `كشف_${selectedAccount}_${selectedCurrency}_${new Date().toISOString().split('T')[0]}.pdf`;
+        await sharePDFViaWhatsApp(pdfBlob, filename);
+        toast.success('تم إنشاء ملف PDF وفتح واتساب');
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('حدث خطأ أثناء إنشاء ملف PDF');
+    }
   };
 
   // Get all currencies for "all" selection in analytical report

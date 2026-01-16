@@ -1,0 +1,510 @@
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { Settings } from '@/types/accounting';
+
+// Convert number to Arabic words
+const numberToArabicWords = (num: number): string => {
+  if (num === 0) return 'صفر';
+  
+  const ones = ['', 'واحد', 'اثنان', 'ثلاثة', 'أربعة', 'خمسة', 'ستة', 'سبعة', 'ثمانية', 'تسعة', 'عشرة', 
+    'أحد عشر', 'اثنا عشر', 'ثلاثة عشر', 'أربعة عشر', 'خمسة عشر', 'ستة عشر', 'سبعة عشر', 'ثمانية عشر', 'تسعة عشر'];
+  const tens = ['', '', 'عشرون', 'ثلاثون', 'أربعون', 'خمسون', 'ستون', 'سبعون', 'ثمانون', 'تسعون'];
+  const hundreds = ['', 'مائة', 'مائتان', 'ثلاثمائة', 'أربعمائة', 'خمسمائة', 'ستمائة', 'سبعمائة', 'ثمانمائة', 'تسعمائة'];
+  
+  const absNum = Math.abs(Math.floor(num));
+  
+  if (absNum < 20) return ones[absNum];
+  
+  if (absNum < 100) {
+    const ten = Math.floor(absNum / 10);
+    const one = absNum % 10;
+    if (one === 0) return tens[ten];
+    return ones[one] + ' و' + tens[ten];
+  }
+  
+  if (absNum < 1000) {
+    const hundred = Math.floor(absNum / 100);
+    const remainder = absNum % 100;
+    if (remainder === 0) return hundreds[hundred];
+    return hundreds[hundred] + ' و' + numberToArabicWords(remainder);
+  }
+  
+  if (absNum < 1000000) {
+    const thousand = Math.floor(absNum / 1000);
+    const remainder = absNum % 1000;
+    let result = '';
+    if (thousand === 1) result = 'ألف';
+    else if (thousand === 2) result = 'ألفان';
+    else if (thousand >= 3 && thousand <= 10) result = numberToArabicWords(thousand) + ' آلاف';
+    else result = numberToArabicWords(thousand) + ' ألف';
+    
+    if (remainder === 0) return result;
+    return result + ' و' + numberToArabicWords(remainder);
+  }
+  
+  if (absNum < 1000000000) {
+    const million = Math.floor(absNum / 1000000);
+    const remainder = absNum % 1000000;
+    let result = '';
+    if (million === 1) result = 'مليون';
+    else if (million === 2) result = 'مليونان';
+    else if (million >= 3 && million <= 10) result = numberToArabicWords(million) + ' ملايين';
+    else result = numberToArabicWords(million) + ' مليون';
+    
+    if (remainder === 0) return result;
+    return result + ' و' + numberToArabicWords(remainder);
+  }
+  
+  return absNum.toLocaleString('ar-EG');
+};
+
+interface ReportPDFData {
+  title: string;
+  accountName: string;
+  currency: string;
+  transactions: Array<{
+    date: string;
+    type: string;
+    description: string;
+    reference?: string;
+    debit: number;
+    credit: number;
+    balance: number;
+    isPreviousBalance?: boolean;
+  }>;
+  settings: Settings;
+  totals: {
+    debit: number;
+    credit: number;
+    balance: number;
+  };
+}
+
+interface SummaryPDFData {
+  title: string;
+  groupName: string;
+  dateFrom: string;
+  dateTo: string;
+  currencyData: Array<{
+    currency: string;
+    accounts: Array<{
+      accountName: string;
+      accountNumber: string;
+      totalDebit: number;
+      totalCredit: number;
+      balance: number;
+    }>;
+    totalDebit: number;
+    totalCredit: number;
+    totalBalance: number;
+  }>;
+  settings: Settings;
+}
+
+const getReportHTML = (data: ReportPDFData): string => {
+  const { title, accountName, currency, transactions, settings, totals } = data;
+  
+  const isDebit = totals.balance >= 0;
+  const balanceLabel = isDebit ? 'عليكم رصيد' : 'لكم رصيد';
+  const absBalance = Math.abs(totals.balance);
+  
+  const transactionsRows = transactions.map(t => `
+    <tr${t.isPreviousBalance ? ' style="background: #fef3f2;"' : ''}>
+      <td style="padding: 8px; border: 1px solid #ddd; text-align: center;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${t.date}</td>
+      <td style="padding: 8px; border: 1px solid #ddd; text-align: center;${t.isPreviousBalance ? ' color: #dc2626; font-weight: bold;' : ''}">${t.type}</td>
+      <td style="padding: 8px; border: 1px solid #ddd; text-align: center;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${t.description}</td>
+      <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${t.reference || '-'}</td>
+      <td style="padding: 8px; border: 1px solid #ddd; text-align: center; color: #16a34a; font-weight: bold;">${t.debit > 0 ? t.debit.toLocaleString() : '-'}</td>
+      <td style="padding: 8px; border: 1px solid #ddd; text-align: center; color: #dc2626; font-weight: bold;">${t.credit > 0 ? t.credit.toLocaleString() : '-'}</td>
+      <td style="padding: 8px; border: 1px solid #ddd; text-align: center; color: ${t.balance >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold;">${t.balance.toLocaleString()}</td>
+    </tr>
+  `).join('');
+
+  return `
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Tajawal', Arial, sans-serif; direction: rtl; background: #fff; padding: 20px; }
+      </style>
+    </head>
+    <body>
+      <div style="max-width: 800px; margin: 0 auto; border: 2px solid #0d9488; border-radius: 12px; overflow: hidden;">
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+          <div style="text-align: right; flex: 1;">
+            <h1 style="font-size: 18px; font-weight: bold; margin: 2px 0;">${settings.headerArabic[0]}</h1>
+            <h2 style="font-size: 14px; opacity: 0.9; margin: 2px 0;">${settings.headerArabic[1]}</h2>
+            <p style="font-size: 12px; opacity: 0.8; margin: 2px 0;">${settings.headerArabic[2]}</p>
+          </div>
+          ${settings.logo ? `<div style="flex: 0 0 100px; display: flex; justify-content: center; align-items: center;"><img src="${settings.logo}" alt="Logo" style="max-width: 80px; max-height: 80px; object-fit: contain;" /></div>` : ''}
+          <div style="text-align: left; flex: 1; direction: ltr;">
+            <h1 style="font-size: 18px; font-weight: bold; margin: 2px 0;">${settings.headerEnglish[0]}</h1>
+            <h2 style="font-size: 14px; opacity: 0.9; margin: 2px 0;">${settings.headerEnglish[1]}</h2>
+            <p style="font-size: 12px; opacity: 0.8; margin: 2px 0;">${settings.headerEnglish[2]}</p>
+          </div>
+        </div>
+        
+        <!-- Content -->
+        <div style="padding: 25px;">
+          <div style="text-align: center; font-size: 22px; font-weight: bold; color: #0d9488; border: 2px solid #0d9488; border-radius: 8px; padding: 10px; margin-bottom: 20px; background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);">
+            ${title}
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #ccc;">
+            <span style="color: #666; font-size: 14px;">اسم الحساب:</span>
+            <span style="font-weight: bold; font-size: 16px;">${accountName}</span>
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #ccc;">
+            <span style="color: #666; font-size: 14px;">العملة:</span>
+            <span style="font-weight: bold; font-size: 16px;">${currency}</span>
+          </div>
+          
+          ${transactions.length > 0 ? `
+          <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+            <thead>
+              <tr>
+                <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">التاريخ</th>
+                <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">النوع</th>
+                <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">البيان</th>
+                <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">المرجع</th>
+                <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">مدين</th>
+                <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">دائن</th>
+                <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">الرصيد</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${transactionsRows}
+              <tr style="background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%); font-weight: bold; font-size: 14px;">
+                <td colspan="4" style="padding: 10px 8px; border: 1px solid #ddd; text-align: center; border-top: 3px solid #0d9488;">الإجمالي</td>
+                <td style="padding: 10px 8px; border: 1px solid #ddd; text-align: center; color: #16a34a; font-weight: bold; border-top: 3px solid #0d9488;">${totals.debit.toLocaleString()}</td>
+                <td style="padding: 10px 8px; border: 1px solid #ddd; text-align: center; color: #dc2626; font-weight: bold; border-top: 3px solid #0d9488;">${totals.credit.toLocaleString()}</td>
+                <td style="padding: 10px 8px; border: 1px solid #ddd; text-align: center; color: ${totals.balance >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold; border-top: 3px solid #0d9488;">${totals.balance.toLocaleString()}</td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <!-- Balance in numbers row -->
+          <div style="padding: 15px; background: #f0fdfa; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 10px;">
+            <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+              ${balanceLabel}: ${absBalance.toLocaleString()} ${currency}
+            </span>
+          </div>
+          
+          <!-- Balance in Arabic words row -->
+          <div style="padding: 15px; background: #f8fafc; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 20px;">
+            <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+              ${balanceLabel}: ${numberToArabicWords(absBalance)} ${currency}
+            </span>
+          </div>
+          ` : `
+          <div style="text-align: center; padding: 40px; color: #666;">
+            لا توجد معاملات لهذا الحساب
+          </div>
+          `}
+          
+          <!-- Footer -->
+          <div style="display: flex; justify-content: space-between; padding: 20px; border-top: 2px solid #eee; margin-top: 20px;">
+            <div style="text-align: center; width: 45%;">
+              <div style="border-top: 2px solid #333; margin-top: 50px; padding-top: 10px; font-size: 14px; color: #666;">توقيع المدير</div>
+            </div>
+            <div style="text-align: center; width: 45%;">
+              <div style="border-top: 2px solid #333; margin-top: 50px; padding-top: 10px; font-size: 14px; color: #666;">توقيع المحاسب</div>
+            </div>
+          </div>
+          
+          <div style="text-align: center; font-size: 12px; color: #999; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+            تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+
+const getSummaryReportHTML = (data: SummaryPDFData): string => {
+  const { title, groupName, dateFrom, dateTo, currencyData, settings } = data;
+  
+  const currencyTables = currencyData.map(cd => {
+    const isDebit = cd.totalBalance >= 0;
+    const balanceLabel = isDebit ? 'عليكم رصيد' : 'لكم رصيد';
+    const absBalance = Math.abs(cd.totalBalance);
+    
+    const accountRows = cd.accounts.map(acc => `
+      <tr>
+        <td style="padding: 10px 8px; border: 1px solid #ddd; font-size: 12px; text-align: center;">${acc.accountNumber}</td>
+        <td style="padding: 10px 8px; border: 1px solid #ddd; font-size: 12px; text-align: right;">${acc.accountName}</td>
+        <td style="padding: 10px 8px; border: 1px solid #ddd; font-size: 12px; text-align: center; color: #16a34a; font-weight: bold;">${acc.totalDebit > 0 ? acc.totalDebit.toLocaleString() : '-'}</td>
+        <td style="padding: 10px 8px; border: 1px solid #ddd; font-size: 12px; text-align: center; color: #dc2626; font-weight: bold;">${acc.totalCredit > 0 ? acc.totalCredit.toLocaleString() : '-'}</td>
+        <td style="padding: 10px 8px; border: 1px solid #ddd; font-size: 12px; text-align: center; color: ${acc.balance >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold;">${acc.balance.toLocaleString()}</td>
+      </tr>
+    `).join('');
+
+    return `
+      <div style="margin-bottom: 30px;">
+        <h3 style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 10px 15px; border-radius: 8px; margin-bottom: 10px;">
+          العملة: ${cd.currency}
+        </h3>
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+          <thead>
+            <tr>
+              <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">رقم الحساب</th>
+              <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">اسم الحساب</th>
+              <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">مدين</th>
+              <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">دائن</th>
+              <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">الرصيد</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${accountRows}
+            <tr style="background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%); font-weight: bold; font-size: 14px;">
+              <td colspan="2" style="padding: 10px 8px; border: 1px solid #ddd; text-align: center; border-top: 3px solid #0d9488;">الإجمالي</td>
+              <td style="padding: 10px 8px; border: 1px solid #ddd; text-align: center; color: #16a34a; font-weight: bold; border-top: 3px solid #0d9488;">${cd.totalDebit.toLocaleString()}</td>
+              <td style="padding: 10px 8px; border: 1px solid #ddd; text-align: center; color: #dc2626; font-weight: bold; border-top: 3px solid #0d9488;">${cd.totalCredit.toLocaleString()}</td>
+              <td style="padding: 10px 8px; border: 1px solid #ddd; text-align: center; color: ${cd.totalBalance >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold; border-top: 3px solid #0d9488;">${cd.totalBalance.toLocaleString()}</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <!-- Balance in numbers row -->
+        <div style="padding: 15px; background: #f0fdfa; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 10px;">
+          <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+            ${balanceLabel}: ${absBalance.toLocaleString()} ${cd.currency}
+          </span>
+        </div>
+        
+        <!-- Balance in Arabic words row -->
+        <div style="padding: 15px; background: #f8fafc; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 20px;">
+          <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+            ${balanceLabel}: ${numberToArabicWords(absBalance)} ${cd.currency}
+          </span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Tajawal', Arial, sans-serif; direction: rtl; background: #fff; padding: 20px; }
+      </style>
+    </head>
+    <body>
+      <div style="max-width: 800px; margin: 0 auto; border: 2px solid #0d9488; border-radius: 12px; overflow: hidden;">
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+          <div style="text-align: right; flex: 1;">
+            <h1 style="font-size: 18px; font-weight: bold; margin: 2px 0;">${settings.headerArabic[0]}</h1>
+            <h2 style="font-size: 14px; opacity: 0.9; margin: 2px 0;">${settings.headerArabic[1]}</h2>
+            <p style="font-size: 12px; opacity: 0.8; margin: 2px 0;">${settings.headerArabic[2]}</p>
+          </div>
+          ${settings.logo ? `<div style="flex: 0 0 100px; display: flex; justify-content: center; align-items: center;"><img src="${settings.logo}" alt="Logo" style="max-width: 80px; max-height: 80px; object-fit: contain;" /></div>` : ''}
+          <div style="text-align: left; flex: 1; direction: ltr;">
+            <h1 style="font-size: 18px; font-weight: bold; margin: 2px 0;">${settings.headerEnglish[0]}</h1>
+            <h2 style="font-size: 14px; opacity: 0.9; margin: 2px 0;">${settings.headerEnglish[1]}</h2>
+            <p style="font-size: 12px; opacity: 0.8; margin: 2px 0;">${settings.headerEnglish[2]}</p>
+          </div>
+        </div>
+        
+        <!-- Content -->
+        <div style="padding: 25px;">
+          <div style="text-align: center; font-size: 22px; font-weight: bold; color: #0d9488; border: 2px solid #0d9488; border-radius: 8px; padding: 10px; margin-bottom: 20px; background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);">
+            ${title}
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #ccc;">
+            <span style="color: #666; font-size: 14px;">المجموعة:</span>
+            <span style="font-weight: bold; font-size: 16px;">${groupName}</span>
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #ccc; margin-bottom: 20px;">
+            <span style="color: #666; font-size: 14px;">الفترة:</span>
+            <span style="font-weight: bold; font-size: 16px;">من ${dateFrom} إلى ${dateTo}</span>
+          </div>
+          
+          ${currencyData.length > 0 ? currencyTables : `
+          <div style="text-align: center; padding: 40px; color: #666;">
+            لا توجد حسابات لهذه المجموعة
+          </div>
+          `}
+          
+          <!-- Footer -->
+          <div style="display: flex; justify-content: space-between; padding: 20px; border-top: 2px solid #eee; margin-top: 20px;">
+            <div style="text-align: center; width: 45%;">
+              <div style="border-top: 2px solid #333; margin-top: 50px; padding-top: 10px; font-size: 14px; color: #666;">توقيع المدير</div>
+            </div>
+            <div style="text-align: center; width: 45%;">
+              <div style="border-top: 2px solid #333; margin-top: 50px; padding-top: 10px; font-size: 14px; color: #666;">توقيع المحاسب</div>
+            </div>
+          </div>
+          
+          <div style="text-align: center; font-size: 12px; color: #999; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+            تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+
+export async function generateReportPDF(data: ReportPDFData): Promise<Blob> {
+  const htmlContent = getReportHTML(data);
+  
+  // Create a hidden iframe to render the HTML
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.left = '-9999px';
+  iframe.style.top = '-9999px';
+  iframe.style.width = '800px';
+  iframe.style.height = '2000px';
+  document.body.appendChild(iframe);
+  
+  const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+  if (!iframeDoc) {
+    document.body.removeChild(iframe);
+    throw new Error('Could not access iframe document');
+  }
+  
+  iframeDoc.open();
+  iframeDoc.write(htmlContent);
+  iframeDoc.close();
+  
+  // Wait for fonts to load
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  const canvas = await html2canvas(iframeDoc.body, {
+    scale: 2,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: '#ffffff',
+  });
+  
+  document.body.removeChild(iframe);
+  
+  const imgData = canvas.toDataURL('image/png');
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  
+  const pdfWidth = pdf.internal.pageSize.getWidth();
+  const pdfHeight = pdf.internal.pageSize.getHeight();
+  const imgWidth = canvas.width;
+  const imgHeight = canvas.height;
+  const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+  const imgX = (pdfWidth - imgWidth * ratio) / 2;
+  const imgY = 0;
+  
+  // Calculate how many pages we need
+  const scaledHeight = imgHeight * ratio;
+  const pageCount = Math.ceil(scaledHeight / pdfHeight);
+  
+  for (let i = 0; i < pageCount; i++) {
+    if (i > 0) {
+      pdf.addPage();
+    }
+    pdf.addImage(imgData, 'PNG', imgX, imgY - (i * pdfHeight), imgWidth * ratio, imgHeight * ratio);
+  }
+  
+  return pdf.output('blob');
+}
+
+export async function generateSummaryReportPDF(data: SummaryPDFData): Promise<Blob> {
+  const htmlContent = getSummaryReportHTML(data);
+  
+  // Create a hidden iframe to render the HTML
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.left = '-9999px';
+  iframe.style.top = '-9999px';
+  iframe.style.width = '800px';
+  iframe.style.height = '3000px';
+  document.body.appendChild(iframe);
+  
+  const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+  if (!iframeDoc) {
+    document.body.removeChild(iframe);
+    throw new Error('Could not access iframe document');
+  }
+  
+  iframeDoc.open();
+  iframeDoc.write(htmlContent);
+  iframeDoc.close();
+  
+  // Wait for fonts to load
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  const canvas = await html2canvas(iframeDoc.body, {
+    scale: 2,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: '#ffffff',
+  });
+  
+  document.body.removeChild(iframe);
+  
+  const imgData = canvas.toDataURL('image/png');
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  
+  const pdfWidth = pdf.internal.pageSize.getWidth();
+  const pdfHeight = pdf.internal.pageSize.getHeight();
+  const imgWidth = canvas.width;
+  const imgHeight = canvas.height;
+  const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+  const imgX = (pdfWidth - imgWidth * ratio) / 2;
+  const imgY = 0;
+  
+  // Calculate how many pages we need
+  const scaledHeight = imgHeight * ratio;
+  const pageCount = Math.ceil(scaledHeight / pdfHeight);
+  
+  for (let i = 0; i < pageCount; i++) {
+    if (i > 0) {
+      pdf.addPage();
+    }
+    pdf.addImage(imgData, 'PNG', imgX, imgY - (i * pdfHeight), imgWidth * ratio, imgHeight * ratio);
+  }
+  
+  return pdf.output('blob');
+}
+
+export async function sharePDFViaWhatsApp(pdfBlob: Blob, filename: string): Promise<void> {
+  // Create a file from the blob
+  const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+  
+  // Check if Web Share API is available and supports file sharing
+  if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: filename,
+        text: 'تقرير محاسبي',
+      });
+      return;
+    } catch (error) {
+      console.log('Web Share API failed, falling back to download');
+    }
+  }
+  
+  // Fallback: Download the PDF and open WhatsApp with a message
+  const url = URL.createObjectURL(pdfBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  
+  // Open WhatsApp with a message indicating PDF was downloaded
+  const message = encodeURIComponent('تم تحميل التقرير كملف PDF. يرجى إرفاقه يدوياً.');
+  window.open(`https://wa.me/?text=${message}`, '_blank');
+}
