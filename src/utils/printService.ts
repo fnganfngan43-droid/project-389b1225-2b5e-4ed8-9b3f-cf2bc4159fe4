@@ -1,5 +1,61 @@
 import { Voucher, Settings } from '@/types/accounting';
 
+// Convert number to Arabic words
+const numberToArabicWords = (num: number): string => {
+  if (num === 0) return 'صفر';
+  
+  const ones = ['', 'واحد', 'اثنان', 'ثلاثة', 'أربعة', 'خمسة', 'ستة', 'سبعة', 'ثمانية', 'تسعة', 'عشرة', 
+    'أحد عشر', 'اثنا عشر', 'ثلاثة عشر', 'أربعة عشر', 'خمسة عشر', 'ستة عشر', 'سبعة عشر', 'ثمانية عشر', 'تسعة عشر'];
+  const tens = ['', '', 'عشرون', 'ثلاثون', 'أربعون', 'خمسون', 'ستون', 'سبعون', 'ثمانون', 'تسعون'];
+  const hundreds = ['', 'مائة', 'مائتان', 'ثلاثمائة', 'أربعمائة', 'خمسمائة', 'ستمائة', 'سبعمائة', 'ثمانمائة', 'تسعمائة'];
+  
+  const absNum = Math.abs(Math.floor(num));
+  
+  if (absNum < 20) return ones[absNum];
+  
+  if (absNum < 100) {
+    const ten = Math.floor(absNum / 10);
+    const one = absNum % 10;
+    if (one === 0) return tens[ten];
+    return ones[one] + ' و' + tens[ten];
+  }
+  
+  if (absNum < 1000) {
+    const hundred = Math.floor(absNum / 100);
+    const remainder = absNum % 100;
+    if (remainder === 0) return hundreds[hundred];
+    return hundreds[hundred] + ' و' + numberToArabicWords(remainder);
+  }
+  
+  if (absNum < 1000000) {
+    const thousand = Math.floor(absNum / 1000);
+    const remainder = absNum % 1000;
+    let result = '';
+    if (thousand === 1) result = 'ألف';
+    else if (thousand === 2) result = 'ألفان';
+    else if (thousand >= 3 && thousand <= 10) result = numberToArabicWords(thousand) + ' آلاف';
+    else result = numberToArabicWords(thousand) + ' ألف';
+    
+    if (remainder === 0) return result;
+    return result + ' و' + numberToArabicWords(remainder);
+  }
+  
+  if (absNum < 1000000000) {
+    const million = Math.floor(absNum / 1000000);
+    const remainder = absNum % 1000000;
+    let result = '';
+    if (million === 1) result = 'مليون';
+    else if (million === 2) result = 'مليونان';
+    else if (million >= 3 && million <= 10) result = numberToArabicWords(million) + ' ملايين';
+    else result = numberToArabicWords(million) + ' مليون';
+    
+    if (remainder === 0) return result;
+    return result + ' و' + numberToArabicWords(remainder);
+  }
+  
+  return absNum.toLocaleString('ar-EG');
+};
+
 interface PrintVoucherData {
   voucher: Voucher;
   settings: Settings;
@@ -375,6 +431,10 @@ export function printVoucher({ voucher, settings }: PrintVoucherData) {
 }
 
 export function printReport({ title, accountName, currency, transactions, settings, totals }: PrintReportData) {
+  const isDebit = totals.balance >= 0;
+  const balanceLabel = isDebit ? 'عليكم رصيد' : 'لكم رصيد';
+  const absBalance = Math.abs(totals.balance);
+
   const transactionsRows = transactions.map(t => `
     <tr${t.isPreviousBalance ? ' class="previous-balance-row"' : ''}>
       <td>${t.date}</td>
@@ -395,7 +455,28 @@ export function printReport({ title, accountName, currency, transactions, settin
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>${title} - ${accountName}</title>
       <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-      <style>${getCommonStyles()}</style>
+      <style>
+        ${getCommonStyles()}
+        .balance-row {
+          padding: 15px;
+          border: 2px solid #0d9488;
+          border-radius: 8px;
+          text-align: center;
+          margin-bottom: 10px;
+        }
+        .balance-row.numbers {
+          background: #f0fdfa;
+        }
+        .balance-row.words {
+          background: #f8fafc;
+        }
+        .balance-text {
+          font-size: 16px;
+          font-weight: bold;
+        }
+        .balance-text.debit { color: #16a34a; }
+        .balance-text.credit { color: #dc2626; }
+      </style>
     </head>
     <body>
       <div class="print-container">
@@ -452,19 +533,18 @@ export function printReport({ title, accountName, currency, transactions, settin
             </tbody>
           </table>
           
-          <div class="summary-box">
-            <div class="summary-item">
-              <div class="summary-label">إجمالي المدين</div>
-              <div class="summary-value debit">${totals.debit.toLocaleString()} ${currency}</div>
-            </div>
-            <div class="summary-item">
-              <div class="summary-label">إجمالي الدائن</div>
-              <div class="summary-value credit">${totals.credit.toLocaleString()} ${currency}</div>
-            </div>
-            <div class="summary-item">
-              <div class="summary-label">صافي الرصيد</div>
-              <div class="summary-value balance">${totals.balance.toLocaleString()} ${currency}</div>
-            </div>
+          <!-- Balance in numbers row -->
+          <div class="balance-row numbers">
+            <span class="balance-text ${isDebit ? 'debit' : 'credit'}">
+              ${balanceLabel}: ${absBalance.toLocaleString()} ${currency}
+            </span>
+          </div>
+          
+          <!-- Balance in Arabic words row -->
+          <div class="balance-row words">
+            <span class="balance-text ${isDebit ? 'debit' : 'credit'}">
+              ${balanceLabel}: ${numberToArabicWords(absBalance)} ${currency}
+            </span>
           </div>
           ` : `
           <div style="text-align: center; padding: 40px; color: #666;">
@@ -495,6 +575,10 @@ export function printReport({ title, accountName, currency, transactions, settin
 
 export function printSummaryReport({ title, groupName, dateFrom, dateTo, currencyData, settings }: PrintSummaryReportData) {
   const currencyTables = currencyData.map(cd => {
+    const isDebit = cd.totalBalance >= 0;
+    const balanceLabel = isDebit ? 'عليكم رصيد' : 'لكم رصيد';
+    const absBalance = Math.abs(cd.totalBalance);
+
     const accountRows = cd.accounts.map(acc => `
       <tr>
         <td>${acc.accountNumber}</td>
@@ -530,6 +614,20 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
             </tr>
           </tbody>
         </table>
+        
+        <!-- Balance in numbers row -->
+        <div style="padding: 15px; background: #f0fdfa; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 10px;">
+          <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+            ${balanceLabel}: ${absBalance.toLocaleString()} ${cd.currency}
+          </span>
+        </div>
+        
+        <!-- Balance in Arabic words row -->
+        <div style="padding: 15px; background: #f8fafc; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 20px;">
+          <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+            ${balanceLabel}: ${numberToArabicWords(absBalance)} ${cd.currency}
+          </span>
+        </div>
       </div>
     `;
   }).join('');
