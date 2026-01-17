@@ -77,6 +77,28 @@ const numberToArabicWords = (num: number): string => {
   return absNum.toLocaleString('ar-EG');
 };
 
+// Convert currency symbol to full name
+const getCurrencyFullName = (symbol: string): string => {
+  const currencyMap: { [key: string]: string } = {
+    'ر.س': 'ريال سعودي',
+    'ر.ي': 'ريال يمني',
+    '$': 'دولار أمريكي',
+    '€': 'يورو',
+    '£': 'جنيه إسترليني',
+    'د.إ': 'درهم إماراتي',
+    'د.ك': 'دينار كويتي',
+    'ر.ع': 'ريال عماني',
+    'ر.ق': 'ريال قطري',
+    'د.ب': 'دينار بحريني',
+    'ج.م': 'جنيه مصري',
+    'د.ج': 'دينار جزائري',
+    'د.ل': 'دينار ليبي',
+    'د.ت': 'دينار تونسي',
+    'د.م': 'درهم مغربي',
+  };
+  return currencyMap[symbol] || symbol;
+};
+
 // Helper to get first day of current year
 const getFirstDayOfYear = () => {
   const now = new Date();
@@ -795,7 +817,7 @@ export function ReportsScreen() {
                 <CardTitle className="text-center">
                   <p className="text-lg font-bold">كشف حساب تحليلي</p>
                   <p className="text-sm opacity-80 mt-1">{selectedAccount}</p>
-                  <p className="text-xs opacity-60 mt-1">العملة: {currData.currency}</p>
+                  <p className="text-xs opacity-60 mt-1">العملة: {getCurrencyFullName(currData.currency)}</p>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -888,14 +910,14 @@ export function ReportsScreen() {
                       {/* Balance in numbers row */}
                       <div className="p-3 bg-primary/10 border-x border-b border-black text-sm font-bold text-center">
                         <span className={finalBalance >= 0 ? 'text-success' : 'text-destructive'}>
-                          {balanceLabel}: {absBalance.toLocaleString()} {currData.currency}
+                          {balanceLabel}: {absBalance.toLocaleString()} {getCurrencyFullName(currData.currency)}
                         </span>
                       </div>
                       
                       {/* Balance in Arabic words row */}
                       <div className="p-3 bg-primary/5 border-x border-b border-black text-sm font-bold text-center rounded-b-lg">
                         <span className={finalBalance >= 0 ? 'text-success' : 'text-destructive'}>
-                          {balanceLabel}: {numberToArabicWords(absBalance)} {currData.currency}
+                          {balanceLabel}: {numberToArabicWords(absBalance)} {getCurrencyFullName(currData.currency)}
                         </span>
                       </div>
                     </>
@@ -923,7 +945,7 @@ export function ReportsScreen() {
               <CardTitle className="text-center">
                 <p className="text-lg font-bold">كشف حساب تحليلي</p>
                 <p className="text-sm opacity-80 mt-1">{selectedAccount}</p>
-                <p className="text-xs opacity-60 mt-1">العملة: {selectedCurrency}</p>
+                <p className="text-xs opacity-60 mt-1">العملة: {getCurrencyFullName(selectedCurrency)}</p>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -1024,14 +1046,14 @@ export function ReportsScreen() {
                     {/* Balance in numbers row */}
                     <div className="p-3 bg-primary/10 border-x border-b border-black text-sm font-bold text-center">
                       <span className={finalBalance >= 0 ? 'text-success' : 'text-destructive'}>
-                        {balanceLabel}: {absBalance.toLocaleString()} {selectedCurrency}
+                        {balanceLabel}: {absBalance.toLocaleString()} {getCurrencyFullName(selectedCurrency)}
                       </span>
                     </div>
                     
                     {/* Balance in Arabic words row */}
                     <div className="p-3 bg-primary/5 border-x border-b border-black text-sm font-bold text-center rounded-b-lg">
                       <span className={finalBalance >= 0 ? 'text-success' : 'text-destructive'}>
-                        {balanceLabel}: {numberToArabicWords(absBalance)} {selectedCurrency}
+                        {balanceLabel}: {numberToArabicWords(absBalance)} {getCurrencyFullName(selectedCurrency)}
                       </span>
                     </div>
                   </>
@@ -1046,11 +1068,11 @@ export function ReportsScreen() {
         <div className="space-y-4 animate-fade-in">
           {getSummaryData().map((currencyData, idx) => (
             <Card key={idx}>
-              <CardHeader className="gradient-primary text-primary-foreground rounded-t-2xl">
+            <CardHeader className="gradient-primary text-primary-foreground rounded-t-2xl">
                 <CardTitle className="text-center">
                   <p className="text-lg font-bold">كشف حساب إجمالي</p>
                   <p className="text-sm opacity-80 mt-1">المجموعة: {selectedGroup}</p>
-                  <p className="text-xs opacity-60 mt-1">العملة: {currencyData.currency}</p>
+                  <p className="text-xs opacity-60 mt-1">العملة: {getCurrencyFullName(currencyData.currency)}</p>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
