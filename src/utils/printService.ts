@@ -56,6 +56,28 @@ const numberToArabicWords = (num: number): string => {
   return absNum.toLocaleString('ar-EG');
 };
 
+// Convert currency symbol to full name
+const getCurrencyFullName = (symbol: string): string => {
+  const currencyMap: { [key: string]: string } = {
+    'ر.س': 'ريال سعودي',
+    'ر.ي': 'ريال يمني',
+    '$': 'دولار أمريكي',
+    '€': 'يورو',
+    '£': 'جنيه إسترليني',
+    'د.إ': 'درهم إماراتي',
+    'د.ك': 'دينار كويتي',
+    'ر.ع': 'ريال عماني',
+    'ر.ق': 'ريال قطري',
+    'د.ب': 'دينار بحريني',
+    'ج.م': 'جنيه مصري',
+    'د.ج': 'دينار جزائري',
+    'د.ل': 'دينار ليبي',
+    'د.ت': 'دينار تونسي',
+    'د.م': 'درهم مغربي',
+  };
+  return currencyMap[symbol] || symbol;
+};
+
 interface PrintVoucherData {
   voucher: Voucher;
   settings: Settings;
@@ -506,7 +528,7 @@ export function printReport({ title, accountName, currency, transactions, settin
           
           <div class="info-row">
             <span class="info-label">العملة:</span>
-            <span class="info-value">${currency}</span>
+            <span class="info-value">${getCurrencyFullName(currency)}</span>
           </div>
           
           ${transactions.length > 0 ? `
@@ -536,14 +558,14 @@ export function printReport({ title, accountName, currency, transactions, settin
           <!-- Balance in numbers row -->
           <div class="balance-row numbers">
             <span class="balance-text ${isDebit ? 'debit' : 'credit'}">
-              ${balanceLabel}: ${absBalance.toLocaleString()} ${currency}
+              ${balanceLabel}: ${absBalance.toLocaleString()} ${getCurrencyFullName(currency)}
             </span>
           </div>
           
           <!-- Balance in Arabic words row -->
           <div class="balance-row words">
             <span class="balance-text ${isDebit ? 'debit' : 'credit'}">
-              ${balanceLabel}: ${numberToArabicWords(absBalance)} ${currency}
+              ${balanceLabel}: ${numberToArabicWords(absBalance)} ${getCurrencyFullName(currency)}
             </span>
           </div>
           ` : `
@@ -618,14 +640,14 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
         <!-- Balance in numbers row -->
         <div style="padding: 15px; background: #f0fdfa; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 10px;">
           <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
-            ${balanceLabel}: ${absBalance.toLocaleString()} ${cd.currency}
+            ${balanceLabel}: ${absBalance.toLocaleString()} ${getCurrencyFullName(cd.currency)}
           </span>
         </div>
         
         <!-- Balance in Arabic words row -->
         <div style="padding: 15px; background: #f8fafc; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 20px;">
           <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
-            ${balanceLabel}: ${numberToArabicWords(absBalance)} ${cd.currency}
+            ${balanceLabel}: ${numberToArabicWords(absBalance)} ${getCurrencyFullName(cd.currency)}
           </span>
         </div>
       </div>
