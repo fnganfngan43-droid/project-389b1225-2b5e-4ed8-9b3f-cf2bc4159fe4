@@ -18,7 +18,7 @@ import { Save, X, Phone, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function ChartOfAccountsScreen() {
-  const { accounts, groups, currencies, governorates, addAccount, updateAccount, deleteAccount } = useAccounting();
+  const { accounts, groups, currencies, governorates, addAccount, updateAccount, deleteAccount, vouchers, openingBalances, invoices, currencyExchanges } = useAccounting();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
@@ -101,6 +101,23 @@ export function ChartOfAccountsScreen() {
 
   const handleDelete = () => {
     if (selectedAccount) {
+      // Check if account has any transactions
+      const hasVouchers = vouchers.some(v => 
+        v.accountName === selectedAccount.accountName || 
+        v.debitAccountName === selectedAccount.accountName || 
+        v.creditAccountName === selectedAccount.accountName
+      );
+      const hasOpeningBalances = openingBalances.some(ob => ob.accountName === selectedAccount.accountName);
+      const hasInvoices = invoices.some(inv => inv.accountName === selectedAccount.accountName);
+      const hasCurrencyExchanges = currencyExchanges.some(ce => 
+        ce.fromAccountName === selectedAccount.accountName || ce.toAccountName === selectedAccount.accountName
+      );
+      
+      if (hasVouchers || hasOpeningBalances || hasInvoices || hasCurrencyExchanges) {
+        toast.error(`عذراً، الحساب "${selectedAccount.accountName}" له حركة سابقة ولا يمكن حذفه`);
+        return;
+      }
+      
       deleteAccount(selectedAccount.id);
       setSelectedAccount(null);
       toast.success('تم حذف الحساب بنجاح');

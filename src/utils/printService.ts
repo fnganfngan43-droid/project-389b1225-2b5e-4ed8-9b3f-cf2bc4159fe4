@@ -137,7 +137,14 @@ const getCommonStyles = () => `
     direction: rtl;
     background: #fff;
     color: #1a1a1a;
-    padding: 20px;
+    padding: 15px;
+  }
+  .page-border {
+    border: 3px solid #0d9488;
+    border-radius: 16px;
+    padding: 10px;
+    background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 100%);
+    box-shadow: 0 4px 20px rgba(13, 148, 136, 0.15);
   }
   .print-container {
     max-width: 800px;
@@ -145,6 +152,7 @@ const getCommonStyles = () => `
     border: 2px solid #0d9488;
     border-radius: 12px;
     overflow: hidden;
+    background: #fff;
   }
   .header {
     background: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
@@ -352,9 +360,14 @@ const getCommonStyles = () => `
   .summary-value.balance { color: #0d9488; }
   
   @media print {
-    body { padding: 0; }
-    .print-container { border: none; }
-    @page { margin: 10mm; }
+    body { padding: 10px; }
+    .page-border { 
+      border: 2px solid #0d9488; 
+      box-shadow: none;
+      padding: 8px;
+    }
+    .print-container { border: 1px solid #0d9488; }
+    @page { margin: 8mm; }
   }
 `;
 
@@ -373,6 +386,7 @@ export function printVoucher({ voucher, settings }: PrintVoucherData) {
       <style>${getCommonStyles()}</style>
     </head>
     <body>
+      <div class="page-border">
       <div class="print-container">
         <div class="header">
           <div class="header-right">
@@ -445,6 +459,7 @@ export function printVoucher({ voucher, settings }: PrintVoucherData) {
           </div>
         </div>
       </div>
+      </div>
     </body>
     </html>
   `;
@@ -501,6 +516,7 @@ export function printReport({ title, accountName, currency, transactions, settin
       </style>
     </head>
     <body>
+      <div class="page-border">
       <div class="print-container">
         <div class="header">
           <div class="header-right">
@@ -588,6 +604,7 @@ export function printReport({ title, accountName, currency, transactions, settin
           </div>
         </div>
       </div>
+      </div>
     </body>
     </html>
   `;
@@ -665,6 +682,7 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
       <style>${getCommonStyles()}</style>
     </head>
     <body>
+      <div class="page-border">
       <div class="print-container">
         <div class="header">
           <div class="header-right">
@@ -714,6 +732,7 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
             تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}
           </div>
         </div>
+      </div>
       </div>
     </body>
     </html>
