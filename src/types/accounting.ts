@@ -111,4 +111,5 @@ export type ScreenType =
   | 'reports' 
   | 'discount' 
   | 'sales-return'
-  | 'currency-exchange';
+  | 'currency-exchange'
+  | 'currency-management';

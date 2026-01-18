@@ -9,6 +9,7 @@ import { OpeningBalanceScreen } from '@/components/screens/OpeningBalanceScreen'
 import { ReportsScreen } from '@/components/screens/ReportsScreen';
 import { DiscountScreen } from '@/components/screens/DiscountScreen';
 import { CurrencyExchangeScreen } from '@/components/screens/CurrencyExchangeScreen';
+import { CurrencyManagementScreen } from '@/components/screens/CurrencyManagementScreen';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { ScreenType } from '@/types/accounting';
 
@@ -28,6 +29,7 @@ export function MainDashboard() {
       'discount': 'الخصم',
       'sales-return': 'مرتجع المبيعات',
       'currency-exchange': 'صرف عملة',
+      'currency-management': 'إدارة العملات',
     };
     return titles[activeScreen];
   };
@@ -52,6 +54,8 @@ export function MainDashboard() {
         return <DiscountScreen />;
       case 'currency-exchange':
         return <CurrencyExchangeScreen />;
+      case 'currency-management':
+        return <CurrencyManagementScreen />;
       default:
         return <ChartOfAccountsScreen />;
     }

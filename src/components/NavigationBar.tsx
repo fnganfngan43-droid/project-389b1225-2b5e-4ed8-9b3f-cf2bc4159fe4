@@ -9,7 +9,8 @@ import {
   BarChart3,
   Percent,
   RotateCcw,
-  ArrowLeftRight
+  ArrowLeftRight,
+  Coins
 } from 'lucide-react';
 
 interface NavigationBarProps {
@@ -27,6 +28,7 @@ const navItems: { id: ScreenType; label: string; icon: React.ElementType }[] = [
   { id: 'discount', label: 'الخصم', icon: Percent },
   { id: 'sales-return', label: 'مرتجع المبيعات', icon: RotateCcw },
   { id: 'currency-exchange', label: 'صرف عملة', icon: ArrowLeftRight },
+  { id: 'currency-management', label: 'إدارة العملات', icon: Coins },
 ];
 
 export function NavigationBar({ activeScreen, onScreenChange }: NavigationBarProps) {
