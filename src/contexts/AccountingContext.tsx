@@ -40,6 +40,8 @@ interface AccountingContextType {
   // Governorates
   governorates: Governorate[];
   addGovernorate: (gov: Omit<Governorate, 'id'>) => void;
+  updateGovernorate: (id: string, gov: Partial<Governorate>) => void;
+  deleteGovernorate: (id: string) => void;
 
   // Vouchers
   vouchers: Voucher[];
@@ -184,6 +186,8 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
 
     governorates,
     addGovernorate: (gov) => setGovernorates(prev => [...prev, { ...gov, id: generateId() }]),
+    updateGovernorate: (id, gov) => setGovernorates(prev => prev.map(g => g.id === id ? { ...g, ...gov } : g)),
+    deleteGovernorate: (id) => setGovernorates(prev => prev.filter(g => g.id !== id)),
 
     vouchers,
     addVoucher: (voucher) => setVouchers(prev => [...prev, { ...voucher, id: generateId() }]),

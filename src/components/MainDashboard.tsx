@@ -10,6 +10,8 @@ import { ReportsScreen } from '@/components/screens/ReportsScreen';
 import { DiscountScreen } from '@/components/screens/DiscountScreen';
 import { CurrencyExchangeScreen } from '@/components/screens/CurrencyExchangeScreen';
 import { CurrencyManagementScreen } from '@/components/screens/CurrencyManagementScreen';
+import { GovernorateManagementScreen } from '@/components/screens/GovernorateManagementScreen';
+import { AccountGroupManagementScreen } from '@/components/screens/AccountGroupManagementScreen';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { ScreenType } from '@/types/accounting';
 
@@ -30,6 +32,8 @@ export function MainDashboard() {
       'sales-return': 'مرتجع المبيعات',
       'currency-exchange': 'صرف عملة',
       'currency-management': 'إدارة العملات',
+      'governorate-management': 'إدارة المحافظات',
+      'group-management': 'إدارة المجموعات',
     };
     return titles[activeScreen];
   };
@@ -56,6 +60,10 @@ export function MainDashboard() {
         return <CurrencyExchangeScreen />;
       case 'currency-management':
         return <CurrencyManagementScreen />;
+      case 'governorate-management':
+        return <GovernorateManagementScreen />;
+      case 'group-management':
+        return <AccountGroupManagementScreen />;
       default:
         return <ChartOfAccountsScreen />;
     }
