@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { printReport, printSummaryReport } from '@/utils/printService';
 import { generateReportPDF, generateSummaryReportPDF, sharePDFViaWhatsApp } from '@/utils/pdfService';
+import { exportAnalyticalReportToExcel, exportSummaryReportToExcel } from '@/utils/excelExport';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { 
   Select,
@@ -14,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BarChart3, Eye, Printer, Share2, FileText, ArrowRight, CalendarIcon, MessageCircle } from 'lucide-react';
+import { BarChart3, Eye, Printer, Share2, FileText, ArrowRight, CalendarIcon, MessageCircle, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
 
 type ReportType = 'analytical' | 'summary';
@@ -607,6 +608,84 @@ export function ReportsScreen() {
     }
   };
 
+  // Handle Excel export
+  const handleExcelExport = () => {
+    if (!showReport) {
+      toast.error('يرجى إنشاء التقرير أولاً');
+      return;
+    }
+
+    try {
+      if (reportType === 'summary') {
+        // Export summary report to Excel
+        if (!selectedGroup) {
+          toast.error('يرجى اختيار المجموعة');
+          return;
+        }
+        
+        const summaryData = getSummaryData();
+        exportSummaryReportToExcel({
+          title: 'كشف حساب إجمالي',
+          groupName: selectedGroup,
+          dateFrom,
+          dateTo,
+          currencyData: summaryData,
+          settings,
+        });
+        toast.success('تم تصدير التقرير إلى Excel بنجاح');
+      } else {
+        // Export analytical report to Excel
+        if (!selectedAccount || !selectedCurrency) {
+          toast.error('يرجى اختيار الحساب والعملة');
+          return;
+        }
+        
+        const prevBalance = getPreviousBalance(selectedAccount, selectedCurrency);
+        
+        // Build transactions with previous balance row
+        let exportTransactions = [...transactionsWithBalance];
+        
+        // Add previous balance row at the beginning if exists
+        if (prevBalance !== 0) {
+          const prevBalanceRow = {
+            date: '-',
+            type: 'رصيد افتتاحي',
+            description: 'الرصيد الافتتاحي',
+            reference: '-',
+            debit: prevBalance > 0 ? prevBalance : 0,
+            credit: prevBalance < 0 ? Math.abs(prevBalance) : 0,
+            balance: prevBalance,
+          };
+          exportTransactions = [prevBalanceRow, ...transactionsWithBalance.map((t) => ({
+            ...t,
+            balance: t.balance + prevBalance
+          }))];
+        }
+        
+        const totals = {
+          debit: transactionsWithBalance.reduce((sum, t) => sum + t.debit, 0) + (prevBalance > 0 ? prevBalance : 0),
+          credit: transactionsWithBalance.reduce((sum, t) => sum + t.credit, 0) + (prevBalance < 0 ? Math.abs(prevBalance) : 0),
+          balance: runningBalance + prevBalance,
+        };
+        
+        exportAnalyticalReportToExcel({
+          title: 'كشف حساب تحليلي',
+          accountName: selectedAccount,
+          currency: selectedCurrency,
+          dateFrom,
+          dateTo,
+          transactions: exportTransactions,
+          totals,
+          settings,
+        });
+        toast.success('تم تصدير التقرير إلى Excel بنجاح');
+      }
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+      toast.error('حدث خطأ أثناء تصدير التقرير');
+    }
+  };
+
   // Get all currencies for "all" selection in analytical report
   const getAnalyticalDataForAllCurrencies = () => {
     return currencies.map(currency => {
@@ -651,6 +730,16 @@ export function ReportsScreen() {
           >
             <MessageCircle className="w-4 h-4" />
             واتساب
+          </Button>
+          <Button 
+            variant="secondary" 
+            size="sm"
+            onClick={handleExcelExport}
+            disabled={!showReport}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            Excel
           </Button>
           <Button 
             variant="secondary" 
