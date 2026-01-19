@@ -112,4 +112,6 @@ export type ScreenType =
   | 'discount' 
   | 'sales-return'
   | 'currency-exchange'
-  | 'currency-management';
+  | 'currency-management'
+  | 'governorate-management'
+  | 'group-management';
