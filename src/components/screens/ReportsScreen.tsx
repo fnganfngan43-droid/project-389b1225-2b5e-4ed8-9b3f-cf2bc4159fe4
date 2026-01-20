@@ -608,6 +608,119 @@ export function ReportsScreen() {
     }
   };
 
+  // Handle PDF export and share
+  const handlePDFExport = async () => {
+    if (!showReport) {
+      toast.error('يرجى إنشاء التقرير أولاً');
+      return;
+    }
+
+    try {
+      let pdfBlob: Blob;
+      let filename: string;
+
+      if (reportType === 'summary') {
+        // Generate summary report PDF
+        if (!selectedGroup) {
+          toast.error('يرجى اختيار المجموعة');
+          return;
+        }
+        
+        const summaryData = getSummaryData();
+        pdfBlob = await generateSummaryReportPDF({
+          title: 'كشف حساب إجمالي',
+          groupName: selectedGroup,
+          dateFrom,
+          dateTo,
+          currencyData: summaryData,
+          settings,
+        });
+        
+        filename = `كشف_إجمالي_${selectedGroup}_${new Date().toISOString().split('T')[0]}.pdf`;
+      } else {
+        // Generate analytical report PDF
+        if (!selectedAccount || !selectedCurrency) {
+          toast.error('يرجى اختيار الحساب والعملة');
+          return;
+        }
+        
+        const prevBalance = getPreviousBalance(selectedAccount, selectedCurrency);
+        
+        // Build transactions with previous balance row
+        let printTransactions = [...transactionsWithBalance];
+        
+        // Add previous balance row at the beginning if exists
+        if (prevBalance !== 0) {
+          const prevBalanceRow = {
+            date: '-',
+            type: 'رصيد افتتاحي',
+            description: 'الرصيد الافتتاحي',
+            reference: '-',
+            debit: prevBalance > 0 ? prevBalance : 0,
+            credit: prevBalance < 0 ? Math.abs(prevBalance) : 0,
+            balance: prevBalance,
+            isPreviousBalance: true,
+          };
+          printTransactions = [prevBalanceRow, ...transactionsWithBalance.map((t) => ({
+            ...t,
+            balance: t.balance + prevBalance
+          }))];
+        }
+        
+        const totals = {
+          debit: transactionsWithBalance.reduce((sum, t) => sum + t.debit, 0) + (prevBalance > 0 ? prevBalance : 0),
+          credit: transactionsWithBalance.reduce((sum, t) => sum + t.credit, 0) + (prevBalance < 0 ? Math.abs(prevBalance) : 0),
+          balance: runningBalance + prevBalance,
+        };
+        
+        pdfBlob = await generateReportPDF({
+          title: 'كشف حساب تحليلي',
+          accountName: selectedAccount,
+          currency: selectedCurrency,
+          transactions: printTransactions,
+          settings,
+          totals,
+        });
+        
+        filename = `كشف_${selectedAccount}_${selectedCurrency}_${new Date().toISOString().split('T')[0]}.pdf`;
+      }
+
+      // Create file for sharing
+      const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+      
+      // Check if Web Share API is available and supports file sharing
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: filename,
+            text: 'تقرير محاسبي',
+          });
+          toast.success('تم مشاركة ملف PDF بنجاح');
+          return;
+        } catch (error) {
+          // User cancelled or share failed, fall back to download
+          console.log('Web Share API failed, falling back to download');
+        }
+      }
+      
+      // Fallback: Download the PDF
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast.success('تم تحميل ملف PDF بنجاح');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('حدث خطأ أثناء إنشاء ملف PDF');
+    }
+  };
+
   // Handle Excel export
   const handleExcelExport = () => {
     if (!showReport) {
@@ -744,7 +857,9 @@ export function ReportsScreen() {
           <Button 
             variant="secondary" 
             size="sm"
-            onClick={() => toast.info('سيتم إضافة خاصية التصدير قريباً')}
+            onClick={handlePDFExport}
+            disabled={!showReport}
+            className="bg-rose-600 hover:bg-rose-700 text-white"
           >
             <FileText className="w-4 h-4" />
             PDF
