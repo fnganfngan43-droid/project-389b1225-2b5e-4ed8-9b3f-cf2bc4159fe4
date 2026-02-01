@@ -123,6 +123,25 @@ interface SummaryPDFData {
   settings: Settings;
 }
 
+// Generate header HTML for multi-page support
+const getHeaderHTML = (settings: Settings): string => {
+  return `
+    <div class="report-header" style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+      <div style="text-align: right; flex: 1;">
+        <h1 style="font-size: 18px; font-weight: bold; margin: 2px 0;">${settings.headerArabic[0]}</h1>
+        <h2 style="font-size: 14px; opacity: 0.9; margin: 2px 0;">${settings.headerArabic[1]}</h2>
+        <p style="font-size: 12px; opacity: 0.8; margin: 2px 0;">${settings.headerArabic[2]}</p>
+      </div>
+      ${settings.logo ? `<div style="flex: 0 0 100px; display: flex; justify-content: center; align-items: center;"><img src="${settings.logo}" alt="Logo" style="max-width: 80px; max-height: 80px; object-fit: contain;" /></div>` : ''}
+      <div style="text-align: left; flex: 1; direction: ltr;">
+        <h1 style="font-size: 18px; font-weight: bold; margin: 2px 0;">${settings.headerEnglish[0]}</h1>
+        <h2 style="font-size: 14px; opacity: 0.9; margin: 2px 0;">${settings.headerEnglish[1]}</h2>
+        <p style="font-size: 12px; opacity: 0.8; margin: 2px 0;">${settings.headerEnglish[2]}</p>
+      </div>
+    </div>
+  `;
+};
+
 const getReportHTML = (data: ReportPDFData): string => {
   const { title, accountName, currency, transactions, settings, totals } = data;
   
@@ -142,6 +161,18 @@ const getReportHTML = (data: ReportPDFData): string => {
     </tr>
   `).join('');
 
+  const tableHeaderHTML = `
+    <tr>
+      <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">التاريخ</th>
+      <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">النوع</th>
+      <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">البيان</th>
+      <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">المرجع</th>
+      <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">مدين</th>
+      <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">دائن</th>
+      <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">الرصيد</th>
+    </tr>
+  `;
+
   return `
     <!DOCTYPE html>
     <html lang="ar" dir="rtl">
@@ -151,24 +182,42 @@ const getReportHTML = (data: ReportPDFData): string => {
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Tajawal', Arial, sans-serif; direction: rtl; background: #fff; padding: 20px; }
+        
+        /* Print styles for multi-page header repetition */
+        @media print {
+          .report-header {
+            position: running(header);
+          }
+          thead {
+            display: table-header-group;
+          }
+          @page {
+            @top-center {
+              content: element(header);
+            }
+          }
+        }
+        
+        /* Table header repetition for printing */
+        table {
+          page-break-inside: auto;
+        }
+        tr {
+          page-break-inside: avoid;
+          page-break-after: auto;
+        }
+        thead {
+          display: table-header-group;
+        }
+        tfoot {
+          display: table-footer-group;
+        }
       </style>
     </head>
     <body>
       <div style="max-width: 800px; margin: 0 auto; border: 2px solid #0d9488; border-radius: 12px; overflow: hidden;">
         <!-- Header -->
-        <div style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
-          <div style="text-align: right; flex: 1;">
-            <h1 style="font-size: 18px; font-weight: bold; margin: 2px 0;">${settings.headerArabic[0]}</h1>
-            <h2 style="font-size: 14px; opacity: 0.9; margin: 2px 0;">${settings.headerArabic[1]}</h2>
-            <p style="font-size: 12px; opacity: 0.8; margin: 2px 0;">${settings.headerArabic[2]}</p>
-          </div>
-          ${settings.logo ? `<div style="flex: 0 0 100px; display: flex; justify-content: center; align-items: center;"><img src="${settings.logo}" alt="Logo" style="max-width: 80px; max-height: 80px; object-fit: contain;" /></div>` : ''}
-          <div style="text-align: left; flex: 1; direction: ltr;">
-            <h1 style="font-size: 18px; font-weight: bold; margin: 2px 0;">${settings.headerEnglish[0]}</h1>
-            <h2 style="font-size: 14px; opacity: 0.9; margin: 2px 0;">${settings.headerEnglish[1]}</h2>
-            <p style="font-size: 12px; opacity: 0.8; margin: 2px 0;">${settings.headerEnglish[2]}</p>
-          </div>
-        </div>
+        ${getHeaderHTML(settings)}
         
         <!-- Content -->
         <div style="padding: 25px;">
@@ -189,15 +238,7 @@ const getReportHTML = (data: ReportPDFData): string => {
           ${transactions.length > 0 ? `
           <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
             <thead>
-              <tr>
-                <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">التاريخ</th>
-                <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">النوع</th>
-                <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">البيان</th>
-                <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">المرجع</th>
-                <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">مدين</th>
-                <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">دائن</th>
-                <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">الرصيد</th>
-              </tr>
+              ${tableHeaderHTML}
             </thead>
             <tbody>
               ${transactionsRows}
@@ -319,24 +360,38 @@ const getSummaryReportHTML = (data: SummaryPDFData): string => {
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Tajawal', Arial, sans-serif; direction: rtl; background: #fff; padding: 20px; }
+        
+        /* Print styles for multi-page header repetition */
+        @media print {
+          .report-header {
+            position: running(header);
+          }
+          thead {
+            display: table-header-group;
+          }
+          @page {
+            @top-center {
+              content: element(header);
+            }
+          }
+        }
+        
+        table {
+          page-break-inside: auto;
+        }
+        tr {
+          page-break-inside: avoid;
+          page-break-after: auto;
+        }
+        thead {
+          display: table-header-group;
+        }
       </style>
     </head>
     <body>
       <div style="max-width: 800px; margin: 0 auto; border: 2px solid #0d9488; border-radius: 12px; overflow: hidden;">
         <!-- Header -->
-        <div style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
-          <div style="text-align: right; flex: 1;">
-            <h1 style="font-size: 18px; font-weight: bold; margin: 2px 0;">${settings.headerArabic[0]}</h1>
-            <h2 style="font-size: 14px; opacity: 0.9; margin: 2px 0;">${settings.headerArabic[1]}</h2>
-            <p style="font-size: 12px; opacity: 0.8; margin: 2px 0;">${settings.headerArabic[2]}</p>
-          </div>
-          ${settings.logo ? `<div style="flex: 0 0 100px; display: flex; justify-content: center; align-items: center;"><img src="${settings.logo}" alt="Logo" style="max-width: 80px; max-height: 80px; object-fit: contain;" /></div>` : ''}
-          <div style="text-align: left; flex: 1; direction: ltr;">
-            <h1 style="font-size: 18px; font-weight: bold; margin: 2px 0;">${settings.headerEnglish[0]}</h1>
-            <h2 style="font-size: 14px; opacity: 0.9; margin: 2px 0;">${settings.headerEnglish[1]}</h2>
-            <p style="font-size: 12px; opacity: 0.8; margin: 2px 0;">${settings.headerEnglish[2]}</p>
-          </div>
-        </div>
+        ${getHeaderHTML(settings)}
         
         <!-- Content -->
         <div style="padding: 25px;">
@@ -382,6 +437,7 @@ const getSummaryReportHTML = (data: SummaryPDFData): string => {
 
 export async function generateReportPDF(data: ReportPDFData): Promise<Blob> {
   const htmlContent = getReportHTML(data);
+  const headerHeight = 120; // Approximate header height in pixels
   
   // Create a hidden iframe to render the HTML
   const iframe = document.createElement('iframe');
@@ -389,7 +445,7 @@ export async function generateReportPDF(data: ReportPDFData): Promise<Blob> {
   iframe.style.left = '-9999px';
   iframe.style.top = '-9999px';
   iframe.style.width = '800px';
-  iframe.style.height = '2000px';
+  iframe.style.height = '4000px';
   document.body.appendChild(iframe);
   
   const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -404,6 +460,19 @@ export async function generateReportPDF(data: ReportPDFData): Promise<Blob> {
   
   // Wait for fonts to load
   await new Promise(resolve => setTimeout(resolve, 500));
+  
+  // Capture the header separately for repetition
+  const headerElement = iframeDoc.querySelector('.report-header');
+  let headerCanvas: HTMLCanvasElement | null = null;
+  
+  if (headerElement) {
+    headerCanvas = await html2canvas(headerElement as HTMLElement, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+    });
+  }
   
   const canvas = await html2canvas(iframeDoc.body, {
     scale: 2,
@@ -423,7 +492,10 @@ export async function generateReportPDF(data: ReportPDFData): Promise<Blob> {
   const imgHeight = canvas.height;
   const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
   const imgX = (pdfWidth - imgWidth * ratio) / 2;
-  const imgY = 0;
+  
+  // Calculate header height in PDF units
+  const headerPdfHeight = headerCanvas ? (headerCanvas.height * ratio) / 2 : 0;
+  const headerImgData = headerCanvas ? headerCanvas.toDataURL('image/png') : null;
   
   // Calculate how many pages we need
   const scaledHeight = imgHeight * ratio;
@@ -432,8 +504,18 @@ export async function generateReportPDF(data: ReportPDFData): Promise<Blob> {
   for (let i = 0; i < pageCount; i++) {
     if (i > 0) {
       pdf.addPage();
+      
+      // Add header to subsequent pages
+      if (headerImgData && headerCanvas) {
+        const headerWidth = headerCanvas.width * ratio / 2;
+        const hdrX = (pdfWidth - headerWidth) / 2;
+        pdf.addImage(headerImgData, 'PNG', hdrX, 5, headerWidth, headerPdfHeight);
+      }
     }
-    pdf.addImage(imgData, 'PNG', imgX, imgY - (i * pdfHeight), imgWidth * ratio, imgHeight * ratio);
+    
+    // Offset the main content based on page number
+    const yOffset = i === 0 ? 0 : -(i * pdfHeight) + (i > 0 ? headerPdfHeight + 10 : 0);
+    pdf.addImage(imgData, 'PNG', imgX, yOffset, imgWidth * ratio, imgHeight * ratio);
   }
   
   return pdf.output('blob');
@@ -448,7 +530,7 @@ export async function generateSummaryReportPDF(data: SummaryPDFData): Promise<Bl
   iframe.style.left = '-9999px';
   iframe.style.top = '-9999px';
   iframe.style.width = '800px';
-  iframe.style.height = '3000px';
+  iframe.style.height = '4000px';
   document.body.appendChild(iframe);
   
   const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -463,6 +545,19 @@ export async function generateSummaryReportPDF(data: SummaryPDFData): Promise<Bl
   
   // Wait for fonts to load
   await new Promise(resolve => setTimeout(resolve, 500));
+  
+  // Capture the header separately for repetition
+  const headerElement = iframeDoc.querySelector('.report-header');
+  let headerCanvas: HTMLCanvasElement | null = null;
+  
+  if (headerElement) {
+    headerCanvas = await html2canvas(headerElement as HTMLElement, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+    });
+  }
   
   const canvas = await html2canvas(iframeDoc.body, {
     scale: 2,
@@ -482,7 +577,10 @@ export async function generateSummaryReportPDF(data: SummaryPDFData): Promise<Bl
   const imgHeight = canvas.height;
   const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
   const imgX = (pdfWidth - imgWidth * ratio) / 2;
-  const imgY = 0;
+  
+  // Calculate header height in PDF units
+  const headerPdfHeight = headerCanvas ? (headerCanvas.height * ratio) / 2 : 0;
+  const headerImgData = headerCanvas ? headerCanvas.toDataURL('image/png') : null;
   
   // Calculate how many pages we need
   const scaledHeight = imgHeight * ratio;
@@ -491,8 +589,18 @@ export async function generateSummaryReportPDF(data: SummaryPDFData): Promise<Bl
   for (let i = 0; i < pageCount; i++) {
     if (i > 0) {
       pdf.addPage();
+      
+      // Add header to subsequent pages
+      if (headerImgData && headerCanvas) {
+        const headerWidth = headerCanvas.width * ratio / 2;
+        const hdrX = (pdfWidth - headerWidth) / 2;
+        pdf.addImage(headerImgData, 'PNG', hdrX, 5, headerWidth, headerPdfHeight);
+      }
     }
-    pdf.addImage(imgData, 'PNG', imgX, imgY - (i * pdfHeight), imgWidth * ratio, imgHeight * ratio);
+    
+    // Offset the main content based on page number
+    const yOffset = i === 0 ? 0 : -(i * pdfHeight) + (i > 0 ? headerPdfHeight + 10 : 0);
+    pdf.addImage(imgData, 'PNG', imgX, yOffset, imgWidth * ratio, imgHeight * ratio);
   }
   
   return pdf.output('blob');
