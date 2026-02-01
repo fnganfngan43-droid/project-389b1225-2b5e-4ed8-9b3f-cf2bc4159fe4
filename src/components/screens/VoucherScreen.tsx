@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { printVoucher } from '@/utils/printService';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { parseExcelFile, mapVoucherRow } from '@/utils/excelImport';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
+import { getNextSequentialNumber } from '@/utils/sequentialNumber';
 import { 
   Select,
   SelectContent,
@@ -43,9 +44,16 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
     )
   );
 
+  // Calculate next sequential number based on existing vouchers of same type
+  const nextVoucherNumber = useMemo(() => {
+    const typeVouchers = vouchers.filter(v => v.type === type);
+    const existingNumbers = typeVouchers.map(v => v.voucherNumber);
+    return getNextSequentialNumber(existingNumbers);
+  }, [vouchers, type]);
+
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
-    voucherNumber: String(filteredVouchers.length + 1).padStart(4, '0'),
+    voucherNumber: nextVoucherNumber,
     // Debit side
     debitGroupName: '',
     debitAccountName: '',
@@ -170,9 +178,13 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
   };
 
   const resetForm = () => {
+    const typeVouchers = vouchers.filter(v => v.type === type);
+    const existingNumbers = typeVouchers.map(v => v.voucherNumber);
+    const newNumber = getNextSequentialNumber(existingNumbers);
+    
     setFormData({
       date: new Date().toISOString().split('T')[0],
-      voucherNumber: String(filteredVouchers.length + 2).padStart(4, '0'),
+      voucherNumber: newNumber,
       debitGroupName: '',
       debitAccountName: '',
       debitCurrency: '',
@@ -232,11 +244,15 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
       <div className="shrink-0 px-4 pt-2">
         <ActionToolbar
           onAdd={() => {
+            const typeVouchers = vouchers.filter(v => v.type === type);
+            const existingNumbers = typeVouchers.map(v => v.voucherNumber);
+            const newNumber = getNextSequentialNumber(existingNumbers);
+            
             if (selectedVoucher) {
               // Copy selected voucher data to form (duplicate functionality)
               setFormData({
                 date: new Date().toISOString().split('T')[0],
-                voucherNumber: String(filteredVouchers.length + 1).padStart(4, '0'),
+                voucherNumber: newNumber,
                 debitGroupName: selectedVoucher.debitGroupName,
                 debitAccountName: selectedVoucher.debitAccountName,
                 debitCurrency: selectedVoucher.debitCurrency,
@@ -254,7 +270,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
               // Reset form for new entry
               setFormData({
                 date: new Date().toISOString().split('T')[0],
-                voucherNumber: String(filteredVouchers.length + 1).padStart(4, '0'),
+                voucherNumber: newNumber,
                 debitGroupName: '',
                 debitAccountName: '',
                 debitCurrency: '',
