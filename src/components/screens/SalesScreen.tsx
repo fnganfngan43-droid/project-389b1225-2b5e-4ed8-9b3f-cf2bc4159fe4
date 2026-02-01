@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Invoice } from '@/types/accounting';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { parseExcelFile, mapInvoiceRow } from '@/utils/excelImport';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
+import { getNextSequentialNumber } from '@/utils/sequentialNumber';
 import { 
   Select,
   SelectContent,
@@ -36,9 +37,16 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
     )
   );
 
+  // Calculate next sequential number based on existing invoices of same type
+  const nextInvoiceNumber = useMemo(() => {
+    const typeInvoices = invoices.filter(inv => isReturn ? inv.amount < 0 : inv.amount >= 0);
+    const existingNumbers = typeInvoices.map(inv => inv.invoiceNumber);
+    return getNextSequentialNumber(existingNumbers);
+  }, [invoices, isReturn]);
+
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
-    invoiceNumber: String(filteredInvoices.length + 1).padStart(4, '0'),
+    invoiceNumber: nextInvoiceNumber,
     type: 'cash' as 'cash' | 'credit',
     groupName: '',
     accountName: '',
@@ -113,9 +121,13 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
   };
 
   const resetForm = () => {
+    const typeInvoices = invoices.filter(inv => isReturn ? inv.amount < 0 : inv.amount >= 0);
+    const existingNumbers = typeInvoices.map(inv => inv.invoiceNumber);
+    const newNumber = getNextSequentialNumber(existingNumbers);
+    
     setFormData({
       date: new Date().toISOString().split('T')[0],
-      invoiceNumber: String(filteredInvoices.length + 2).padStart(4, '0'),
+      invoiceNumber: newNumber,
       type: 'cash',
       groupName: '',
       accountName: '',
@@ -223,7 +235,24 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
     <div className="flex flex-col h-full overflow-hidden min-h-0">
       <div className="shrink-0 px-4 pt-2">
         <ActionToolbar
-          onAdd={() => setIsAdding(true)}
+          onAdd={() => {
+            const typeInvoices = invoices.filter(inv => isReturn ? inv.amount < 0 : inv.amount >= 0);
+            const existingNumbers = typeInvoices.map(inv => inv.invoiceNumber);
+            const newNumber = getNextSequentialNumber(existingNumbers);
+            
+            setFormData({
+              date: new Date().toISOString().split('T')[0],
+              invoiceNumber: newNumber,
+              type: 'cash',
+              groupName: '',
+              accountName: '',
+              amount: '',
+              currency: '',
+              reference: '',
+              description: '',
+            });
+            setIsAdding(true);
+          }}
           onEdit={selectedInvoice ? handleEdit : undefined}
           onDelete={selectedInvoice ? handleDelete : undefined}
           onImport={handleImport}

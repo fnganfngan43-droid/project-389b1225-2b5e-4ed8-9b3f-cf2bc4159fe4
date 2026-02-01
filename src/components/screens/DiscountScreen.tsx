@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +6,7 @@ import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { parseExcelFile, mapDiscountRow } from '@/utils/excelImport';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
+import { getNextSequentialNumber } from '@/utils/sequentialNumber';
 import { 
   Select,
   SelectContent,
@@ -41,9 +42,15 @@ export function DiscountScreen() {
     d.discountNumber.includes(searchTerm)
   );
 
+  // Calculate next sequential number based on existing discounts
+  const nextDiscountNumber = useMemo(() => {
+    const existingNumbers = discounts.map(d => d.discountNumber);
+    return getNextSequentialNumber(existingNumbers);
+  }, [discounts]);
+
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
-    discountNumber: String(discounts.length + 1).padStart(4, '0'),
+    discountNumber: nextDiscountNumber,
     type: 'cash' as 'cash' | 'credit',
     groupName: '',
     accountName: '',
@@ -124,9 +131,12 @@ export function DiscountScreen() {
   };
 
   const resetForm = () => {
+    const existingNumbers = discounts.map(d => d.discountNumber);
+    const newNumber = getNextSequentialNumber(existingNumbers);
+    
     setFormData({
       date: new Date().toISOString().split('T')[0],
-      discountNumber: String(discounts.length + 2).padStart(4, '0'),
+      discountNumber: newNumber,
       type: 'cash',
       groupName: '',
       accountName: '',
@@ -235,7 +245,23 @@ export function DiscountScreen() {
     <div className="flex flex-col h-full overflow-hidden min-h-0">
       <div className="shrink-0 px-4 pt-2">
         <ActionToolbar
-          onAdd={() => setIsAdding(true)}
+          onAdd={() => {
+            const existingNumbers = discounts.map(d => d.discountNumber);
+            const newNumber = getNextSequentialNumber(existingNumbers);
+            
+            setFormData({
+              date: new Date().toISOString().split('T')[0],
+              discountNumber: newNumber,
+              type: 'cash',
+              groupName: '',
+              accountName: '',
+              amount: '',
+              currency: '',
+              reference: '',
+              description: '',
+            });
+            setIsAdding(true);
+          }}
           onEdit={selectedDiscount ? handleEdit : undefined}
           onDelete={selectedDiscount ? handleDelete : undefined}
           onImport={handleImport}
