@@ -1,13 +1,5 @@
 import { ReactNode } from 'react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 
 interface Column<T> {
   key: string;
@@ -49,45 +41,52 @@ export function ScrollableTable<T>({
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden border rounded-lg">
-      {/* Fixed Table Header */}
-      <div className="shrink-0 overflow-hidden bg-muted">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted">
-              {columns.map((col) => (
-                <TableHead key={col.key} className={`whitespace-nowrap text-right bg-muted ${col.className || ''}`}>
-                  {col.header}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-        </Table>
-      </div>
-      
-      {/* Scrollable Table Body - Both vertical and horizontal */}
+      {/* Scrollable container - both header and body scroll horizontally together */}
       <ScrollArea className="flex-1">
         <div className="min-w-max">
-          <Table>
-            <TableBody>
+          {/* Sticky Header */}
+          <div className="sticky top-0 z-10 bg-muted">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b">
+                  {columns.map((col) => (
+                    <th 
+                      key={col.key} 
+                      className={`h-12 px-4 text-right align-middle font-medium text-muted-foreground whitespace-nowrap bg-muted ${col.className || ''}`}
+                    >
+                      {col.header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+            </table>
+          </div>
+          
+          {/* Table Body */}
+          <table className="w-full border-collapse">
+            <tbody>
               {data.map((item, index) => (
-                <TableRow
+                <tr
                   key={getItemId(item)}
                   onClick={() => onRowClick?.(item)}
-                  className={`cursor-pointer transition-colors ${
+                  className={`border-b cursor-pointer transition-colors ${
                     selectedId === getItemId(item)
                       ? 'bg-primary/10 border-primary'
                       : 'hover:bg-muted/50'
                   }`}
                 >
                   {columns.map((col) => (
-                    <TableCell key={col.key} className={`whitespace-nowrap ${col.className || ''}`}>
+                    <td 
+                      key={col.key} 
+                      className={`p-4 align-middle whitespace-nowrap ${col.className || ''}`}
+                    >
                       {col.render(item, index)}
-                    </TableCell>
+                    </td>
                   ))}
-                </TableRow>
+                </tr>
               ))}
-            </TableBody>
-          </Table>
+            </tbody>
+          </table>
         </div>
         <ScrollBar orientation="horizontal" />
         <ScrollBar orientation="vertical" />
