@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 
 type ReportType = 'analytical' | 'summary';
 type OperationType = 'all' | 'opening' | 'receipt' | 'payment' | 'invoices' | 'returns' | 'discount' | 'exchange';
+type AmountFilterType = 'all' | 'less' | 'greater' | 'equal';
 
 // Convert number to Arabic words
 const numberToArabicWords = (num: number): string => {
@@ -121,6 +122,10 @@ export function ReportsScreen() {
   const [showReport, setShowReport] = useState(false);
   const [dateFrom, setDateFrom] = useState(getFirstDayOfYear());
   const [dateTo, setDateTo] = useState(getToday());
+  
+  // Amount filter for summary report
+  const [amountFilterType, setAmountFilterType] = useState<AmountFilterType>('all');
+  const [amountFilterValue, setAmountFilterValue] = useState<string>('');
 
   const filteredAccounts = accounts.filter(a => !selectedGroup || a.groupName === selectedGroup);
   const groupAccounts = accounts.filter(a => a.groupName === selectedGroup);
@@ -355,6 +360,23 @@ export function ReportsScreen() {
   };
 
   // Get summary data for all accounts in a group
+  // Apply amount filter to a balance value
+  const matchesAmountFilter = (balance: number): boolean => {
+    if (amountFilterType === 'all') return true;
+    const filterValue = parseFloat(amountFilterValue) || 0;
+    const absBalance = Math.abs(balance);
+    switch (amountFilterType) {
+      case 'less':
+        return absBalance < filterValue;
+      case 'greater':
+        return absBalance > filterValue;
+      case 'equal':
+        return absBalance === filterValue;
+      default:
+        return true;
+    }
+  };
+
   const getSummaryData = () => {
     const currenciesToShow = selectedCurrency === 'all' 
       ? currencies.map(c => c.symbol) 
@@ -374,7 +396,7 @@ export function ReportsScreen() {
           totalCredit,
           balance,
         };
-      }).filter(acc => acc.totalDebit > 0 || acc.totalCredit > 0 || acc.balance !== 0);
+      }).filter(acc => (acc.totalDebit > 0 || acc.totalCredit > 0 || acc.balance !== 0) && matchesAmountFilter(acc.balance));
 
       return {
         currency,
@@ -1004,6 +1026,42 @@ export function ReportsScreen() {
               </div>
             )}
           </div>
+
+          {/* Amount filter - only for summary report */}
+          {reportType === 'summary' && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm text-muted-foreground mb-1 block">فلترة المبلغ</label>
+                <Select 
+                  value={amountFilterType} 
+                  onValueChange={(val) => setAmountFilterType(val as AmountFilterType)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">الكل</SelectItem>
+                    <SelectItem value="less">&lt; أقل من</SelectItem>
+                    <SelectItem value="greater">&gt; أكبر من</SelectItem>
+                    <SelectItem value="equal">= يساوي</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {amountFilterType !== 'all' && (
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1 block">المبلغ</label>
+                  <Input
+                    type="number"
+                    value={amountFilterValue}
+                    onChange={(e) => setAmountFilterValue(e.target.value)}
+                    placeholder="أدخل المبلغ"
+                    className="text-left"
+                    dir="ltr"
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           <Button onClick={generateReport} className="w-full" size="lg">
             <Eye className="w-4 h-4" />
