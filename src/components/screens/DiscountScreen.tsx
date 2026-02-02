@@ -7,6 +7,8 @@ import { useAccounting } from '@/contexts/AccountingContext';
 import { parseExcelFile, mapDiscountRow } from '@/utils/excelImport';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { getNextSequentialNumber } from '@/utils/sequentialNumber';
+import { AccountSearchInput } from '@/components/AccountSearchInput';
+import { DiscountEntry } from '@/types/accounting';
 import { 
   Select,
   SelectContent,
@@ -17,21 +19,8 @@ import {
 import { Save, X, Percent } from 'lucide-react';
 import { toast } from 'sonner';
 
-interface DiscountEntry {
-  id: string;
-  date: string;
-  discountNumber: string;
-  accountName: string;
-  amount: number;
-  currency: string;
-  type: 'cash' | 'credit';
-  reference?: string;
-  description: string;
-}
-
 export function DiscountScreen() {
-  const { accounts, groups, currencies } = useAccounting();
-  const [discounts, setDiscounts] = useState<DiscountEntry[]>([]);
+  const { accounts, groups, currencies, discounts, addDiscount, updateDiscount, deleteDiscount } = useAccounting();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedDiscount, setSelectedDiscount] = useState<DiscountEntry | null>(null);
@@ -69,35 +58,30 @@ export function DiscountScreen() {
     }
 
     if (editingDiscount) {
-      setDiscounts(prev => prev.map(d => 
-        d.id === editingDiscount.id 
-          ? {
-              ...d,
-              date: formData.date,
-              discountNumber: formData.discountNumber,
-              accountName: formData.accountName,
-              amount: parseFloat(formData.amount),
-              currency: formData.currency,
-              type: formData.type,
-              reference: formData.reference,
-              description: formData.description || 'خصم',
-            }
-          : d
-      ));
-      toast.success('تم تحديث الخصم بنجاح');
-    } else {
-      const newDiscount: DiscountEntry = {
-        id: Math.random().toString(36).substr(2, 9),
+      updateDiscount(editingDiscount.id, {
         date: formData.date,
         discountNumber: formData.discountNumber,
         accountName: formData.accountName,
+        groupName: formData.groupName,
         amount: parseFloat(formData.amount),
         currency: formData.currency,
         type: formData.type,
         reference: formData.reference,
         description: formData.description || 'خصم',
-      };
-      setDiscounts(prev => [...prev, newDiscount]);
+      });
+      toast.success('تم تحديث الخصم بنجاح');
+    } else {
+      addDiscount({
+        date: formData.date,
+        discountNumber: formData.discountNumber,
+        accountName: formData.accountName,
+        groupName: formData.groupName,
+        amount: parseFloat(formData.amount),
+        currency: formData.currency,
+        type: formData.type,
+        reference: formData.reference,
+        description: formData.description || 'خصم',
+      });
       toast.success('تم حفظ الخصم بنجاح');
     }
     resetForm();
@@ -124,7 +108,7 @@ export function DiscountScreen() {
 
   const handleDelete = () => {
     if (selectedDiscount) {
-      setDiscounts(prev => prev.filter(d => d.id !== selectedDiscount.id));
+      deleteDiscount(selectedDiscount.id);
       setSelectedDiscount(null);
       toast.success('تم حذف الخصم بنجاح');
     }
@@ -157,18 +141,17 @@ export function DiscountScreen() {
       for (const row of rows) {
         const mapped = mapDiscountRow(row);
         if (mapped && mapped.accountName) {
-          const newDiscount: DiscountEntry = {
-            id: Math.random().toString(36).substr(2, 9),
+          addDiscount({
             date: mapped.date,
             discountNumber: mapped.discountNumber || String(discounts.length + successCount + 1).padStart(4, '0'),
             accountName: mapped.accountName,
+            groupName: mapped.groupName || '',
             amount: mapped.amount,
             currency: mapped.currency,
             type: mapped.type,
             reference: mapped.reference,
             description: mapped.description || 'خصم',
-          };
-          setDiscounts(prev => [...prev, newDiscount]);
+          });
           successCount++;
         }
       }
@@ -360,21 +343,13 @@ export function DiscountScreen() {
               </div>
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-                <Select 
-                  value={formData.accountName} 
-                  onValueChange={(val) => setFormData(prev => ({ ...prev, accountName: val }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر الحساب" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredAccounts.map(acc => (
-                      <SelectItem key={acc.id} value={acc.accountName}>
-                        {acc.accountName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <AccountSearchInput
+                  accounts={filteredAccounts}
+                  value={formData.accountName}
+                  onSelect={(val) => setFormData(prev => ({ ...prev, accountName: val }))}
+                  placeholder="ابحث عن الحساب..."
+                  disabled={!formData.groupName}
+                />
               </div>
             </div>
 

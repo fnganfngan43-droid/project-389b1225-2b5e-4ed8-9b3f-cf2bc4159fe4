@@ -94,6 +94,19 @@ export interface Invoice {
   description: string;
 }
 
+export interface DiscountEntry {
+  id: string;
+  date: string;
+  discountNumber: string;
+  accountName: string;
+  groupName: string;
+  amount: number;
+  currency: string;
+  type: 'cash' | 'credit';
+  reference?: string;
+  description: string;
+}
+
 export interface Settings {
   userName: string;
   headerArabic: string[];
