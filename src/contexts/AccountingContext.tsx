@@ -8,7 +8,8 @@ import {
   OpeningBalance,
   Invoice,
   Settings,
-  CurrencyExchange 
+  CurrencyExchange,
+  DiscountEntry
 } from '@/types/accounting';
 
 interface AccountingContextType {
@@ -66,6 +67,12 @@ interface AccountingContextType {
   addCurrencyExchange: (exchange: Omit<CurrencyExchange, 'id'>) => void;
   updateCurrencyExchange: (id: string, exchange: Partial<CurrencyExchange>) => void;
   deleteCurrencyExchange: (id: string) => void;
+
+  // Discounts
+  discounts: DiscountEntry[];
+  addDiscount: (discount: Omit<DiscountEntry, 'id'>) => void;
+  updateDiscount: (id: string, discount: Partial<DiscountEntry>) => void;
+  deleteDiscount: (id: string) => void;
 }
 
 const AccountingContext = createContext<AccountingContextType | undefined>(undefined);
@@ -145,6 +152,7 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
   const [openingBalances, setOpeningBalances] = useState<OpeningBalance[]>(storedData?.openingBalances ?? []);
   const [invoices, setInvoices] = useState<Invoice[]>(storedData?.invoices ?? []);
   const [currencyExchanges, setCurrencyExchanges] = useState<CurrencyExchange[]>(storedData?.currencyExchanges ?? []);
+  const [discounts, setDiscounts] = useState<DiscountEntry[]>(storedData?.discounts ?? []);
 
   // Save to localStorage whenever data changes
   React.useEffect(() => {
@@ -159,8 +167,9 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
       openingBalances,
       invoices,
       currencyExchanges,
+      discounts,
     });
-  }, [isLoggedIn, settings, accounts, groups, currencies, governorates, vouchers, openingBalances, invoices, currencyExchanges]);
+  }, [isLoggedIn, settings, accounts, groups, currencies, governorates, vouchers, openingBalances, invoices, currencyExchanges, discounts]);
 
   const value: AccountingContextType = {
     settings,
@@ -208,6 +217,11 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
     addCurrencyExchange: (exchange) => setCurrencyExchanges(prev => [...prev, { ...exchange, id: generateId() }]),
     updateCurrencyExchange: (id, exchange) => setCurrencyExchanges(prev => prev.map(e => e.id === id ? { ...e, ...exchange } : e)),
     deleteCurrencyExchange: (id) => setCurrencyExchanges(prev => prev.filter(e => e.id !== id)),
+
+    discounts,
+    addDiscount: (discount) => setDiscounts(prev => [...prev, { ...discount, id: generateId() }]),
+    updateDiscount: (id, discount) => setDiscounts(prev => prev.map(d => d.id === id ? { ...d, ...discount } : d)),
+    deleteDiscount: (id) => setDiscounts(prev => prev.filter(d => d.id !== id)),
   };
 
   return (
