@@ -19,6 +19,10 @@ interface AccountingContextType {
   isLoggedIn: boolean;
   login: () => void;
   logout: () => void;
+  
+  // Password
+  password: string | null;
+  setPassword: (password: string | null) => void;
 
   // Accounts
   accounts: Account[];
@@ -138,6 +142,7 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
   const storedData = loadFromStorage();
   
   const [isLoggedIn, setIsLoggedIn] = useState(storedData?.isLoggedIn ?? false);
+  const [password, setPasswordState] = useState<string | null>(storedData?.password ?? null);
   const [settings, setSettings] = useState<Settings>(storedData?.settings ?? {
     userName: 'المستخدم',
     headerArabic: ['رفيق المحاسب', 'برنامج محاسبي متكامل', 'إدارة الحسابات بسهولة'],
@@ -158,6 +163,7 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
   React.useEffect(() => {
     saveToStorage({
       isLoggedIn,
+      password,
       settings,
       accounts,
       groups,
@@ -169,7 +175,7 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
       currencyExchanges,
       discounts,
     });
-  }, [isLoggedIn, settings, accounts, groups, currencies, governorates, vouchers, openingBalances, invoices, currencyExchanges, discounts]);
+  }, [isLoggedIn, password, settings, accounts, groups, currencies, governorates, vouchers, openingBalances, invoices, currencyExchanges, discounts]);
 
   const value: AccountingContextType = {
     settings,
@@ -177,6 +183,9 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
     isLoggedIn,
     login: () => setIsLoggedIn(true),
     logout: () => setIsLoggedIn(false),
+    
+    password,
+    setPassword: setPasswordState,
 
     accounts,
     addAccount: (account) => setAccounts(prev => [...prev, { ...account, id: generateId() }]),
