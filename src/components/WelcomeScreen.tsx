@@ -1,9 +1,40 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useAccounting } from '@/contexts/AccountingContext';
-import { Calculator, LogIn, LogOut, User } from 'lucide-react';
+import { Calculator, LogIn, LogOut, User, Eye, EyeOff, Lock } from 'lucide-react';
+import { toast } from 'sonner';
 
 export function WelcomeScreen() {
-  const { settings, isLoggedIn, login, logout } = useAccounting();
+  const { settings, isLoggedIn, login, logout, password } = useAccounting();
+  const [showPasswordInput, setShowPasswordInput] = useState(false);
+  const [enteredPassword, setEnteredPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleLoginClick = () => {
+    if (password) {
+      // Password is set, show password input
+      setShowPasswordInput(true);
+    } else {
+      // No password, login directly
+      login();
+    }
+  };
+
+  const handlePasswordSubmit = () => {
+    if (enteredPassword === password) {
+      login();
+      setShowPasswordInput(false);
+      setEnteredPassword('');
+    } else {
+      toast.error('كلمة المرور غير صحيحة');
+    }
+  };
+
+  const handleCancelPassword = () => {
+    setShowPasswordInput(false);
+    setEnteredPassword('');
+  };
 
   return (
     <div className="min-h-screen gradient-primary flex flex-col items-center justify-center p-6 relative overflow-hidden">
@@ -49,15 +80,62 @@ export function WelcomeScreen() {
       {/* Action buttons */}
       <div className="mt-8 flex flex-col gap-4 w-full max-w-sm animate-slide-up animation-delay-300">
         {!isLoggedIn ? (
-          <Button
-            onClick={login}
-            size="xl"
-            variant="accent"
-            className="w-full"
-          >
-            <LogIn className="w-5 h-5" />
-            الدخول
-          </Button>
+          <>
+            {!showPasswordInput ? (
+              <Button
+                onClick={handleLoginClick}
+                size="xl"
+                variant="accent"
+                className="w-full"
+              >
+                <LogIn className="w-5 h-5" />
+                الدخول
+                {password && <Lock className="w-4 h-4 mr-2" />}
+              </Button>
+            ) : (
+              <div className="space-y-4 animate-slide-up">
+                <div className="p-4 bg-card/10 backdrop-blur-sm rounded-xl border border-primary-foreground/20">
+                  <label className="text-primary-foreground text-sm mb-2 block">أدخل كلمة المرور</label>
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      value={enteredPassword}
+                      onChange={(e) => setEnteredPassword(e.target.value)}
+                      placeholder="كلمة المرور"
+                      className="bg-background/80 pl-10"
+                      onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handlePasswordSubmit}
+                    size="lg"
+                    variant="accent"
+                    className="flex-1"
+                  >
+                    <LogIn className="w-5 h-5" />
+                    دخول
+                  </Button>
+                  <Button
+                    onClick={handleCancelPassword}
+                    size="lg"
+                    variant="outline"
+                    className="flex-1 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
+                  >
+                    إلغاء
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           <Button
             onClick={logout}

@@ -127,4 +127,5 @@ export type ScreenType =
   | 'currency-exchange'
   | 'currency-management'
   | 'governorate-management'
-  | 'group-management';
+  | 'group-management'
+  | 'password-settings';

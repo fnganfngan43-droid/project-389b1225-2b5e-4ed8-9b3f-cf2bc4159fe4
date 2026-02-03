@@ -12,7 +12,8 @@ import {
   ArrowLeftRight,
   Coins,
   MapPin,
-  FolderTree
+  FolderTree,
+  Lock
 } from 'lucide-react';
 
 interface NavigationBarProps {
@@ -33,6 +34,7 @@ const navItems: { id: ScreenType; label: string; icon: React.ElementType }[] = [
   { id: 'currency-management', label: 'إدارة العملات', icon: Coins },
   { id: 'governorate-management', label: 'إدارة المحافظات', icon: MapPin },
   { id: 'group-management', label: 'إدارة المجموعات', icon: FolderTree },
+  { id: 'password-settings', label: 'كلمة المرور', icon: Lock },
 ];
 
 export function NavigationBar({ activeScreen, onScreenChange }: NavigationBarProps) {
