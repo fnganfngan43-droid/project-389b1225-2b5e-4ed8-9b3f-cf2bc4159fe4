@@ -27,7 +27,7 @@ export function WelcomeScreen() {
       setShowPasswordInput(false);
       setEnteredPassword('');
     } else {
-      toast.error('كلمة المرور غير صحيحة');
+      toast.error('عذراً، كلمة المرور خاطئة');
     }
   };
 
