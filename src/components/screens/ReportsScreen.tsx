@@ -1339,9 +1339,10 @@ export function ReportsScreen() {
               </CardHeader>
               <CardContent className="p-0">
                 {/* Table header */}
-                <div className="grid grid-cols-5 gap-1 p-3 bg-secondary text-secondary-foreground text-xs font-semibold border border-black">
+                <div className="grid grid-cols-6 gap-1 p-3 bg-secondary text-secondary-foreground text-xs font-semibold border border-black">
                   <div className="border-l border-black pl-1">رقم الحساب</div>
                   <div className="border-l border-black pl-1">اسم الحساب</div>
+                  <div className="border-l border-black pl-1">العملة</div>
                   <div className="border-l border-black pl-1 text-left">مدين</div>
                   <div className="border-l border-black pl-1 text-left">دائن</div>
                   <div className="text-left">الرصيد</div>
@@ -1357,10 +1358,11 @@ export function ReportsScreen() {
                   currencyData.accounts.map((acc, index) => (
                     <div 
                       key={index}
-                      className="grid grid-cols-5 gap-1 p-3 text-xs border-x border-b border-black hover:bg-secondary/30 transition-colors"
+                      className="grid grid-cols-6 gap-1 p-3 text-xs border-x border-b border-black hover:bg-secondary/30 transition-colors"
                     >
                       <div className="border-l border-black pl-1 text-muted-foreground">{acc.accountNumber}</div>
                       <div className="border-l border-black pl-1 font-medium">{acc.accountName}</div>
+                      <div className="border-l border-black pl-1 text-center font-medium">{currencyData.currency}</div>
                       <div className="border-l border-black pl-1 text-left text-success font-medium">
                         {acc.totalDebit > 0 ? acc.totalDebit.toLocaleString() : '-'}
                       </div>
@@ -1376,8 +1378,8 @@ export function ReportsScreen() {
 
                 {/* Summary footer */}
                 {currencyData.accounts.length > 0 && (
-                  <div className="grid grid-cols-5 gap-1 p-3 bg-muted text-sm font-bold border border-black">
-                    <div className="col-span-2 border-l border-black pl-1">الإجمالي</div>
+                  <div className="grid grid-cols-6 gap-1 p-3 bg-muted text-sm font-bold border border-black">
+                    <div className="col-span-3 border-l border-black pl-1">الإجمالي</div>
                     <div className="border-l border-black pl-1 text-left text-success">
                       {currencyData.totalDebit.toLocaleString()}
                     </div>
