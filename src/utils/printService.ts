@@ -613,61 +613,47 @@ export function printReport({ title, accountName, currency, transactions, settin
 }
 
 export function printSummaryReport({ title, groupName, dateFrom, dateTo, currencyData, settings }: PrintSummaryReportData) {
-  const currencyTables = currencyData.map(cd => {
+  // Build all account rows across all currencies for the table
+  const allAccountRows: string[] = [];
+  
+  currencyData.forEach(cd => {
+    cd.accounts.forEach(acc => {
+      allAccountRows.push(`
+        <tr>
+          <td>${acc.accountNumber}</td>
+          <td style="text-align: right;">${acc.accountName}</td>
+          <td style="text-align: center;">${cd.currency}</td>
+          <td class="debit">${acc.totalDebit > 0 ? acc.totalDebit.toLocaleString() : '-'}</td>
+          <td class="credit">${acc.totalCredit > 0 ? acc.totalCredit.toLocaleString() : '-'}</td>
+          <td class="${acc.balance >= 0 ? 'balance-positive' : 'balance-negative'}">${acc.balance.toLocaleString()}</td>
+        </tr>
+      `);
+    });
+  });
+
+  // Build totals and balance summary for each currency
+  const currencySummaries = currencyData.map(cd => {
     const isDebit = cd.totalBalance >= 0;
     const balanceLabel = isDebit ? 'عليكم رصيد' : 'لكم رصيد';
     const absBalance = Math.abs(cd.totalBalance);
 
-    const accountRows = cd.accounts.map(acc => `
-      <tr>
-        <td>${acc.accountNumber}</td>
-        <td style="text-align: right;">${acc.accountName}</td>
-        <td class="debit">${acc.totalDebit > 0 ? acc.totalDebit.toLocaleString() : '-'}</td>
-        <td class="credit">${acc.totalCredit > 0 ? acc.totalCredit.toLocaleString() : '-'}</td>
-        <td class="${acc.balance >= 0 ? 'balance-positive' : 'balance-negative'}">${acc.balance.toLocaleString()}</td>
-      </tr>
-    `).join('');
-
     return `
-      <div style="margin-bottom: 30px;">
-        <h3 style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 10px 15px; border-radius: 8px; margin-bottom: 10px;">
-          العملة: ${cd.currency}
-        </h3>
-        <table class="report-table">
-          <thead>
-            <tr>
-              <th>رقم الحساب</th>
-              <th>اسم الحساب</th>
-              <th>مدين</th>
-              <th>دائن</th>
-              <th>الرصيد</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${accountRows}
-            <tr class="totals-row">
-              <td colspan="2">الإجمالي</td>
-              <td class="debit">${cd.totalDebit.toLocaleString()}</td>
-              <td class="credit">${cd.totalCredit.toLocaleString()}</td>
-              <td class="${cd.totalBalance >= 0 ? 'balance-positive' : 'balance-negative'}">${cd.totalBalance.toLocaleString()}</td>
-            </tr>
-          </tbody>
-        </table>
-        
-        <!-- Balance in numbers row -->
-        <div style="padding: 15px; background: #f0fdfa; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 10px;">
-          <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
-            ${balanceLabel}: ${absBalance.toLocaleString()} ${getCurrencyFullName(cd.currency)}
-          </span>
-        </div>
-        
-        <!-- Balance in Arabic words row -->
-        <div style="padding: 15px; background: #f8fafc; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 20px;">
-          <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
-            ${balanceLabel}: ${numberToArabicWords(absBalance)} ${getCurrencyFullName(cd.currency)}
-          </span>
-        </div>
-      </div>
+      <tr class="totals-row">
+        <td colspan="3">إجمالي ${getCurrencyFullName(cd.currency)}</td>
+        <td class="debit">${cd.totalDebit.toLocaleString()}</td>
+        <td class="credit">${cd.totalCredit.toLocaleString()}</td>
+        <td class="${cd.totalBalance >= 0 ? 'balance-positive' : 'balance-negative'}">${cd.totalBalance.toLocaleString()}</td>
+      </tr>
+      <tr>
+        <td colspan="6" style="background: #f0fdfa; text-align: center; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+          ${balanceLabel}: ${absBalance.toLocaleString()} ${getCurrencyFullName(cd.currency)}
+        </td>
+      </tr>
+      <tr>
+        <td colspan="6" style="background: #f8fafc; text-align: center; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+          ${balanceLabel}: ${numberToArabicWords(absBalance)} ${getCurrencyFullName(cd.currency)}
+        </td>
+      </tr>
     `;
   }).join('');
 
@@ -679,12 +665,126 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>${title} - ${groupName}</title>
       <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-      <style>${getCommonStyles()}</style>
+      <style>
+        ${getCommonStyles()}
+        
+        /* Multi-page print styles */
+        @media print {
+          body { 
+            padding: 0; 
+            margin: 0;
+          }
+          .page-border { 
+            border: none; 
+            box-shadow: none;
+            padding: 0;
+            background: none;
+          }
+          .print-container { 
+            border: none;
+            box-shadow: none;
+          }
+          
+          /* Page setup */
+          @page { 
+            size: A4;
+            margin: 10mm;
+          }
+          
+          /* Repeat header on every page */
+          thead { display: table-header-group; }
+          tfoot { display: table-footer-group; }
+          
+          /* Page border decoration */
+          .print-page {
+            border: 3px solid #0d9488;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            page-break-inside: avoid;
+          }
+          
+          /* Avoid breaking inside rows */
+          tr { page-break-inside: avoid; }
+          
+          /* Page number footer */
+          .page-footer {
+            position: fixed;
+            bottom: 5mm;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+          }
+        }
+        
+        /* Screen styles for page numbers */
+        .page-number-container {
+          display: none;
+        }
+        
+        @media print {
+          .page-number-container {
+            display: block;
+            position: running(pageNumber);
+          }
+        }
+        
+        /* Report table with repeated header */
+        .report-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 15px 0;
+        }
+        .report-table th {
+          background: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
+          color: white;
+          padding: 10px 6px;
+          font-size: 12px;
+          text-align: center;
+          border: 1px solid #0d9488;
+        }
+        .report-table td {
+          padding: 8px 6px;
+          border: 1px solid #ddd;
+          font-size: 11px;
+          text-align: center;
+        }
+        .report-table tr:nth-child(even) {
+          background: #f9fafb;
+        }
+        .report-table .debit {
+          color: #16a34a;
+          font-weight: bold;
+        }
+        .report-table .credit {
+          color: #dc2626;
+          font-weight: bold;
+        }
+        .report-table .balance-positive {
+          color: #16a34a;
+          font-weight: bold;
+        }
+        .report-table .balance-negative {
+          color: #dc2626;
+          font-weight: bold;
+        }
+        .totals-row {
+          background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%) !important;
+          font-weight: bold;
+          font-size: 12px !important;
+        }
+        .totals-row td {
+          border-top: 2px solid #0d9488 !important;
+        }
+      </style>
     </head>
     <body>
       <div class="page-border">
       <div class="print-container">
-        <div class="header">
+        <!-- Main header section that repeats -->
+        <div class="header report-header">
           <div class="header-right">
             <h1>${settings.headerArabic[0]}</h1>
             <h2>${settings.headerArabic[1]}</h2>
@@ -713,7 +813,24 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
             <span class="info-value">من ${dateFrom} إلى ${dateTo}</span>
           </div>
           
-          ${currencyData.length > 0 ? currencyTables : `
+          ${currencyData.length > 0 ? `
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>رقم الحساب</th>
+                <th>اسم الحساب</th>
+                <th>العملة</th>
+                <th>مدين</th>
+                <th>دائن</th>
+                <th>الرصيد</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${allAccountRows.join('')}
+              ${currencySummaries}
+            </tbody>
+          </table>
+          ` : `
           <div style="text-align: center; padding: 40px; color: #666;">
             لا توجد حسابات لهذه المجموعة
           </div>
@@ -734,6 +851,17 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
         </div>
       </div>
       </div>
+      
+      <script>
+        // Add page numbers dynamically before printing
+        window.onbeforeprint = function() {
+          // The browser will handle page breaks and thead repetition automatically
+        };
+        
+        window.onafterprint = function() {
+          // Clean up if needed
+        };
+      </script>
     </body>
     </html>
   `;
@@ -742,13 +870,62 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
 }
 
 function openPrintWindow(content: string) {
-  const printWindow = window.open('', '_blank', 'width=800,height=600');
+  const printWindow = window.open('', '_blank', 'width=900,height=700');
   if (printWindow) {
     printWindow.document.write(content);
     printWindow.document.close();
     printWindow.focus();
+    
+    // Wait for content to load then add page numbers and print
     setTimeout(() => {
+      // Inject page numbering CSS that works across browsers
+      const style = printWindow.document.createElement('style');
+      style.textContent = `
+        @media print {
+          @page {
+            size: A4;
+            margin: 12mm 10mm 20mm 10mm;
+            
+            @bottom-center {
+              content: counter(page) " / " counter(pages);
+              font-family: 'Tajawal', Arial, sans-serif;
+              font-size: 11px;
+              color: #666;
+            }
+          }
+          
+          /* Page border for each printed page */
+          html {
+            height: 100%;
+          }
+          
+          body {
+            border: 3px solid #0d9488;
+            border-radius: 8px;
+            padding: 10px;
+            min-height: calc(100% - 6px);
+            box-sizing: border-box;
+          }
+          
+          /* Ensure tables don't break awkwardly */
+          tr {
+            page-break-inside: avoid;
+          }
+          
+          /* thead repeats on each page */
+          thead {
+            display: table-header-group;
+          }
+          
+          /* Remove empty pages */
+          .print-container {
+            page-break-after: auto;
+          }
+        }
+      `;
+      printWindow.document.head.appendChild(style);
+      
       printWindow.print();
-    }, 500);
+    }, 600);
   }
 }
