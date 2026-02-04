@@ -437,7 +437,6 @@ const getSummaryReportHTML = (data: SummaryPDFData): string => {
 
 export async function generateReportPDF(data: ReportPDFData): Promise<Blob> {
   const htmlContent = getReportHTML(data);
-  const headerHeight = 120; // Approximate header height in pixels
   
   // Create a hidden iframe to render the HTML
   const iframe = document.createElement('iframe');
@@ -445,7 +444,7 @@ export async function generateReportPDF(data: ReportPDFData): Promise<Blob> {
   iframe.style.left = '-9999px';
   iframe.style.top = '-9999px';
   iframe.style.width = '800px';
-  iframe.style.height = '4000px';
+  iframe.style.height = '10000px';
   document.body.appendChild(iframe);
   
   const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -474,7 +473,8 @@ export async function generateReportPDF(data: ReportPDFData): Promise<Blob> {
     });
   }
   
-  const canvas = await html2canvas(iframeDoc.body, {
+  const contentElement = iframeDoc.body;
+  const canvas = await html2canvas(contentElement, {
     scale: 2,
     useCORS: true,
     allowTaint: true,
@@ -483,39 +483,110 @@ export async function generateReportPDF(data: ReportPDFData): Promise<Blob> {
   
   document.body.removeChild(iframe);
   
-  const imgData = canvas.toDataURL('image/png');
   const pdf = new jsPDF('p', 'mm', 'a4');
   
   const pdfWidth = pdf.internal.pageSize.getWidth();
   const pdfHeight = pdf.internal.pageSize.getHeight();
+  const margin = 10; // Page margin
+  const borderRadius = 3;
+  const usableWidth = pdfWidth - (margin * 2);
+  const usableHeight = pdfHeight - (margin * 2);
+  
   const imgWidth = canvas.width;
   const imgHeight = canvas.height;
-  const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-  const imgX = (pdfWidth - imgWidth * ratio) / 2;
+  const ratio = usableWidth / (imgWidth / 2); // Scale to fit usable width
   
   // Calculate header height in PDF units
   const headerPdfHeight = headerCanvas ? (headerCanvas.height * ratio) / 2 : 0;
   const headerImgData = headerCanvas ? headerCanvas.toDataURL('image/png') : null;
   
-  // Calculate how many pages we need
-  const scaledHeight = imgHeight * ratio;
-  const pageCount = Math.ceil(scaledHeight / pdfHeight);
+  const imgData = canvas.toDataURL('image/png');
+  
+  // Calculate content height per page (excluding header on subsequent pages)
+  const firstPageContentHeight = usableHeight;
+  const subsequentPageContentHeight = usableHeight - headerPdfHeight - 5;
+  
+  // Calculate total scaled height of content
+  const totalScaledHeight = (imgHeight * ratio) / 2;
+  
+  // Calculate number of pages needed
+  let remainingHeight = totalScaledHeight;
+  let pageCount = 1;
+  remainingHeight -= firstPageContentHeight;
+  while (remainingHeight > 0) {
+    pageCount++;
+    remainingHeight -= subsequentPageContentHeight;
+  }
+  
+  // Draw page border function
+  const drawPageBorder = (pdfDoc: jsPDF) => {
+    pdfDoc.setDrawColor(13, 148, 136); // Teal color
+    pdfDoc.setLineWidth(0.8);
+    pdfDoc.roundedRect(margin, margin, usableWidth, usableHeight, borderRadius, borderRadius);
+  };
+  
+  // Generate each page
+  let currentYOffset = 0;
   
   for (let i = 0; i < pageCount; i++) {
     if (i > 0) {
       pdf.addPage();
-      
-      // Add header to subsequent pages
-      if (headerImgData && headerCanvas) {
-        const headerWidth = headerCanvas.width * ratio / 2;
-        const hdrX = (pdfWidth - headerWidth) / 2;
-        pdf.addImage(headerImgData, 'PNG', hdrX, 5, headerWidth, headerPdfHeight);
-      }
     }
     
-    // Offset the main content based on page number
-    const yOffset = i === 0 ? 0 : -(i * pdfHeight) + (i > 0 ? headerPdfHeight + 10 : 0);
-    pdf.addImage(imgData, 'PNG', imgX, yOffset, imgWidth * ratio, imgHeight * ratio);
+    // Draw page border
+    drawPageBorder(pdf);
+    
+    const contentStartY = margin + 2;
+    
+    if (i === 0) {
+      // First page - show content from the beginning
+      pdf.addImage(
+        imgData, 
+        'PNG', 
+        margin + 2, 
+        contentStartY, 
+        usableWidth - 4, 
+        (imgHeight * ratio) / 2
+      );
+      currentYOffset = firstPageContentHeight;
+    } else {
+      // Subsequent pages - add header first, then content
+      if (headerImgData && headerCanvas) {
+        const headerWidth = usableWidth - 4;
+        pdf.addImage(headerImgData, 'PNG', margin + 2, contentStartY, headerWidth, headerPdfHeight);
+      }
+      
+      // Calculate where to clip from the source image
+      const sourceYStart = currentYOffset * 2 / ratio;
+      
+      // Create a temporary canvas to clip the portion we need
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+      if (tempCtx) {
+        const clipHeight = Math.min(subsequentPageContentHeight * 2 / ratio, imgHeight - sourceYStart);
+        tempCanvas.width = imgWidth;
+        tempCanvas.height = clipHeight;
+        tempCtx.drawImage(
+          canvas, 
+          0, sourceYStart, imgWidth, clipHeight,
+          0, 0, imgWidth, clipHeight
+        );
+        
+        const clippedImgData = tempCanvas.toDataURL('image/png');
+        const clippedHeight = (clipHeight * ratio) / 2;
+        
+        pdf.addImage(
+          clippedImgData, 
+          'PNG', 
+          margin + 2, 
+          contentStartY + headerPdfHeight + 3, 
+          usableWidth - 4, 
+          clippedHeight
+        );
+      }
+      
+      currentYOffset += subsequentPageContentHeight;
+    }
   }
   
   return pdf.output('blob');
@@ -530,7 +601,7 @@ export async function generateSummaryReportPDF(data: SummaryPDFData): Promise<Bl
   iframe.style.left = '-9999px';
   iframe.style.top = '-9999px';
   iframe.style.width = '800px';
-  iframe.style.height = '4000px';
+  iframe.style.height = '10000px';
   document.body.appendChild(iframe);
   
   const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -559,7 +630,8 @@ export async function generateSummaryReportPDF(data: SummaryPDFData): Promise<Bl
     });
   }
   
-  const canvas = await html2canvas(iframeDoc.body, {
+  const contentElement = iframeDoc.body;
+  const canvas = await html2canvas(contentElement, {
     scale: 2,
     useCORS: true,
     allowTaint: true,
@@ -568,39 +640,110 @@ export async function generateSummaryReportPDF(data: SummaryPDFData): Promise<Bl
   
   document.body.removeChild(iframe);
   
-  const imgData = canvas.toDataURL('image/png');
   const pdf = new jsPDF('p', 'mm', 'a4');
   
   const pdfWidth = pdf.internal.pageSize.getWidth();
   const pdfHeight = pdf.internal.pageSize.getHeight();
+  const margin = 10; // Page margin
+  const borderRadius = 3;
+  const usableWidth = pdfWidth - (margin * 2);
+  const usableHeight = pdfHeight - (margin * 2);
+  
   const imgWidth = canvas.width;
   const imgHeight = canvas.height;
-  const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-  const imgX = (pdfWidth - imgWidth * ratio) / 2;
+  const ratio = usableWidth / (imgWidth / 2); // Scale to fit usable width
   
   // Calculate header height in PDF units
   const headerPdfHeight = headerCanvas ? (headerCanvas.height * ratio) / 2 : 0;
   const headerImgData = headerCanvas ? headerCanvas.toDataURL('image/png') : null;
   
-  // Calculate how many pages we need
-  const scaledHeight = imgHeight * ratio;
-  const pageCount = Math.ceil(scaledHeight / pdfHeight);
+  const imgData = canvas.toDataURL('image/png');
+  
+  // Calculate content height per page (excluding header on subsequent pages)
+  const firstPageContentHeight = usableHeight;
+  const subsequentPageContentHeight = usableHeight - headerPdfHeight - 5;
+  
+  // Calculate total scaled height of content
+  const totalScaledHeight = (imgHeight * ratio) / 2;
+  
+  // Calculate number of pages needed
+  let remainingHeight = totalScaledHeight;
+  let pageCount = 1;
+  remainingHeight -= firstPageContentHeight;
+  while (remainingHeight > 0) {
+    pageCount++;
+    remainingHeight -= subsequentPageContentHeight;
+  }
+  
+  // Draw page border function
+  const drawPageBorder = (pdfDoc: jsPDF) => {
+    pdfDoc.setDrawColor(13, 148, 136); // Teal color
+    pdfDoc.setLineWidth(0.8);
+    pdfDoc.roundedRect(margin, margin, usableWidth, usableHeight, borderRadius, borderRadius);
+  };
+  
+  // Generate each page
+  let currentYOffset = 0;
   
   for (let i = 0; i < pageCount; i++) {
     if (i > 0) {
       pdf.addPage();
-      
-      // Add header to subsequent pages
-      if (headerImgData && headerCanvas) {
-        const headerWidth = headerCanvas.width * ratio / 2;
-        const hdrX = (pdfWidth - headerWidth) / 2;
-        pdf.addImage(headerImgData, 'PNG', hdrX, 5, headerWidth, headerPdfHeight);
-      }
     }
     
-    // Offset the main content based on page number
-    const yOffset = i === 0 ? 0 : -(i * pdfHeight) + (i > 0 ? headerPdfHeight + 10 : 0);
-    pdf.addImage(imgData, 'PNG', imgX, yOffset, imgWidth * ratio, imgHeight * ratio);
+    // Draw page border
+    drawPageBorder(pdf);
+    
+    const contentStartY = margin + 2;
+    
+    if (i === 0) {
+      // First page - show content from the beginning
+      pdf.addImage(
+        imgData, 
+        'PNG', 
+        margin + 2, 
+        contentStartY, 
+        usableWidth - 4, 
+        (imgHeight * ratio) / 2
+      );
+      currentYOffset = firstPageContentHeight;
+    } else {
+      // Subsequent pages - add header first, then content
+      if (headerImgData && headerCanvas) {
+        const headerWidth = usableWidth - 4;
+        pdf.addImage(headerImgData, 'PNG', margin + 2, contentStartY, headerWidth, headerPdfHeight);
+      }
+      
+      // Calculate where to clip from the source image
+      const sourceYStart = currentYOffset * 2 / ratio;
+      
+      // Create a temporary canvas to clip the portion we need
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+      if (tempCtx) {
+        const clipHeight = Math.min(subsequentPageContentHeight * 2 / ratio, imgHeight - sourceYStart);
+        tempCanvas.width = imgWidth;
+        tempCanvas.height = clipHeight;
+        tempCtx.drawImage(
+          canvas, 
+          0, sourceYStart, imgWidth, clipHeight,
+          0, 0, imgWidth, clipHeight
+        );
+        
+        const clippedImgData = tempCanvas.toDataURL('image/png');
+        const clippedHeight = (clipHeight * ratio) / 2;
+        
+        pdf.addImage(
+          clippedImgData, 
+          'PNG', 
+          margin + 2, 
+          contentStartY + headerPdfHeight + 3, 
+          usableWidth - 4, 
+          clippedHeight
+        );
+      }
+      
+      currentYOffset += subsequentPageContentHeight;
+    }
   }
   
   return pdf.output('blob');
