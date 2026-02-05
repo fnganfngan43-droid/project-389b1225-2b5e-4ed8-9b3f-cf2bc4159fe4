@@ -494,6 +494,15 @@ export function printReport({ title, accountName, currency, transactions, settin
       <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
       <style>
         ${getCommonStyles()}
+        .print-doc {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        .print-doc td {
+          padding: 0;
+          border: none;
+          vertical-align: top;
+        }
         .balance-row {
           padding: 15px;
           border: 2px solid #0d9488;
@@ -518,91 +527,108 @@ export function printReport({ title, accountName, currency, transactions, settin
     <body>
       <div class="page-border">
       <div class="print-container">
-        <div class="header">
-          <div class="header-right">
-            <h1>${settings.headerArabic[0]}</h1>
-            <h2>${settings.headerArabic[1]}</h2>
-            <p>${settings.headerArabic[2]}</p>
-          </div>
-          <div class="header-center">
-            ${settings.logo ? `<img src="${settings.logo}" alt="Logo" />` : ''}
-          </div>
-          <div class="header-left">
-            <h1>${settings.headerEnglish[0]}</h1>
-            <h2>${settings.headerEnglish[1]}</h2>
-            <p>${settings.headerEnglish[2]}</p>
-          </div>
-        </div>
-        
-        <div class="content">
-          <div class="voucher-type">${title}</div>
-          
-          <div class="info-row">
-            <span class="info-label">اسم الحساب:</span>
-            <span class="info-value">${accountName}</span>
-          </div>
-          
-          <div class="info-row">
-            <span class="info-label">العملة:</span>
-            <span class="info-value">${getCurrencyFullName(currency)}</span>
-          </div>
-          
-          ${transactions.length > 0 ? `
-          <table class="report-table">
-            <thead>
-              <tr>
-                <th>التاريخ</th>
-                <th>النوع</th>
-                <th>البيان</th>
-                <th>المرجع</th>
-                <th>مدين</th>
-                <th>دائن</th>
-                <th>الرصيد</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${transactionsRows}
-              <tr class="totals-row">
-                <td colspan="4">الإجمالي</td>
-                <td class="debit">${totals.debit.toLocaleString()}</td>
-                <td class="credit">${totals.credit.toLocaleString()}</td>
-                <td class="${totals.balance >= 0 ? 'balance-positive' : 'balance-negative'}">${totals.balance.toLocaleString()}</td>
-              </tr>
-            </tbody>
-          </table>
-          
-          <!-- Balance in numbers row -->
-          <div class="balance-row numbers">
-            <span class="balance-text ${isDebit ? 'debit' : 'credit'}">
-              ${balanceLabel}: ${absBalance.toLocaleString()} ${getCurrencyFullName(currency)}
-            </span>
-          </div>
-          
-          <!-- Balance in Arabic words row -->
-          <div class="balance-row words">
-            <span class="balance-text ${isDebit ? 'debit' : 'credit'}">
-              ${balanceLabel}: ${numberToArabicWords(absBalance)} ${getCurrencyFullName(currency)}
-            </span>
-          </div>
-          ` : `
-          <div style="text-align: center; padding: 40px; color: #666;">
-            لا توجد معاملات لهذا الحساب
-          </div>
-          `}
-          
-          <div class="footer">
-            <div class="signature-box">
-              <div class="signature-line">توقيع المدير</div>
-            </div>
-            <div class="signature-box">
-              <div class="signature-line">توقيع المحاسب</div>
-            </div>
-          </div>
-          
-          <div class="print-date">
-            تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}
-          </div>
-        </div>
+        <table class="print-doc">
+          <!-- وضع الترويسة داخل THEAD يجعل المتصفح يكررها تلقائياً في كل صفحة عند الطباعة -->
+          <thead>
+            <tr>
+              <td>
+                <div class="header report-header">
+                  <div class="header-right">
+                    <h1>${settings.headerArabic[0]}</h1>
+                    <h2>${settings.headerArabic[1]}</h2>
+                    <p>${settings.headerArabic[2]}</p>
+                  </div>
+                  <div class="header-center">
+                    ${settings.logo ? `<img src="${settings.logo}" alt="Logo" />` : ''}
+                  </div>
+                  <div class="header-left">
+                    <h1>${settings.headerEnglish[0]}</h1>
+                    <h2>${settings.headerEnglish[1]}</h2>
+                    <p>${settings.headerEnglish[2]}</p>
+                  </div>
+                </div>
+
+                <div class="content">
+                  <div class="voucher-type">${title}</div>
+
+                  <div class="info-row">
+                    <span class="info-label">اسم الحساب:</span>
+                    <span class="info-value">${accountName}</span>
+                  </div>
+
+                  <div class="info-row">
+                    <span class="info-label">العملة:</span>
+                    <span class="info-value">${getCurrencyFullName(currency)}</span>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>
+                <div class="content">
+                  ${transactions.length > 0 ? `
+                  <table class="report-table">
+                    <thead>
+                      <tr>
+                        <th>التاريخ</th>
+                        <th>النوع</th>
+                        <th>البيان</th>
+                        <th>المرجع</th>
+                        <th>مدين</th>
+                        <th>دائن</th>
+                        <th>الرصيد</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${transactionsRows}
+                      <tr class="totals-row">
+                        <td colspan="4">الإجمالي</td>
+                        <td class="debit">${totals.debit.toLocaleString()}</td>
+                        <td class="credit">${totals.credit.toLocaleString()}</td>
+                        <td class="${totals.balance >= 0 ? 'balance-positive' : 'balance-negative'}">${totals.balance.toLocaleString()}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <!-- Balance in numbers row -->
+                  <div class="balance-row numbers">
+                    <span class="balance-text ${isDebit ? 'debit' : 'credit'}">
+                      ${balanceLabel}: ${absBalance.toLocaleString()} ${getCurrencyFullName(currency)}
+                    </span>
+                  </div>
+
+                  <!-- Balance in Arabic words row -->
+                  <div class="balance-row words">
+                    <span class="balance-text ${isDebit ? 'debit' : 'credit'}">
+                      ${balanceLabel}: ${numberToArabicWords(absBalance)} ${getCurrencyFullName(currency)}
+                    </span>
+                  </div>
+                  ` : `
+                  <div style="text-align: center; padding: 40px; color: #666;">
+                    لا توجد معاملات لهذا الحساب
+                  </div>
+                  `}
+
+                  <div class="footer">
+                    <div class="signature-box">
+                      <div class="signature-line">توقيع المدير</div>
+                    </div>
+                    <div class="signature-box">
+                      <div class="signature-line">توقيع المحاسب</div>
+                    </div>
+                  </div>
+
+                  <div class="print-date">
+                    تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       </div>
     </body>
@@ -667,6 +693,16 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
       <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
       <style>
         ${getCommonStyles()}
+
+        .print-doc {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        .print-doc td {
+          padding: 0;
+          border: none;
+          vertical-align: top;
+        }
         
         /* Multi-page print styles */
         @media print {
@@ -783,85 +819,90 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
     <body>
       <div class="page-border">
       <div class="print-container">
-        <!-- Main header section that repeats -->
-        <div class="header report-header">
-          <div class="header-right">
-            <h1>${settings.headerArabic[0]}</h1>
-            <h2>${settings.headerArabic[1]}</h2>
-            <p>${settings.headerArabic[2]}</p>
-          </div>
-          <div class="header-center">
-            ${settings.logo ? `<img src="${settings.logo}" alt="Logo" />` : ''}
-          </div>
-          <div class="header-left">
-            <h1>${settings.headerEnglish[0]}</h1>
-            <h2>${settings.headerEnglish[1]}</h2>
-            <p>${settings.headerEnglish[2]}</p>
-          </div>
-        </div>
-        
-        <div class="content">
-          <div class="voucher-type">${title}</div>
-          
-          <div class="info-row">
-            <span class="info-label">المجموعة:</span>
-            <span class="info-value">${groupName}</span>
-          </div>
-          
-          <div class="info-row">
-            <span class="info-label">الفترة:</span>
-            <span class="info-value">من ${dateFrom} إلى ${dateTo}</span>
-          </div>
-          
-          ${currencyData.length > 0 ? `
-          <table class="report-table">
-            <thead>
-              <tr>
-                <th>رقم الحساب</th>
-                <th>اسم الحساب</th>
-                <th>العملة</th>
-                <th>مدين</th>
-                <th>دائن</th>
-                <th>الرصيد</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${allAccountRows.join('')}
-              ${currencySummaries}
-            </tbody>
-          </table>
-          ` : `
-          <div style="text-align: center; padding: 40px; color: #666;">
-            لا توجد حسابات لهذه المجموعة
-          </div>
-          `}
-          
-          <div class="footer">
-            <div class="signature-box">
-              <div class="signature-line">توقيع المدير</div>
-            </div>
-            <div class="signature-box">
-              <div class="signature-line">توقيع المحاسب</div>
-            </div>
-          </div>
-          
-          <div class="print-date">
-            تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}
-          </div>
-        </div>
+        <table class="print-doc">
+          <!-- وضع الترويسة + معلومات التقرير داخل THEAD ليتكرر تلقائياً في كل صفحة -->
+          <thead>
+            <tr>
+              <td>
+                <div class="header report-header">
+                  <div class="header-right">
+                    <h1>${settings.headerArabic[0]}</h1>
+                    <h2>${settings.headerArabic[1]}</h2>
+                    <p>${settings.headerArabic[2]}</p>
+                  </div>
+                  <div class="header-center">
+                    ${settings.logo ? `<img src="${settings.logo}" alt="Logo" />` : ''}
+                  </div>
+                  <div class="header-left">
+                    <h1>${settings.headerEnglish[0]}</h1>
+                    <h2>${settings.headerEnglish[1]}</h2>
+                    <p>${settings.headerEnglish[2]}</p>
+                  </div>
+                </div>
+
+                <div class="content">
+                  <div class="voucher-type">${title}</div>
+
+                  <div class="info-row">
+                    <span class="info-label">المجموعة:</span>
+                    <span class="info-value">${groupName}</span>
+                  </div>
+
+                  <div class="info-row">
+                    <span class="info-label">الفترة:</span>
+                    <span class="info-value">من ${dateFrom} إلى ${dateTo}</span>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>
+                <div class="content">
+                  ${currencyData.length > 0 ? `
+                  <table class="report-table">
+                    <thead>
+                      <tr>
+                        <th>رقم الحساب</th>
+                        <th>اسم الحساب</th>
+                        <th>العملة</th>
+                        <th>مدين</th>
+                        <th>دائن</th>
+                        <th>الرصيد</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${allAccountRows.join('')}
+                      ${currencySummaries}
+                    </tbody>
+                  </table>
+                  ` : `
+                  <div style="text-align: center; padding: 40px; color: #666;">
+                    لا توجد حسابات لهذه المجموعة
+                  </div>
+                  `}
+
+                  <div class="footer">
+                    <div class="signature-box">
+                      <div class="signature-line">توقيع المدير</div>
+                    </div>
+                    <div class="signature-box">
+                      <div class="signature-line">توقيع المحاسب</div>
+                    </div>
+                  </div>
+
+                  <div class="print-date">
+                    تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       </div>
-      
-      <script>
-        // Add page numbers dynamically before printing
-        window.onbeforeprint = function() {
-          // The browser will handle page breaks and thead repetition automatically
-        };
-        
-        window.onafterprint = function() {
-          // Clean up if needed
-        };
-      </script>
     </body>
     </html>
   `;
@@ -875,119 +916,30 @@ function openPrintWindow(content: string) {
     printWindow.document.write(content);
     printWindow.document.close();
     printWindow.focus();
-    
-    // Wait for content to load then add page numbers and print
-    setTimeout(() => {
-      // Inject comprehensive multi-page print styles
-      const style = printWindow.document.createElement('style');
-      style.textContent = `
-        @media print {
-          @page {
-            size: A4;
-            margin: 15mm 12mm 25mm 12mm;
-          }
-          
-          /* Reset and base styles */
-          html, body {
-            margin: 0;
-            padding: 0;
-            height: auto;
-          }
-          
-          body {
-            padding: 15px;
-          }
-          
-          /* Page wrapper with border on each page */
-          .page-border {
-            border: 3px solid #0d9488 !important;
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: none !important;
-            background: white !important;
-          }
-          
-          .print-container {
-            border: none !important;
-          }
-          
-          /* Main header repeats on each page via position running */
-          .report-header {
-            display: block;
-          }
-          
-          /* Ensure table headers repeat on every page */
-          table {
-            width: 100%;
-            border-collapse: collapse;
-          }
-          
-          thead {
-            display: table-header-group !important;
-          }
-          
-          tbody {
-            display: table-row-group;
-          }
-          
-          tfoot {
-            display: table-footer-group;
-          }
-          
-          /* Prevent row breaks */
-          tr {
-            page-break-inside: avoid !important;
-          }
-          
-          /* Ensure content doesn't create empty pages */
-          .content {
-            page-break-after: auto;
-          }
-          
-          /* Footer stays at bottom */
-          .footer {
-            page-break-inside: avoid;
-            margin-top: 20px;
-          }
-          
-          /* Print date */
-          .print-date {
-            page-break-inside: avoid;
-          }
-        }
-        
-        /* Page counter using CSS counters */
-        @media print {
-          body {
-            counter-reset: page-counter;
-          }
-          
-          .page-number {
-            position: fixed;
-            bottom: 10mm;
-            left: 0;
-            right: 0;
-            text-align: center;
-            font-family: 'Tajawal', Arial, sans-serif;
-            font-size: 11px;
-            color: #666;
-          }
-          
-          .page-number::after {
-            counter-increment: page-counter;
-            content: counter(page-counter);
-          }
-        }
-      `;
-      printWindow.document.head.appendChild(style);
-      
-      // Add page number element
-      const pageNumberDiv = printWindow.document.createElement('div');
-      pageNumberDiv.className = 'page-number';
-      pageNumberDiv.style.cssText = 'position: fixed; bottom: 10mm; left: 0; right: 0; text-align: center; font-size: 11px; color: #666;';
-      printWindow.document.body.appendChild(pageNumberDiv);
-      
-      printWindow.print();
-    }, 600);
+
+    const waitForImages = () => {
+      const images = Array.from(printWindow.document.images || []);
+      if (images.length === 0) return Promise.resolve();
+
+      return Promise.all(
+        images.map(
+          (img) =>
+            img.complete
+              ? Promise.resolve()
+              : new Promise<void>((resolve) => {
+                  img.onload = () => resolve();
+                  img.onerror = () => resolve();
+                })
+        )
+      ).then(() => undefined);
+    };
+
+    // Wait for fonts/images so the header/logo render correctly, then print
+    const maybeFontsReady = (printWindow.document as any).fonts?.ready;
+    const fontsReady = maybeFontsReady ? maybeFontsReady.catch(() => undefined) : Promise.resolve();
+
+    Promise.all([fontsReady, waitForImages()]).finally(() => {
+      setTimeout(() => printWindow.print(), 150);
+    });
   }
 }
