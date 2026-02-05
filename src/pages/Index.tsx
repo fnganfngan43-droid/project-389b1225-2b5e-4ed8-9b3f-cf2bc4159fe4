@@ -1,17 +1,10 @@
-import { WelcomeScreen } from '@/components/WelcomeScreen';
 import { MainDashboard } from '@/components/MainDashboard';
-import { AccountingProvider, useAccounting } from '@/contexts/AccountingContext';
-
-function AccountingApp() {
-  const { isLoggedIn } = useAccounting();
-  
-  return isLoggedIn ? <MainDashboard /> : <WelcomeScreen />;
-}
+import { AccountingProvider } from '@/contexts/AccountingContext';
 
 const Index = () => {
   return (
     <AccountingProvider>
-      <AccountingApp />
+      <MainDashboard />
     </AccountingProvider>
   );
 };
