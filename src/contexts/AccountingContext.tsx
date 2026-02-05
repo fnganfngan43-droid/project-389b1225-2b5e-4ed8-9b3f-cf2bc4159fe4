@@ -141,7 +141,7 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
   // Load stored data or use initial data
   const storedData = loadFromStorage();
   
-  const [isLoggedIn, setIsLoggedIn] = useState(storedData?.isLoggedIn ?? false);
+  const [isLoggedIn, setIsLoggedIn] = useState(storedData?.isLoggedIn ?? true);
   const [password, setPasswordState] = useState<string | null>(storedData?.password ?? null);
   const [settings, setSettings] = useState<Settings>(storedData?.settings ?? {
     userName: 'المستخدم',

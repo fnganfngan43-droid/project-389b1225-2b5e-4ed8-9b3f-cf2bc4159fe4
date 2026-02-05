@@ -878,52 +878,114 @@ function openPrintWindow(content: string) {
     
     // Wait for content to load then add page numbers and print
     setTimeout(() => {
-      // Inject page numbering CSS that works across browsers
+      // Inject comprehensive multi-page print styles
       const style = printWindow.document.createElement('style');
       style.textContent = `
         @media print {
           @page {
             size: A4;
-            margin: 12mm 10mm 20mm 10mm;
-            
-            @bottom-center {
-              content: counter(page) " / " counter(pages);
-              font-family: 'Tajawal', Arial, sans-serif;
-              font-size: 11px;
-              color: #666;
-            }
+            margin: 15mm 12mm 25mm 12mm;
           }
           
-          /* Page border for each printed page */
-          html {
-            height: 100%;
+          /* Reset and base styles */
+          html, body {
+            margin: 0;
+            padding: 0;
+            height: auto;
           }
           
           body {
-            border: 3px solid #0d9488;
-            border-radius: 8px;
-            padding: 10px;
-            min-height: calc(100% - 6px);
-            box-sizing: border-box;
+            padding: 15px;
           }
           
-          /* Ensure tables don't break awkwardly */
+          /* Page wrapper with border on each page */
+          .page-border {
+            border: 3px solid #0d9488 !important;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: none !important;
+            background: white !important;
+          }
+          
+          .print-container {
+            border: none !important;
+          }
+          
+          /* Main header repeats on each page via position running */
+          .report-header {
+            display: block;
+          }
+          
+          /* Ensure table headers repeat on every page */
+          table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+          
+          thead {
+            display: table-header-group !important;
+          }
+          
+          tbody {
+            display: table-row-group;
+          }
+          
+          tfoot {
+            display: table-footer-group;
+          }
+          
+          /* Prevent row breaks */
           tr {
+            page-break-inside: avoid !important;
+          }
+          
+          /* Ensure content doesn't create empty pages */
+          .content {
+            page-break-after: auto;
+          }
+          
+          /* Footer stays at bottom */
+          .footer {
+            page-break-inside: avoid;
+            margin-top: 20px;
+          }
+          
+          /* Print date */
+          .print-date {
             page-break-inside: avoid;
           }
-          
-          /* thead repeats on each page */
-          thead {
-            display: table-header-group;
+        }
+        
+        /* Page counter using CSS counters */
+        @media print {
+          body {
+            counter-reset: page-counter;
           }
           
-          /* Remove empty pages */
-          .print-container {
-            page-break-after: auto;
+          .page-number {
+            position: fixed;
+            bottom: 10mm;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-family: 'Tajawal', Arial, sans-serif;
+            font-size: 11px;
+            color: #666;
+          }
+          
+          .page-number::after {
+            counter-increment: page-counter;
+            content: counter(page-counter);
           }
         }
       `;
       printWindow.document.head.appendChild(style);
+      
+      // Add page number element
+      const pageNumberDiv = printWindow.document.createElement('div');
+      pageNumberDiv.className = 'page-number';
+      pageNumberDiv.style.cssText = 'position: fixed; bottom: 10mm; left: 0; right: 0; text-align: center; font-size: 11px; color: #666;';
+      printWindow.document.body.appendChild(pageNumberDiv);
       
       printWindow.print();
     }, 600);
