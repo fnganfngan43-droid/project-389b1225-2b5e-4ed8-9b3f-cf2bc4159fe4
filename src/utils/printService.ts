@@ -360,15 +360,210 @@ const getCommonStyles = () => `
   .summary-value.balance { color: #0d9488; }
   
   @media print {
-    body { padding: 10px; }
-    .page-border { 
-      border: 2px solid #0d9488; 
-      box-shadow: none;
-      padding: 8px;
+    body { padding: 0; margin: 0; }
+    
+    @page { 
+      size: A4;
+      margin: 10mm; 
     }
-    .print-container { border: 1px solid #0d9488; }
-    @page { margin: 8mm; }
+    
+    /* Page border frame - appears on every printed page */
+    .page-frame {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border: 3px solid #0d9488;
+      border-radius: 10px;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    
+    .page-border { 
+      border: none; 
+      box-shadow: none;
+      padding: 0;
+      background: none;
+      border-radius: 0;
+    }
+    .print-container { 
+      border: none; 
+      border-radius: 0;
+    }
+    
+    /* Repeat outer table header/footer on every page */
+    .print-doc > thead { display: table-header-group; }
+    .print-doc > tfoot { display: table-footer-group; }
+    
+    /* Inner report table header also repeats */
+    .report-table thead { display: table-header-group; }
+    
+    /* Avoid breaking inside rows */
+    tr { page-break-inside: avoid; }
+    
+    /* Header border in print */
+    .report-header-wrapper {
+      border: 2px solid #0d9488;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 8px 12px 5px 12px;
+    }
+    
+    /* Report info section */
+    .report-info-wrapper {
+      margin: 0 12px;
+      padding: 5px 15px;
+    }
+    
+    /* Footer area for page numbers */
+    .page-footer-content {
+      text-align: center;
+      font-size: 11px;
+      color: #666;
+      padding: 8px 12px;
+      border-top: 1px solid #e2e8f0;
+      margin: 0 12px;
+    }
   }
+`;
+
+const getReportPrintStyles = () => `
+  /* Outer document table for thead/tfoot repetition */
+  .print-doc {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .print-doc > thead > tr > td,
+  .print-doc > tfoot > tr > td,
+  .print-doc > tbody > tr > td {
+    padding: 0;
+    border: none;
+    vertical-align: top;
+  }
+  
+  /* Header border styling */
+  .report-header-wrapper {
+    border: 2px solid #0d9488;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 5px 0 5px 0;
+  }
+  .report-header {
+    margin: 0;
+  }
+  
+  /* Report info section */
+  .report-info-wrapper {
+    padding: 5px 15px;
+  }
+  .report-info-wrapper .voucher-type {
+    font-size: 18px;
+    padding: 8px;
+    margin-bottom: 10px;
+  }
+  .report-info-wrapper .info-row {
+    padding: 6px 0;
+  }
+  
+  /* Footer area */
+  .page-footer-content {
+    text-align: center;
+    font-size: 11px;
+    color: #666;
+    padding: 6px 0;
+    border-top: 1px solid #e2e8f0;
+  }
+  
+  /* Balance rows */
+  .balance-row {
+    padding: 15px;
+    border: 2px solid #0d9488;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .balance-row.numbers {
+    background: #f0fdfa;
+  }
+  .balance-row.words {
+    background: #f8fafc;
+  }
+  .balance-text {
+    font-size: 16px;
+    font-weight: bold;
+  }
+  .balance-text.debit { color: #16a34a; }
+  .balance-text.credit { color: #dc2626; }
+  
+  /* Report table overrides for multi-page */
+  .report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+  }
+  .report-table th {
+    background: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
+    color: white;
+    padding: 10px 6px;
+    font-size: 12px;
+    text-align: center;
+    border: 1px solid #0d9488;
+  }
+  .report-table td {
+    padding: 8px 6px;
+    border: 1px solid #ddd;
+    font-size: 11px;
+    text-align: center;
+  }
+  .report-table tr:nth-child(even) {
+    background: #f9fafb;
+  }
+  .report-table .debit {
+    color: #16a34a;
+    font-weight: bold;
+  }
+  .report-table .credit {
+    color: #dc2626;
+    font-weight: bold;
+  }
+  .report-table .balance-positive {
+    color: #16a34a;
+    font-weight: bold;
+  }
+  .report-table .balance-negative {
+    color: #dc2626;
+    font-weight: bold;
+  }
+  .totals-row {
+    background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%) !important;
+    font-weight: bold;
+    font-size: 12px !important;
+  }
+  .totals-row td {
+    border-top: 2px solid #0d9488 !important;
+  }
+`;
+
+// Build the header HTML block used in thead
+const buildHeaderBlock = (settings: Settings) => `
+  <div class="report-header-wrapper">
+    <div class="header report-header">
+      <div class="header-right">
+        <h1>${settings.headerArabic[0]}</h1>
+        <h2>${settings.headerArabic[1]}</h2>
+        <p>${settings.headerArabic[2]}</p>
+      </div>
+      <div class="header-center">
+        ${settings.logo ? `<img src="${settings.logo}" alt="Logo" />` : ''}
+      </div>
+      <div class="header-left">
+        <h1>${settings.headerEnglish[0]}</h1>
+        <h2>${settings.headerEnglish[1]}</h2>
+        <p>${settings.headerEnglish[2]}</p>
+      </div>
+    </div>
+  </div>
 `;
 
 export function printVoucher({ voucher, settings }: PrintVoucherData) {
@@ -494,68 +689,27 @@ export function printReport({ title, accountName, currency, transactions, settin
       <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
       <style>
         ${getCommonStyles()}
-        .print-doc {
-          width: 100%;
-          border-collapse: collapse;
-        }
-        .print-doc td {
-          padding: 0;
-          border: none;
-          vertical-align: top;
-        }
-        .balance-row {
-          padding: 15px;
-          border: 2px solid #0d9488;
-          border-radius: 8px;
-          text-align: center;
-          margin-bottom: 10px;
-        }
-        .balance-row.numbers {
-          background: #f0fdfa;
-        }
-        .balance-row.words {
-          background: #f8fafc;
-        }
-        .balance-text {
-          font-size: 16px;
-          font-weight: bold;
-        }
-        .balance-text.debit { color: #16a34a; }
-        .balance-text.credit { color: #dc2626; }
+        ${getReportPrintStyles()}
       </style>
     </head>
     <body>
+      <!-- Page border frame - fixed position appears on every printed page -->
+      <div class="page-frame"></div>
+      
       <div class="page-border">
       <div class="print-container">
         <table class="print-doc">
-          <!-- وضع الترويسة داخل THEAD يجعل المتصفح يكررها تلقائياً في كل صفحة عند الطباعة -->
+          <!-- THEAD: الترويسة + معلومات التقرير - تتكرر في كل صفحة -->
           <thead>
             <tr>
               <td>
-                <div class="header report-header">
-                  <div class="header-right">
-                    <h1>${settings.headerArabic[0]}</h1>
-                    <h2>${settings.headerArabic[1]}</h2>
-                    <p>${settings.headerArabic[2]}</p>
-                  </div>
-                  <div class="header-center">
-                    ${settings.logo ? `<img src="${settings.logo}" alt="Logo" />` : ''}
-                  </div>
-                  <div class="header-left">
-                    <h1>${settings.headerEnglish[0]}</h1>
-                    <h2>${settings.headerEnglish[1]}</h2>
-                    <p>${settings.headerEnglish[2]}</p>
-                  </div>
-                </div>
-
-                <div class="content">
+                ${buildHeaderBlock(settings)}
+                <div class="report-info-wrapper">
                   <div class="voucher-type">${title}</div>
-
                   <div class="info-row">
                     <span class="info-label">اسم الحساب:</span>
                     <span class="info-value">${accountName}</span>
                   </div>
-
                   <div class="info-row">
                     <span class="info-label">العملة:</span>
                     <span class="info-value">${getCurrencyFullName(currency)}</span>
@@ -565,10 +719,23 @@ export function printReport({ title, accountName, currency, transactions, settin
             </tr>
           </thead>
 
+          <!-- TFOOT: تذييل الصفحة مع ترقيم - يتكرر في كل صفحة -->
+          <tfoot>
+            <tr>
+              <td>
+                <div class="page-footer-content">
+                  <span>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}</span>
+                  <span style="margin: 0 15px;">|</span>
+                  <span class="page-number-text">صفحة <span class="current-page"></span> من <span class="total-pages"></span></span>
+                </div>
+              </td>
+            </tr>
+          </tfoot>
+
           <tbody>
             <tr>
               <td>
-                <div class="content">
+                <div class="content" style="padding: 10px 15px;">
                   ${transactions.length > 0 ? `
                   <table class="report-table">
                     <thead>
@@ -593,14 +760,14 @@ export function printReport({ title, accountName, currency, transactions, settin
                     </tbody>
                   </table>
 
-                  <!-- Balance in numbers row -->
+                  <!-- Balance in numbers -->
                   <div class="balance-row numbers">
                     <span class="balance-text ${isDebit ? 'debit' : 'credit'}">
                       ${balanceLabel}: ${absBalance.toLocaleString()} ${getCurrencyFullName(currency)}
                     </span>
                   </div>
 
-                  <!-- Balance in Arabic words row -->
+                  <!-- Balance in Arabic words -->
                   <div class="balance-row words">
                     <span class="balance-text ${isDebit ? 'debit' : 'credit'}">
                       ${balanceLabel}: ${numberToArabicWords(absBalance)} ${getCurrencyFullName(currency)}
@@ -619,10 +786,6 @@ export function printReport({ title, accountName, currency, transactions, settin
                     <div class="signature-box">
                       <div class="signature-line">توقيع المحاسب</div>
                     </div>
-                  </div>
-
-                  <div class="print-date">
-                    تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}
                   </div>
                 </div>
               </td>
@@ -693,161 +856,27 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
       <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
       <style>
         ${getCommonStyles()}
-
-        .print-doc {
-          width: 100%;
-          border-collapse: collapse;
-        }
-        .print-doc td {
-          padding: 0;
-          border: none;
-          vertical-align: top;
-        }
-        
-        /* Multi-page print styles */
-        @media print {
-          body { 
-            padding: 0; 
-            margin: 0;
-          }
-          .page-border { 
-            border: none; 
-            box-shadow: none;
-            padding: 0;
-            background: none;
-          }
-          .print-container { 
-            border: none;
-            box-shadow: none;
-          }
-          
-          /* Page setup */
-          @page { 
-            size: A4;
-            margin: 10mm;
-          }
-          
-          /* Repeat header on every page */
-          thead { display: table-header-group; }
-          tfoot { display: table-footer-group; }
-          
-          /* Page border decoration */
-          .print-page {
-            border: 3px solid #0d9488;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 10px;
-            page-break-inside: avoid;
-          }
-          
-          /* Avoid breaking inside rows */
-          tr { page-break-inside: avoid; }
-          
-          /* Page number footer */
-          .page-footer {
-            position: fixed;
-            bottom: 5mm;
-            left: 0;
-            right: 0;
-            text-align: center;
-            font-size: 12px;
-            color: #666;
-          }
-        }
-        
-        /* Screen styles for page numbers */
-        .page-number-container {
-          display: none;
-        }
-        
-        @media print {
-          .page-number-container {
-            display: block;
-            position: running(pageNumber);
-          }
-        }
-        
-        /* Report table with repeated header */
-        .report-table {
-          width: 100%;
-          border-collapse: collapse;
-          margin: 15px 0;
-        }
-        .report-table th {
-          background: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
-          color: white;
-          padding: 10px 6px;
-          font-size: 12px;
-          text-align: center;
-          border: 1px solid #0d9488;
-        }
-        .report-table td {
-          padding: 8px 6px;
-          border: 1px solid #ddd;
-          font-size: 11px;
-          text-align: center;
-        }
-        .report-table tr:nth-child(even) {
-          background: #f9fafb;
-        }
-        .report-table .debit {
-          color: #16a34a;
-          font-weight: bold;
-        }
-        .report-table .credit {
-          color: #dc2626;
-          font-weight: bold;
-        }
-        .report-table .balance-positive {
-          color: #16a34a;
-          font-weight: bold;
-        }
-        .report-table .balance-negative {
-          color: #dc2626;
-          font-weight: bold;
-        }
-        .totals-row {
-          background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%) !important;
-          font-weight: bold;
-          font-size: 12px !important;
-        }
-        .totals-row td {
-          border-top: 2px solid #0d9488 !important;
-        }
+        ${getReportPrintStyles()}
       </style>
     </head>
     <body>
+      <!-- Page border frame - fixed position appears on every printed page -->
+      <div class="page-frame"></div>
+      
       <div class="page-border">
       <div class="print-container">
         <table class="print-doc">
-          <!-- وضع الترويسة + معلومات التقرير داخل THEAD ليتكرر تلقائياً في كل صفحة -->
+          <!-- THEAD: الترويسة + معلومات التقرير - تتكرر في كل صفحة -->
           <thead>
             <tr>
               <td>
-                <div class="header report-header">
-                  <div class="header-right">
-                    <h1>${settings.headerArabic[0]}</h1>
-                    <h2>${settings.headerArabic[1]}</h2>
-                    <p>${settings.headerArabic[2]}</p>
-                  </div>
-                  <div class="header-center">
-                    ${settings.logo ? `<img src="${settings.logo}" alt="Logo" />` : ''}
-                  </div>
-                  <div class="header-left">
-                    <h1>${settings.headerEnglish[0]}</h1>
-                    <h2>${settings.headerEnglish[1]}</h2>
-                    <p>${settings.headerEnglish[2]}</p>
-                  </div>
-                </div>
-
-                <div class="content">
+                ${buildHeaderBlock(settings)}
+                <div class="report-info-wrapper">
                   <div class="voucher-type">${title}</div>
-
                   <div class="info-row">
                     <span class="info-label">المجموعة:</span>
                     <span class="info-value">${groupName}</span>
                   </div>
-
                   <div class="info-row">
                     <span class="info-label">الفترة:</span>
                     <span class="info-value">من ${dateFrom} إلى ${dateTo}</span>
@@ -857,10 +886,23 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
             </tr>
           </thead>
 
+          <!-- TFOOT: تذييل الصفحة مع ترقيم - يتكرر في كل صفحة -->
+          <tfoot>
+            <tr>
+              <td>
+                <div class="page-footer-content">
+                  <span>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}</span>
+                  <span style="margin: 0 15px;">|</span>
+                  <span class="page-number-text">صفحة <span class="current-page"></span> من <span class="total-pages"></span></span>
+                </div>
+              </td>
+            </tr>
+          </tfoot>
+
           <tbody>
             <tr>
               <td>
-                <div class="content">
+                <div class="content" style="padding: 10px 15px;">
                   ${currencyData.length > 0 ? `
                   <table class="report-table">
                     <thead>
@@ -891,10 +933,6 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
                     <div class="signature-box">
                       <div class="signature-line">توقيع المحاسب</div>
                     </div>
-                  </div>
-
-                  <div class="print-date">
-                    تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}
                   </div>
                 </div>
               </td>
@@ -934,12 +972,56 @@ function openPrintWindow(content: string) {
       ).then(() => undefined);
     };
 
-    // Wait for fonts/images so the header/logo render correctly, then print
+    // Wait for fonts/images so the header/logo render correctly, then calculate pages and print
     const maybeFontsReady = (printWindow.document as any).fonts?.ready;
     const fontsReady = maybeFontsReady ? maybeFontsReady.catch(() => undefined) : Promise.resolve();
 
     Promise.all([fontsReady, waitForImages()]).finally(() => {
-      setTimeout(() => printWindow.print(), 150);
+      setTimeout(() => {
+        // Calculate total pages and inject page numbers
+        injectPageNumbers(printWindow);
+        setTimeout(() => printWindow.print(), 100);
+      }, 200);
     });
+  }
+}
+
+/**
+ * Calculate the approximate number of pages and inject page numbers
+ * into all .total-pages and .current-page elements
+ */
+function injectPageNumbers(win: Window) {
+  try {
+    const doc = win.document;
+    const body = doc.body;
+    
+    // A4 printable height at 96 DPI with 10mm margins ≈ 1047px
+    // Subtract some for header/footer repetition
+    const A4_HEIGHT_PX = 1047;
+    const contentHeight = body.scrollHeight;
+    const totalPages = Math.max(1, Math.ceil(contentHeight / A4_HEIGHT_PX));
+    
+    // Set total pages in all footer instances
+    const totalEls = doc.querySelectorAll('.total-pages');
+    totalEls.forEach(el => {
+      el.textContent = String(totalPages);
+    });
+    
+    // For the current page, we set 1 as default (browser handles actual pagination)
+    // In tfoot repetition, each page gets the same tfoot content
+    const currentEls = doc.querySelectorAll('.current-page');
+    currentEls.forEach((el, index) => {
+      el.textContent = String(index + 1 || 1);
+    });
+    
+    // If we can't detect individual pages, at least show total
+    if (currentEls.length <= 1) {
+      currentEls.forEach(el => {
+        el.textContent = '1';
+      });
+    }
+  } catch (e) {
+    // Silently fail - page numbers are non-critical
+    console.warn('Could not inject page numbers:', e);
   }
 }
