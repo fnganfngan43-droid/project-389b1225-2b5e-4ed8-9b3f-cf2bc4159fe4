@@ -113,7 +113,7 @@ const getToday = () => {
 };
 
 export function ReportsScreen() {
-  const { accounts, groups, currencies, vouchers, invoices, openingBalances, currencyExchanges, settings } = useAccounting();
+  const { accounts, groups, currencies, vouchers, invoices, openingBalances, currencyExchanges, discounts, settings } = useAccounting();
   const [reportType, setReportType] = useState<ReportType>('analytical');
   const [operationType, setOperationType] = useState<OperationType>('all');
   const [selectedGroup, setSelectedGroup] = useState('');
@@ -188,6 +188,13 @@ export function ReportsScreen() {
         } else {
           totalCredit += Math.abs(i.amount);
         }
+      });
+
+    // Discounts before dateFrom
+    discounts
+      .filter(d => d.accountName === accountName && d.currency === currency && isBeforeDateRange(d.date))
+      .forEach(d => {
+        totalCredit += d.amount;
       });
 
     return totalDebit - totalCredit;
@@ -351,9 +358,19 @@ export function ReportsScreen() {
       })));
     }
 
-    // Discount - placeholder for now
-    if (operationType === 'discount') {
-      // Add discount logic when implemented
+    // Discounts
+    if (operationType === 'all' || operationType === 'discount') {
+      const accountDiscounts = discounts.filter(d => 
+        d.accountName === accountName && d.currency === currency && isInDateRange(d.date)
+      );
+      allTransactions.push(...accountDiscounts.map(d => ({
+        date: d.date,
+        type: 'خصم',
+        description: d.description || 'خصم',
+        reference: d.reference,
+        debit: 0,
+        credit: d.amount,
+      })));
     }
 
     return allTransactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
