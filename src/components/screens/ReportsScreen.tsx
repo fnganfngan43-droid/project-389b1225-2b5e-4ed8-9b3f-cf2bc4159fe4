@@ -1199,6 +1199,13 @@ export function ReportsScreen() {
                           {balanceLabel}: {numberToArabicWords(absBalance)} {getCurrencyFullName(currData.currency)}
                         </span>
                       </div>
+                      
+                      {/* Footer Note */}
+                      {settings.footerNote && (
+                        <div className="p-3 bg-muted/30 border-x border-b border-black text-sm text-center rounded-b-lg">
+                          <span className="text-muted-foreground font-medium">{settings.footerNote}</span>
+                        </div>
+                      )}
                     </>
                   );
                 })()}
@@ -1335,6 +1342,13 @@ export function ReportsScreen() {
                         {balanceLabel}: {numberToArabicWords(absBalance)} {getCurrencyFullName(selectedCurrency)}
                       </span>
                     </div>
+                    
+                    {/* Footer Note */}
+                    {settings.footerNote && (
+                      <div className="p-3 bg-muted/30 border-x border-b border-black text-sm text-center rounded-b-lg">
+                        <span className="text-muted-foreground font-medium">{settings.footerNote}</span>
+                      </div>
+                    )}
                   </>
                 );
               })()}
@@ -1406,6 +1420,13 @@ export function ReportsScreen() {
                     <div className={`text-left ${currencyData.totalBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
                       {currencyData.totalBalance.toLocaleString()}
                     </div>
+                    </div>
+                )}
+                
+                {/* Footer Note */}
+                {settings.footerNote && currencyData.accounts.length > 0 && (
+                  <div className="p-3 bg-muted/30 border-x border-b border-black text-sm text-center rounded-b-lg">
+                    <span className="text-muted-foreground font-medium">{settings.footerNote}</span>
                   </div>
                 )}
               </CardContent>
