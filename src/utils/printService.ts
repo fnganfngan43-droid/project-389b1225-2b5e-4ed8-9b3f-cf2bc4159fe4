@@ -175,7 +175,9 @@ const getCommonStyles = () => `
   .header-center img {
     max-width: 80px;
     max-height: 80px;
-    object-fit: contain;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.5);
   }
   .header-left {
     text-align: left;
@@ -184,18 +186,20 @@ const getCommonStyles = () => `
   }
   .header h1, .header h2, .header p {
     margin: 2px 0;
+    color: #000000;
   }
   .header h1 {
     font-size: 18px;
     font-weight: bold;
+    color: #000000;
   }
   .header h2 {
     font-size: 14px;
-    opacity: 0.9;
+    color: #1a1a1a;
   }
   .header p {
     font-size: 12px;
-    opacity: 0.8;
+    color: #333333;
   }
   .content {
     padding: 25px;
@@ -294,9 +298,10 @@ const getCommonStyles = () => `
   }
   .report-table td {
     padding: 10px 8px;
-    border: 1px solid #ddd;
+    border: 1px solid #000;
     font-size: 12px;
     text-align: center;
+    color: #000000;
   }
   .report-table tr:nth-child(even) {
     background: #f9fafb;
@@ -512,9 +517,10 @@ const getReportPrintStyles = () => `
   }
   .report-table td {
     padding: 8px 6px;
-    border: 1px solid #ddd;
+    border: 1px solid #000;
     font-size: 11px;
     text-align: center;
+    color: #000000;
   }
   .report-table tr:nth-child(even) {
     background: #f9fafb;
@@ -555,7 +561,7 @@ const buildHeaderBlock = (settings: Settings) => `
         <p>${settings.headerArabic[2]}</p>
       </div>
       <div class="header-center">
-        ${settings.logo ? `<img src="${settings.logo}" alt="Logo" />` : ''}
+        ${settings.logo ? `<img src="${settings.logo}" alt="Logo" style="border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover;" />` : ''}
       </div>
       <div class="header-left">
         <h1>${settings.headerEnglish[0]}</h1>
@@ -590,7 +596,7 @@ export function printVoucher({ voucher, settings }: PrintVoucherData) {
             <p>${settings.headerArabic[2]}</p>
           </div>
           <div class="header-center">
-            ${settings.logo ? `<img src="${settings.logo}" alt="Logo" />` : ''}
+            ${settings.logo ? `<img src="${settings.logo}" alt="Logo" style="border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover;" />` : ''}
           </div>
           <div class="header-left">
             <h1>${settings.headerEnglish[0]}</h1>
@@ -779,6 +785,12 @@ export function printReport({ title, accountName, currency, transactions, settin
                   </div>
                   `}
 
+                  ${settings.footerNote ? `
+                  <div style="text-align: center; padding: 12px; margin: 15px 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <span style="font-size: 13px; color: #333; font-weight: 500;">${settings.footerNote}</span>
+                  </div>
+                  ` : ''}
+
                   <div class="footer">
                     <div class="signature-box">
                       <div class="signature-line">توقيع المدير</div>
@@ -925,6 +937,12 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
                     لا توجد حسابات لهذه المجموعة
                   </div>
                   `}
+
+                  ${settings.footerNote ? `
+                  <div style="text-align: center; padding: 12px; margin: 15px 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <span style="font-size: 13px; color: #333; font-weight: 500;">${settings.footerNote}</span>
+                  </div>
+                  ` : ''}
 
                   <div class="footer">
                     <div class="signature-box">
