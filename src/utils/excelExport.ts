@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import * as XLSX from '@datalens-tech/xlsx';
 import { Settings } from '@/types/accounting';
 
 // Convert currency symbol to full name
