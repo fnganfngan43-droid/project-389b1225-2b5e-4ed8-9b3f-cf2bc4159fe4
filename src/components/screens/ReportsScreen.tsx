@@ -241,6 +241,7 @@ export function ReportsScreen() {
       allTransactions.push(...accountOpenings.map(ob => ({
         date: ob.date,
         type: 'افتتاحي',
+        documentNumber: '-',
         description: 'رصيد افتتاحي',
         reference: undefined,
         debit: ob.debit,
@@ -257,6 +258,7 @@ export function ReportsScreen() {
           allTransactions.push({
             date: v.date,
             type: 'قبض',
+            documentNumber: v.voucherNumber,
             description: v.debitDescription || 'سند قبض',
             reference: v.debitReference,
             debit: v.debitAmount,
@@ -267,6 +269,7 @@ export function ReportsScreen() {
           allTransactions.push({
             date: v.date,
             type: 'قبض',
+            documentNumber: v.voucherNumber,
             description: v.creditDescription || 'سند قبض',
             reference: v.creditReference,
             debit: 0,
@@ -284,6 +287,7 @@ export function ReportsScreen() {
           allTransactions.push({
             date: v.date,
             type: 'صرف',
+            documentNumber: v.voucherNumber,
             description: v.debitDescription || 'سند صرف',
             reference: v.debitReference,
             debit: v.debitAmount,
@@ -294,6 +298,7 @@ export function ReportsScreen() {
           allTransactions.push({
             date: v.date,
             type: 'صرف',
+            documentNumber: v.voucherNumber,
             description: v.creditDescription || 'سند صرف',
             reference: v.creditReference,
             debit: 0,
@@ -310,6 +315,7 @@ export function ReportsScreen() {
           allTransactions.push({
             date: ex.date,
             type: 'صرف عملة',
+            documentNumber: ex.exchangeNumber,
             description: ex.description || 'صرف عملة',
             reference: ex.reference,
             debit: 0,
@@ -320,6 +326,7 @@ export function ReportsScreen() {
           allTransactions.push({
             date: ex.date,
             type: 'صرف عملة',
+            documentNumber: ex.exchangeNumber,
             description: ex.description || 'صرف عملة',
             reference: ex.reference,
             debit: ex.toAmount,
@@ -337,6 +344,7 @@ export function ReportsScreen() {
       allTransactions.push(...salesInvoices.map(i => ({
         date: i.date,
         type: 'فواتير',
+        documentNumber: i.invoiceNumber,
         description: i.description,
         reference: i.reference,
         debit: i.amount,
@@ -352,6 +360,7 @@ export function ReportsScreen() {
       allTransactions.push(...returnInvoices.map(i => ({
         date: i.date,
         type: 'مرتجع',
+        documentNumber: i.invoiceNumber,
         description: i.description,
         reference: i.reference,
         debit: 0,
@@ -367,6 +376,7 @@ export function ReportsScreen() {
       allTransactions.push(...accountDiscounts.map(d => ({
         date: d.date,
         type: 'خصم',
+        documentNumber: d.discountNumber,
         description: d.description || 'خصم',
         reference: d.reference,
         debit: 0,
