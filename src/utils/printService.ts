@@ -90,6 +90,7 @@ interface PrintReportData {
   transactions: Array<{
     date: string;
     type: string;
+    documentNumber?: string;
     description: string;
     reference?: string;
     debit: number;
@@ -289,12 +290,13 @@ const getCommonStyles = () => `
     margin: 20px 0;
   }
   .report-table th {
-    background: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
-    color: white;
+    background: #87CEEB;
+    color: #000000;
     padding: 12px 8px;
     font-size: 13px;
     text-align: center;
-    border: 1px solid #0d9488;
+    border: 1px solid #000;
+    font-weight: bold;
   }
   .report-table td {
     padding: 10px 8px;
@@ -508,12 +510,13 @@ const getReportPrintStyles = () => `
     margin: 10px 0;
   }
   .report-table th {
-    background: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
-    color: white;
+    background: #87CEEB;
+    color: #000000;
     padding: 10px 6px;
     font-size: 12px;
     text-align: center;
-    border: 1px solid #0d9488;
+    border: 1px solid #000;
+    font-weight: bold;
   }
   .report-table td {
     padding: 8px 6px;
@@ -673,10 +676,16 @@ export function printReport({ title, accountName, currency, transactions, settin
   const balanceLabel = isDebit ? 'عليكم رصيد' : 'لكم رصيد';
   const absBalance = Math.abs(totals.balance);
 
+  const stripLeadingZeros = (str?: string) => {
+    if (!str || str === '-') return '-';
+    return str.replace(/^0+/, '') || '0';
+  };
+
   const transactionsRows = transactions.map(t => `
     <tr${t.isPreviousBalance ? ' class="previous-balance-row"' : ''}>
       <td>${t.date}</td>
       <td${t.isPreviousBalance ? ' style="color: #dc2626; font-weight: bold;"' : ''}>${t.type}</td>
+      <td${t.isPreviousBalance ? ' style="color: #dc2626;"' : ''}>${stripLeadingZeros(t.documentNumber)}</td>
       <td${t.isPreviousBalance ? ' style="color: #dc2626;"' : ''}>${t.description}</td>
       <td>${t.reference || '-'}</td>
       <td class="debit"${t.isPreviousBalance ? ' style="color: #dc2626; font-weight: bold;"' : ''}>${t.debit > 0 ? t.debit.toLocaleString() : '-'}</td>
@@ -743,11 +752,12 @@ export function printReport({ title, accountName, currency, transactions, settin
               <td>
                 <div class="content" style="padding: 10px 15px;">
                   ${transactions.length > 0 ? `
-                  <table class="report-table">
+                    <table class="report-table">
                     <thead>
                       <tr>
                         <th>التاريخ</th>
                         <th>النوع</th>
+                        <th>رقم المستند</th>
                         <th>البيان</th>
                         <th>المرجع</th>
                         <th>مدين</th>
@@ -758,7 +768,7 @@ export function printReport({ title, accountName, currency, transactions, settin
                     <tbody>
                       ${transactionsRows}
                       <tr class="totals-row">
-                        <td colspan="4">الإجمالي</td>
+                        <td colspan="5">الإجمالي</td>
                         <td class="debit">${totals.debit.toLocaleString()}</td>
                         <td class="credit">${totals.credit.toLocaleString()}</td>
                         <td class="${totals.balance >= 0 ? 'balance-positive' : 'balance-negative'}">${totals.balance.toLocaleString()}</td>
