@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import * as XLSX from '@datalens-tech/xlsx';
 
 export interface ExcelImportResult<T> {
   data: T[];
