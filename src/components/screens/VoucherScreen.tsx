@@ -206,6 +206,8 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
     try {
       const rows = await parseExcelFile(file);
       let successCount = 0;
+      const accountNames = accounts.map(a => a.accountName);
+      const groupNames = groups.map(g => g.name);
 
       for (const row of rows) {
         const mapped = mapVoucherRow(row);
@@ -213,14 +215,14 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
           addVoucher({
             date: mapped.date,
             voucherNumber: mapped.voucherNumber || String(vouchers.length + successCount + 1).padStart(4, '0'),
-            debitAccountName: mapped.debitAccountName,
-            debitGroupName: mapped.debitGroupName,
+            debitAccountName: findClosestMatch(mapped.debitAccountName, accountNames),
+            debitGroupName: findClosestMatch(mapped.debitGroupName, groupNames),
             debitAmount: mapped.debitAmount,
             debitCurrency: mapped.debitCurrency,
             debitReference: mapped.debitReference,
             debitDescription: mapped.debitDescription || (type === 'receipt' ? 'سند قبض' : 'سند صرف'),
-            creditAccountName: mapped.creditAccountName || '',
-            creditGroupName: mapped.creditGroupName || '',
+            creditAccountName: findClosestMatch(mapped.creditAccountName, accountNames),
+            creditGroupName: findClosestMatch(mapped.creditGroupName, groupNames),
             creditAmount: mapped.creditAmount || 0,
             creditCurrency: mapped.creditCurrency || '',
             creditReference: mapped.creditReference,

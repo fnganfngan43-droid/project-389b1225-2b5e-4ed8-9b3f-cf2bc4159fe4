@@ -137,6 +137,8 @@ export function DiscountScreen() {
     try {
       const rows = await parseExcelFile(file);
       let successCount = 0;
+      const accountNames = accounts.map(a => a.accountName);
+      const groupNames = groups.map(g => g.name);
 
       for (const row of rows) {
         const mapped = mapDiscountRow(row);
@@ -144,8 +146,8 @@ export function DiscountScreen() {
           addDiscount({
             date: mapped.date,
             discountNumber: mapped.discountNumber || String(discounts.length + successCount + 1).padStart(4, '0'),
-            accountName: mapped.accountName,
-            groupName: mapped.groupName || '',
+            accountName: findClosestMatch(mapped.accountName, accountNames),
+            groupName: findClosestMatch(mapped.groupName || '', groupNames),
             amount: mapped.amount,
             currency: mapped.currency,
             type: mapped.type,
