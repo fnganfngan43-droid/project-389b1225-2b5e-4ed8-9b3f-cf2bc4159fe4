@@ -226,6 +226,7 @@ export function ReportsScreen() {
     let allTransactions: Array<{
       date: string;
       type: string;
+      documentNumber?: string;
       description: string;
       reference?: string;
       debit: number;
