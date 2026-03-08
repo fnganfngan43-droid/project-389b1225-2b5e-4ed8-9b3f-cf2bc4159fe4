@@ -497,6 +497,7 @@ export function ReportsScreen() {
       const prevBalanceRow = {
         date: '-',
         type: 'رصيد افتتاحي',
+        documentNumber: '-',
         description: 'الرصيد الافتتاحي',
         reference: '-',
         debit: prevBalance > 0 ? prevBalance : 0,
@@ -626,6 +627,7 @@ export function ReportsScreen() {
           const prevBalanceRow = {
             date: '-',
             type: 'رصيد افتتاحي',
+            documentNumber: '-',
             description: 'الرصيد الافتتاحي',
             reference: '-',
             debit: prevBalance > 0 ? prevBalance : 0,
@@ -710,6 +712,7 @@ export function ReportsScreen() {
           const prevBalanceRow = {
             date: '-',
             type: 'رصيد افتتاحي',
+            documentNumber: '-',
             description: 'الرصيد الافتتاحي',
             reference: '-',
             debit: prevBalance > 0 ? prevBalance : 0,
@@ -819,6 +822,7 @@ export function ReportsScreen() {
           const prevBalanceRow = {
             date: '-',
             type: 'رصيد افتتاحي',
+            documentNumber: '-',
             description: 'الرصيد الافتتاحي',
             reference: '-',
             debit: prevBalance > 0 ? prevBalance : 0,
