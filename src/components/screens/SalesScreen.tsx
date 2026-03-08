@@ -7,6 +7,7 @@ import { useAccounting } from '@/contexts/AccountingContext';
 import { Invoice } from '@/types/accounting';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { parseExcelFile, mapInvoiceRow } from '@/utils/excelImport';
+import { findClosestMatch } from '@/utils/fuzzyMatch';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { getNextSequentialNumber } from '@/utils/sequentialNumber';
 import { 
@@ -144,15 +145,19 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
     try {
       const rows = await parseExcelFile(file);
       let successCount = 0;
+      const accountNames = accounts.map(a => a.accountName);
+      const groupNames = groups.map(g => g.name);
 
       for (const row of rows) {
         const mapped = mapInvoiceRow(row);
         if (mapped && mapped.accountName) {
+          const correctedAccountName = findClosestMatch(mapped.accountName, accountNames);
+          const correctedGroupName = findClosestMatch(mapped.groupName, groupNames);
           addInvoice({
             date: mapped.date,
             invoiceNumber: mapped.invoiceNumber || String(invoices.length + successCount + 1).padStart(4, '0'),
-            accountName: mapped.accountName,
-            groupName: mapped.groupName,
+            accountName: correctedAccountName,
+            groupName: correctedGroupName,
             amount: isReturn ? -Math.abs(mapped.amount) : mapped.amount,
             currency: mapped.currency,
             type: mapped.type,

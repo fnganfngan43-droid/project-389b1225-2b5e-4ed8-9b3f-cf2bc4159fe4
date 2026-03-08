@@ -7,6 +7,7 @@ import { useAccounting } from '@/contexts/AccountingContext';
 import { OpeningBalance } from '@/types/accounting';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { parseExcelFile, mapOpeningBalanceRow } from '@/utils/excelImport';
+import { findClosestMatch } from '@/utils/fuzzyMatch';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { 
   Select,
@@ -109,13 +110,14 @@ export function OpeningBalanceScreen() {
     try {
       const rows = await parseExcelFile(file);
       let successCount = 0;
+      const accountNames = accounts.map(a => a.accountName);
 
       for (const row of rows) {
         const mapped = mapOpeningBalanceRow(row);
         if (mapped && mapped.accountName) {
           addOpeningBalance({
             date: mapped.date,
-            accountName: mapped.accountName,
+            accountName: findClosestMatch(mapped.accountName, accountNames),
             currency: mapped.currency,
             debit: mapped.debit,
             credit: mapped.credit,
