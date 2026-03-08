@@ -87,6 +87,7 @@ interface ReportPDFData {
   transactions: Array<{
     date: string;
     type: string;
+    documentNumber?: string;
     description: string;
     reference?: string;
     debit: number;
@@ -148,11 +149,17 @@ const getReportHTML = (data: ReportPDFData): string => {
   const isDebit = totals.balance >= 0;
   const balanceLabel = isDebit ? 'عليكم رصيد' : 'لكم رصيد';
   const absBalance = Math.abs(totals.balance);
+
+  const stripLeadingZeros = (str?: string) => {
+    if (!str || str === '-') return '-';
+    return str.replace(/^0+/, '') || '0';
+  };
   
   const transactionsRows = transactions.map(t => `
     <tr${t.isPreviousBalance ? ' style="background: #fef3f2;"' : ''}>
       <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${t.date}</td>
       <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626; font-weight: bold;' : ''}">${t.type}</td>
+      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${stripLeadingZeros(t.documentNumber)}</td>
       <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${t.description}</td>
       <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;">${t.reference || '-'}</td>
       <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #16a34a; font-weight: bold;">${t.debit > 0 ? t.debit.toLocaleString() : '-'}</td>
@@ -163,13 +170,14 @@ const getReportHTML = (data: ReportPDFData): string => {
 
   const tableHeaderHTML = `
     <tr>
-      <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">التاريخ</th>
-      <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">النوع</th>
-      <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">البيان</th>
-      <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">المرجع</th>
-      <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">مدين</th>
-      <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">دائن</th>
-      <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">الرصيد</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">التاريخ</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">النوع</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">رقم المستند</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">البيان</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">المرجع</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">مدين</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">دائن</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">الرصيد</th>
     </tr>
   `;
 
@@ -243,7 +251,7 @@ const getReportHTML = (data: ReportPDFData): string => {
             <tbody>
               ${transactionsRows}
               <tr style="background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%); font-weight: bold; font-size: 14px;">
-                <td colspan="4" style="padding: 10px 8px; border: 1px solid #000; text-align: center; border-top: 3px solid #0d9488;">الإجمالي</td>
+                <td colspan="5" style="padding: 10px 8px; border: 1px solid #000; text-align: center; border-top: 3px solid #0d9488;">الإجمالي</td>
                 <td style="padding: 10px 8px; border: 1px solid #000; text-align: center; color: #16a34a; font-weight: bold; border-top: 3px solid #0d9488;">${totals.debit.toLocaleString()}</td>
                 <td style="padding: 10px 8px; border: 1px solid #000; text-align: center; color: #dc2626; font-weight: bold; border-top: 3px solid #0d9488;">${totals.credit.toLocaleString()}</td>
                 <td style="padding: 10px 8px; border: 1px solid #000; text-align: center; color: ${totals.balance >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold; border-top: 3px solid #0d9488;">${totals.balance.toLocaleString()}</td>
@@ -322,11 +330,11 @@ const getSummaryReportHTML = (data: SummaryPDFData): string => {
         <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
           <thead>
             <tr>
-              <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">رقم الحساب</th>
-              <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">اسم الحساب</th>
-              <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">مدين</th>
-              <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">دائن</th>
-              <th style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #0d9488;">الرصيد</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">رقم الحساب</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">اسم الحساب</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">مدين</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">دائن</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">الرصيد</th>
             </tr>
           </thead>
           <tbody>
