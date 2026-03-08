@@ -226,6 +226,7 @@ export function ReportsScreen() {
     let allTransactions: Array<{
       date: string;
       type: string;
+      documentNumber?: string;
       description: string;
       reference?: string;
       debit: number;
@@ -240,6 +241,7 @@ export function ReportsScreen() {
       allTransactions.push(...accountOpenings.map(ob => ({
         date: ob.date,
         type: 'افتتاحي',
+        documentNumber: '-',
         description: 'رصيد افتتاحي',
         reference: undefined,
         debit: ob.debit,
@@ -256,6 +258,7 @@ export function ReportsScreen() {
           allTransactions.push({
             date: v.date,
             type: 'قبض',
+            documentNumber: v.voucherNumber,
             description: v.debitDescription || 'سند قبض',
             reference: v.debitReference,
             debit: v.debitAmount,
@@ -266,6 +269,7 @@ export function ReportsScreen() {
           allTransactions.push({
             date: v.date,
             type: 'قبض',
+            documentNumber: v.voucherNumber,
             description: v.creditDescription || 'سند قبض',
             reference: v.creditReference,
             debit: 0,
@@ -283,6 +287,7 @@ export function ReportsScreen() {
           allTransactions.push({
             date: v.date,
             type: 'صرف',
+            documentNumber: v.voucherNumber,
             description: v.debitDescription || 'سند صرف',
             reference: v.debitReference,
             debit: v.debitAmount,
@@ -293,6 +298,7 @@ export function ReportsScreen() {
           allTransactions.push({
             date: v.date,
             type: 'صرف',
+            documentNumber: v.voucherNumber,
             description: v.creditDescription || 'سند صرف',
             reference: v.creditReference,
             debit: 0,
@@ -309,6 +315,7 @@ export function ReportsScreen() {
           allTransactions.push({
             date: ex.date,
             type: 'صرف عملة',
+            documentNumber: ex.exchangeNumber,
             description: ex.description || 'صرف عملة',
             reference: ex.reference,
             debit: 0,
@@ -319,6 +326,7 @@ export function ReportsScreen() {
           allTransactions.push({
             date: ex.date,
             type: 'صرف عملة',
+            documentNumber: ex.exchangeNumber,
             description: ex.description || 'صرف عملة',
             reference: ex.reference,
             debit: ex.toAmount,
@@ -336,6 +344,7 @@ export function ReportsScreen() {
       allTransactions.push(...salesInvoices.map(i => ({
         date: i.date,
         type: 'فواتير',
+        documentNumber: i.invoiceNumber,
         description: i.description,
         reference: i.reference,
         debit: i.amount,
@@ -351,6 +360,7 @@ export function ReportsScreen() {
       allTransactions.push(...returnInvoices.map(i => ({
         date: i.date,
         type: 'مرتجع',
+        documentNumber: i.invoiceNumber,
         description: i.description,
         reference: i.reference,
         debit: 0,
@@ -366,6 +376,7 @@ export function ReportsScreen() {
       allTransactions.push(...accountDiscounts.map(d => ({
         date: d.date,
         type: 'خصم',
+        documentNumber: d.discountNumber,
         description: d.description || 'خصم',
         reference: d.reference,
         debit: 0,
@@ -1101,9 +1112,10 @@ export function ReportsScreen() {
               </CardHeader>
               <CardContent className="p-0">
                 {/* Table header */}
-                <div className="grid grid-cols-7 gap-1 p-3 bg-secondary text-secondary-foreground text-xs font-semibold border border-black">
+                <div className="grid grid-cols-8 gap-1 p-3 text-xs font-semibold border border-black text-black" style={{ backgroundColor: '#87CEEB' }}>
                   <div className="border-l border-black pl-1">التاريخ</div>
                   <div className="border-l border-black pl-1">النوع</div>
+                  <div className="border-l border-black pl-1">رقم المستند</div>
                   <div className="border-l border-black pl-1">البيان</div>
                   <div className="border-l border-black pl-1">المرجع</div>
                   <div className="border-l border-black pl-1 text-left">مدين</div>
@@ -1121,11 +1133,12 @@ export function ReportsScreen() {
                   <>
                     {/* Previous Balance Row */}
                     {currData.prevBalance !== 0 && (
-                      <div className="grid grid-cols-7 gap-1 p-3 text-xs border border-black bg-muted/50">
-                        <div className="border-l border-black pl-1 text-muted-foreground">-</div>
+                      <div className="grid grid-cols-8 gap-1 p-3 text-xs border border-black bg-muted/50 text-black">
+                        <div className="border-l border-black pl-1">-</div>
                         <div className="border-l border-black pl-1 font-bold text-destructive">رصيد افتتاحي</div>
+                        <div className="border-l border-black pl-1">-</div>
                         <div className="border-l border-black pl-1 text-destructive">الرصيد الافتتاحي</div>
-                        <div className="border-l border-black pl-1 text-muted-foreground">-</div>
+                        <div className="border-l border-black pl-1">-</div>
                         <div className="border-l border-black pl-1 text-left font-bold text-destructive">
                           {currData.prevBalance > 0 ? currData.prevBalance.toLocaleString() : '-'}
                         </div>
@@ -1143,12 +1156,13 @@ export function ReportsScreen() {
                       return (
                         <div 
                           key={index}
-                          className="grid grid-cols-7 gap-1 p-3 text-xs border-x border-b border-black hover:bg-secondary/30 transition-colors"
+                          className="grid grid-cols-8 gap-1 p-3 text-xs border-x border-b border-black hover:bg-secondary/30 transition-colors text-black"
                         >
-                          <div className="border-l border-black pl-1 text-muted-foreground">{t.date}</div>
+                          <div className="border-l border-black pl-1">{t.date}</div>
                           <div className="border-l border-black pl-1">{t.type}</div>
+                          <div className="border-l border-black pl-1">{t.documentNumber || '-'}</div>
                           <div className="border-l border-black pl-1 truncate">{t.description}</div>
-                          <div className="border-l border-black pl-1 text-muted-foreground">{t.reference || '-'}</div>
+                          <div className="border-l border-black pl-1">{t.reference || '-'}</div>
                           <div className="border-l border-black pl-1 text-left text-success font-medium">
                             {t.debit > 0 ? t.debit.toLocaleString() : '-'}
                           </div>
@@ -1173,8 +1187,8 @@ export function ReportsScreen() {
                   
                   return (
                     <>
-                      <div className="grid grid-cols-7 gap-1 p-3 bg-muted text-sm font-bold border border-black">
-                        <div className="col-span-4 border-l border-black pl-1">الإجمالي</div>
+                      <div className="grid grid-cols-8 gap-1 p-3 bg-muted text-sm font-bold border border-black text-black">
+                        <div className="col-span-5 border-l border-black pl-1">الإجمالي</div>
                         <div className="border-l border-black pl-1 text-left text-success">
                           {(currData.transactions.reduce((sum, t) => sum + t.debit, 0) + (currData.prevBalance > 0 ? currData.prevBalance : 0)).toLocaleString()}
                         </div>
@@ -1236,9 +1250,10 @@ export function ReportsScreen() {
             </CardHeader>
             <CardContent className="p-0">
               {/* Table header */}
-              <div className="grid grid-cols-7 gap-1 p-3 bg-secondary text-secondary-foreground text-xs font-semibold border border-black">
+              <div className="grid grid-cols-8 gap-1 p-3 text-xs font-semibold border border-black text-black" style={{ backgroundColor: '#87CEEB' }}>
                 <div className="border-l border-black pl-1">التاريخ</div>
                 <div className="border-l border-black pl-1">النوع</div>
+                <div className="border-l border-black pl-1">رقم المستند</div>
                 <div className="border-l border-black pl-1">البيان</div>
                 <div className="border-l border-black pl-1">المرجع</div>
                 <div className="border-l border-black pl-1 text-left">مدين</div>
@@ -1259,11 +1274,12 @@ export function ReportsScreen() {
                     const prevBalance = getPreviousBalance(selectedAccount, selectedCurrency);
                     if (prevBalance !== 0) {
                       return (
-                        <div className="grid grid-cols-7 gap-1 p-3 text-xs border border-black bg-muted/50">
-                          <div className="border-l border-black pl-1 text-muted-foreground">-</div>
+                        <div className="grid grid-cols-8 gap-1 p-3 text-xs border border-black bg-muted/50 text-black">
+                          <div className="border-l border-black pl-1">-</div>
                           <div className="border-l border-black pl-1 font-bold text-destructive">رصيد افتتاحي</div>
+                          <div className="border-l border-black pl-1">-</div>
                           <div className="border-l border-black pl-1 text-destructive">الرصيد الافتتاحي</div>
-                          <div className="border-l border-black pl-1 text-muted-foreground">-</div>
+                          <div className="border-l border-black pl-1">-</div>
                           <div className="border-l border-black pl-1 text-left font-bold text-destructive">
                             {prevBalance > 0 ? prevBalance.toLocaleString() : '-'}
                           </div>
@@ -1285,12 +1301,13 @@ export function ReportsScreen() {
                     return (
                       <div 
                         key={index}
-                        className="grid grid-cols-7 gap-1 p-3 text-xs border-x border-b border-black hover:bg-secondary/30 transition-colors"
+                        className="grid grid-cols-8 gap-1 p-3 text-xs border-x border-b border-black hover:bg-secondary/30 transition-colors text-black"
                       >
-                        <div className="border-l border-black pl-1 text-muted-foreground">{t.date}</div>
+                        <div className="border-l border-black pl-1">{t.date}</div>
                         <div className="border-l border-black pl-1">{t.type}</div>
+                        <div className="border-l border-black pl-1">{t.documentNumber || '-'}</div>
                         <div className="border-l border-black pl-1 truncate">{t.description}</div>
-                        <div className="border-l border-black pl-1 text-muted-foreground">{t.reference || '-'}</div>
+                        <div className="border-l border-black pl-1">{t.reference || '-'}</div>
                         <div className="border-l border-black pl-1 text-left text-success font-medium">
                           {t.debit > 0 ? t.debit.toLocaleString() : '-'}
                         </div>
@@ -1316,8 +1333,8 @@ export function ReportsScreen() {
                 
                 return (
                   <>
-                    <div className="grid grid-cols-7 gap-1 p-3 bg-muted text-sm font-bold border border-black">
-                      <div className="col-span-4 border-l border-black pl-1">الإجمالي</div>
+                    <div className="grid grid-cols-8 gap-1 p-3 bg-muted text-sm font-bold border border-black text-black">
+                      <div className="col-span-5 border-l border-black pl-1">الإجمالي</div>
                       <div className="border-l border-black pl-1 text-left text-success">
                         {(transactionsWithBalance.reduce((sum, t) => sum + t.debit, 0) + (prevBalance > 0 ? prevBalance : 0)).toLocaleString()}
                       </div>
