@@ -112,6 +112,12 @@ const getToday = () => {
   return format(new Date(), 'yyyy-MM-dd');
 };
 
+// Helper to strip leading zeros from document numbers
+const stripLeadingZeros = (str?: string) => {
+  if (!str || str === '-') return '-';
+  return str.replace(/^0+/, '') || '0';
+};
+
 export function ReportsScreen() {
   const { accounts, groups, currencies, vouchers, invoices, openingBalances, currencyExchanges, discounts, settings } = useAccounting();
   const [reportType, setReportType] = useState<ReportType>('analytical');
@@ -491,6 +497,7 @@ export function ReportsScreen() {
       const prevBalanceRow = {
         date: '-',
         type: 'رصيد افتتاحي',
+        documentNumber: '-',
         description: 'الرصيد الافتتاحي',
         reference: '-',
         debit: prevBalance > 0 ? prevBalance : 0,
@@ -620,6 +627,7 @@ export function ReportsScreen() {
           const prevBalanceRow = {
             date: '-',
             type: 'رصيد افتتاحي',
+            documentNumber: '-',
             description: 'الرصيد الافتتاحي',
             reference: '-',
             debit: prevBalance > 0 ? prevBalance : 0,
@@ -704,6 +712,7 @@ export function ReportsScreen() {
           const prevBalanceRow = {
             date: '-',
             type: 'رصيد افتتاحي',
+            documentNumber: '-',
             description: 'الرصيد الافتتاحي',
             reference: '-',
             debit: prevBalance > 0 ? prevBalance : 0,
@@ -813,6 +822,7 @@ export function ReportsScreen() {
           const prevBalanceRow = {
             date: '-',
             type: 'رصيد افتتاحي',
+            documentNumber: '-',
             description: 'الرصيد الافتتاحي',
             reference: '-',
             debit: prevBalance > 0 ? prevBalance : 0,
@@ -1160,7 +1170,7 @@ export function ReportsScreen() {
                         >
                           <div className="border-l border-black pl-1">{t.date}</div>
                           <div className="border-l border-black pl-1">{t.type}</div>
-                          <div className="border-l border-black pl-1">{t.documentNumber || '-'}</div>
+                          <div className="border-l border-black pl-1">{stripLeadingZeros(t.documentNumber)}</div>
                           <div className="border-l border-black pl-1 truncate">{t.description}</div>
                           <div className="border-l border-black pl-1">{t.reference || '-'}</div>
                           <div className="border-l border-black pl-1 text-left text-success font-medium">
@@ -1305,7 +1315,7 @@ export function ReportsScreen() {
                       >
                         <div className="border-l border-black pl-1">{t.date}</div>
                         <div className="border-l border-black pl-1">{t.type}</div>
-                        <div className="border-l border-black pl-1">{t.documentNumber || '-'}</div>
+                        <div className="border-l border-black pl-1">{stripLeadingZeros(t.documentNumber)}</div>
                         <div className="border-l border-black pl-1 truncate">{t.description}</div>
                         <div className="border-l border-black pl-1">{t.reference || '-'}</div>
                         <div className="border-l border-black pl-1 text-left text-success font-medium">
@@ -1387,7 +1397,7 @@ export function ReportsScreen() {
               </CardHeader>
               <CardContent className="p-0">
                 {/* Table header */}
-                <div className="grid grid-cols-6 gap-1 p-3 bg-secondary text-secondary-foreground text-xs font-semibold border border-black">
+                <div className="grid grid-cols-6 gap-1 p-3 text-xs font-semibold border border-black text-black" style={{ backgroundColor: '#87CEEB' }}>
                   <div className="border-l border-black pl-1">رقم الحساب</div>
                   <div className="border-l border-black pl-1">اسم الحساب</div>
                   <div className="border-l border-black pl-1">العملة</div>
