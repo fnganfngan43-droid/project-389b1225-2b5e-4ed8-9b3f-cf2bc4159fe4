@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { parseExcelFile, mapDiscountRow } from '@/utils/excelImport';
+import { findClosestMatch } from '@/utils/fuzzyMatch';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { getNextSequentialNumber } from '@/utils/sequentialNumber';
 import { AccountSearchInput } from '@/components/AccountSearchInput';

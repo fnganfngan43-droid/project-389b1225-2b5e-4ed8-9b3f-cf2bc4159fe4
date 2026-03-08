@@ -8,6 +8,7 @@ import { Voucher } from '@/types/accounting';
 import { printVoucher } from '@/utils/printService';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { parseExcelFile, mapVoucherRow } from '@/utils/excelImport';
+import { findClosestMatch } from '@/utils/fuzzyMatch';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { getNextSequentialNumber } from '@/utils/sequentialNumber';
 import { 

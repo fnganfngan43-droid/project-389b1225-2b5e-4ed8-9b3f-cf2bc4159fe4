@@ -7,6 +7,7 @@ import { useAccounting } from '@/contexts/AccountingContext';
 import { Invoice } from '@/types/accounting';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { parseExcelFile, mapInvoiceRow } from '@/utils/excelImport';
+import { findClosestMatch } from '@/utils/fuzzyMatch';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { getNextSequentialNumber } from '@/utils/sequentialNumber';
 import { 
