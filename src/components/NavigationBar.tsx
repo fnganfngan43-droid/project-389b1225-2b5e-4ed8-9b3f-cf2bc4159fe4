@@ -35,6 +35,7 @@ const navItems: { id: ScreenType; label: string; icon: React.ElementType }[] = [
   { id: 'governorate-management', label: 'إدارة المحافظات', icon: MapPin },
   { id: 'group-management', label: 'إدارة المجموعات', icon: FolderTree },
   { id: 'password-settings', label: 'كلمة المرور', icon: Lock },
+  { id: 'invoice-voucher-report', label: 'تقرير الفواتير', icon: FileText },
 ];
 
 export function NavigationBar({ activeScreen, onScreenChange }: NavigationBarProps) {

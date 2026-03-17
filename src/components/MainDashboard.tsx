@@ -76,6 +76,8 @@ export function MainDashboard() {
         return <AccountGroupManagementScreen />;
       case 'password-settings':
         return <PasswordSettingsScreen />;
+      case 'invoice-voucher-report':
+        return <InvoiceVoucherReportScreen />;
       default:
         return <ChartOfAccountsScreen />;
     }
