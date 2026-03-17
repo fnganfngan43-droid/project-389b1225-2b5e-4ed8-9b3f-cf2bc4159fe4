@@ -13,6 +13,7 @@ import { CurrencyManagementScreen } from '@/components/screens/CurrencyManagemen
 import { GovernorateManagementScreen } from '@/components/screens/GovernorateManagementScreen';
 import { AccountGroupManagementScreen } from '@/components/screens/AccountGroupManagementScreen';
 import { PasswordSettingsScreen } from '@/components/screens/PasswordSettingsScreen';
+import { InvoiceVoucherReportScreen } from '@/components/screens/InvoiceVoucherReportScreen';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { ScreenType } from '@/types/accounting';
 
