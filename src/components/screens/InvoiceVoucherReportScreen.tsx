@@ -1,0 +1,320 @@
+import { useState, useMemo } from 'react';
+import { format, startOfYear } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useAccounting } from '@/contexts/AccountingContext';
+import { ScrollableTable } from '@/components/ui/ScrollableTable';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FileText, Eye, Printer, Search } from 'lucide-react';
+import { toast } from 'sonner';
+
+type OperationType = 'invoices' | 'returns' | 'receipts' | 'payments';
+
+const getFirstDayOfYear = () => format(startOfYear(new Date()), 'yyyy-MM-dd');
+const getToday = () => format(new Date(), 'yyyy-MM-dd');
+
+export function InvoiceVoucherReportScreen() {
+  const { invoices, vouchers, currencies, settings } = useAccounting();
+
+  const [operationType, setOperationType] = useState<OperationType>('invoices');
+  const [dateFrom, setDateFrom] = useState(getFirstDayOfYear());
+  const [dateTo, setDateTo] = useState(getToday());
+  const [selectedCurrency, setSelectedCurrency] = useState('');
+  const [numberFrom, setNumberFrom] = useState('');
+  const [numberTo, setNumberTo] = useState('');
+  const [showReport, setShowReport] = useState(false);
+
+  const operationLabels: Record<OperationType, string> = {
+    invoices: 'فواتير المبيعات',
+    returns: 'مرتجعات المبيعات',
+    receipts: 'سندات القبض',
+    payments: 'سندات الصرف',
+  };
+
+  const isInDateRange = (date: string) => {
+    const d = new Date(date);
+    if (dateFrom && d < new Date(dateFrom)) return false;
+    if (dateTo && d > new Date(dateTo + 'T23:59:59')) return false;
+    return true;
+  };
+
+  const isInNumberRange = (num: string) => {
+    if (!numberFrom && !numberTo) return true;
+    const n = parseInt(num.replace(/^0+/, '') || '0', 10);
+    if (numberFrom && n < parseInt(numberFrom, 10)) return false;
+    if (numberTo && n > parseInt(numberTo, 10)) return false;
+    return true;
+  };
+
+  const reportData = useMemo(() => {
+    if (!showReport) return [];
+
+    if (operationType === 'invoices' || operationType === 'returns') {
+      return invoices.filter(inv => {
+        const isReturn = inv.amount < 0;
+        if (operationType === 'invoices' && isReturn) return false;
+        if (operationType === 'returns' && !isReturn) return false;
+        if (!isInDateRange(inv.date)) return false;
+        if (selectedCurrency && inv.currency !== selectedCurrency) return false;
+        if (!isInNumberRange(inv.invoiceNumber)) return false;
+        return true;
+      }).map(inv => ({
+        id: inv.id,
+        number: inv.invoiceNumber,
+        date: inv.date,
+        accountName: inv.accountName,
+        groupName: inv.groupName,
+        amount: Math.abs(inv.amount),
+        currency: inv.currency,
+        type: inv.type === 'cash' ? 'نقدي' : 'آجل',
+        description: inv.description || '-',
+        reference: inv.reference || '-',
+      }));
+    } else {
+      const voucherType = operationType === 'receipts' ? 'receipt' : 'payment';
+      return vouchers.filter(v => {
+        if (v.type !== voucherType) return false;
+        if (!isInDateRange(v.date)) return false;
+        if (selectedCurrency && v.debitCurrency !== selectedCurrency && v.creditCurrency !== selectedCurrency) return false;
+        if (!isInNumberRange(v.voucherNumber)) return false;
+        return true;
+      }).map(v => ({
+        id: v.id,
+        number: v.voucherNumber,
+        date: v.date,
+        accountName: voucherType === 'receipt' ? v.debitAccountName : v.creditAccountName,
+        groupName: voucherType === 'receipt' ? v.debitGroupName : v.creditGroupName,
+        amount: voucherType === 'receipt' ? v.debitAmount : v.creditAmount,
+        currency: voucherType === 'receipt' ? v.debitCurrency : v.creditCurrency,
+        type: '-',
+        description: v.debitDescription || v.creditDescription || '-',
+        reference: v.debitReference || v.creditReference || '-',
+      }));
+    }
+  }, [showReport, operationType, invoices, vouchers, dateFrom, dateTo, selectedCurrency, numberFrom, numberTo]);
+
+  const totalAmount = useMemo(() => reportData.reduce((sum, item) => sum + item.amount, 0), [reportData]);
+
+  const handleGenerateReport = () => {
+    setShowReport(true);
+    toast.success(`تم إنشاء تقرير ${operationLabels[operationType]}`);
+  };
+
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const rows = reportData.map((item, idx) => `
+      <tr>
+        <td style="border:1px solid #333;padding:6px;text-align:center;">${idx + 1}</td>
+        <td style="border:1px solid #333;padding:6px;text-align:center;">${item.number}</td>
+        <td style="border:1px solid #333;padding:6px;text-align:center;">${item.date}</td>
+        <td style="border:1px solid #333;padding:6px;text-align:right;">${item.accountName}</td>
+        <td style="border:1px solid #333;padding:6px;text-align:right;">${item.groupName}</td>
+        <td style="border:1px solid #333;padding:6px;text-align:center;">${item.amount.toLocaleString()}</td>
+        <td style="border:1px solid #333;padding:6px;text-align:center;">${item.currency}</td>
+        <td style="border:1px solid #333;padding:6px;text-align:right;">${item.description}</td>
+      </tr>
+    `).join('');
+
+    printWindow.document.write(`
+      <html dir="rtl">
+      <head>
+        <title>تقرير ${operationLabels[operationType]}</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; direction: rtl; }
+          table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+          th { background-color: #87CEEB; color: #000; font-weight: bold; border: 1px solid #333; padding: 8px; text-align: center; }
+          td { font-size: 13px; }
+          .header { text-align: center; margin-bottom: 16px; }
+          .total { margin-top: 12px; font-weight: bold; font-size: 16px; text-align: left; }
+          .filters { margin-bottom: 12px; font-size: 13px; color: #555; }
+          ${settings.footerNote ? '.footer-note { margin-top: 16px; text-align: center; font-size: 12px; color: #777; }' : ''}
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h2>${operationLabels[operationType]}</h2>
+          <div class="filters">من ${dateFrom} إلى ${dateTo}${selectedCurrency ? ' | العملة: ' + selectedCurrency : ''}${numberFrom || numberTo ? ' | من رقم ' + (numberFrom || '1') + ' إلى رقم ' + (numberTo || '∞') : ''}</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>الرقم</th>
+              <th>التاريخ</th>
+              <th>الحساب</th>
+              <th>المجموعة</th>
+              <th>المبلغ</th>
+              <th>العملة</th>
+              <th>البيان</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div class="total">الإجمالي: ${totalAmount.toLocaleString()} ${selectedCurrency || ''}</div>
+        ${settings.footerNote ? `<div class="footer-note">${settings.footerNote}</div>` : ''}
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+  const columns = [
+    { key: 'index', header: '#', render: (_: any, idx: number) => <span>{idx + 1}</span> },
+    { key: 'number', header: 'الرقم', render: (item: any) => item.number },
+    { key: 'date', header: 'التاريخ', render: (item: any) => item.date },
+    { key: 'accountName', header: 'الحساب', render: (item: any) => item.accountName },
+    { key: 'groupName', header: 'المجموعة', render: (item: any) => <span className="text-muted-foreground">{item.groupName}</span> },
+    { key: 'amount', header: 'المبلغ', render: (item: any) => <span className="font-bold">{item.amount.toLocaleString()}</span> },
+    { key: 'currency', header: 'العملة', render: (item: any) => item.currency },
+    { key: 'description', header: 'البيان', render: (item: any) => <span className="text-muted-foreground">{item.description}</span> },
+  ];
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden min-h-0">
+      {/* Filters */}
+      <div className="shrink-0 bg-card border-b border-border p-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {/* Operation Type */}
+          <div className="space-y-1 col-span-2 md:col-span-1">
+            <Label className="text-xs">نوع العملية</Label>
+            <Select value={operationType} onValueChange={(v) => { setOperationType(v as OperationType); setShowReport(false); }}>
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="invoices">فواتير المبيعات</SelectItem>
+                <SelectItem value="returns">مرتجعات المبيعات</SelectItem>
+                <SelectItem value="receipts">سندات القبض</SelectItem>
+                <SelectItem value="payments">سندات الصرف</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Date From */}
+          <div className="space-y-1">
+            <Label className="text-xs">من تاريخ</Label>
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="h-9 text-sm"
+            />
+          </div>
+
+          {/* Date To */}
+          <div className="space-y-1">
+            <Label className="text-xs">إلى تاريخ</Label>
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="h-9 text-sm"
+            />
+          </div>
+
+          {/* Currency */}
+          <div className="space-y-1">
+            <Label className="text-xs">العملة</Label>
+            <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue placeholder="الكل" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">الكل</SelectItem>
+                {currencies.map(c => (
+                  <SelectItem key={c.id} value={c.symbol}>{c.name} ({c.symbol})</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Number From */}
+          <div className="space-y-1">
+            <Label className="text-xs">من رقم</Label>
+            <Input
+              type="number"
+              value={numberFrom}
+              onChange={(e) => setNumberFrom(e.target.value)}
+              placeholder="1"
+              className="h-9 text-sm"
+            />
+          </div>
+
+          {/* Number To */}
+          <div className="space-y-1">
+            <Label className="text-xs">إلى رقم</Label>
+            <Input
+              type="number"
+              value={numberTo}
+              onChange={(e) => setNumberTo(e.target.value)}
+              placeholder="∞"
+              className="h-9 text-sm"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-2 mt-3">
+          <Button onClick={handleGenerateReport} className="gradient-primary" size="sm">
+            <Eye className="w-4 h-4 ml-2" />
+            عرض التقرير
+          </Button>
+          {showReport && reportData.length > 0 && (
+            <Button onClick={handlePrint} variant="outline" size="sm">
+              <Printer className="w-4 h-4 ml-2" />
+              طباعة
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Report Table */}
+      {showReport && (
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Card className="flex-1 flex flex-col overflow-hidden glass-card m-4">
+            <CardHeader className="py-3 shrink-0">
+              <CardTitle className="text-base flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" />
+                  {operationLabels[operationType]} ({reportData.length})
+                </span>
+                <span className="text-sm font-bold text-primary">
+                  الإجمالي: {totalAmount.toLocaleString()} {selectedCurrency && selectedCurrency !== 'all' ? selectedCurrency : ''}
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-hidden p-0">
+              <ScrollableTable
+                columns={columns}
+                data={reportData}
+                getItemId={(item) => item.id}
+                emptyTitle="لا توجد بيانات"
+                emptyDescription="لا توجد عمليات تطابق معايير البحث"
+              />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {!showReport && (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center text-muted-foreground">
+            <Search className="w-12 h-12 mx-auto mb-3 opacity-40" />
+            <p className="text-lg font-medium">اختر نوع العملية واضغط عرض التقرير</p>
+            <p className="text-sm mt-1">يمكنك تصفية البيانات بالتاريخ والعملة ورقم المستند</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

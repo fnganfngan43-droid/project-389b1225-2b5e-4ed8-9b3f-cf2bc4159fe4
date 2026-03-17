@@ -13,6 +13,7 @@ import { CurrencyManagementScreen } from '@/components/screens/CurrencyManagemen
 import { GovernorateManagementScreen } from '@/components/screens/GovernorateManagementScreen';
 import { AccountGroupManagementScreen } from '@/components/screens/AccountGroupManagementScreen';
 import { PasswordSettingsScreen } from '@/components/screens/PasswordSettingsScreen';
+import { InvoiceVoucherReportScreen } from '@/components/screens/InvoiceVoucherReportScreen';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { ScreenType } from '@/types/accounting';
 
@@ -42,6 +43,7 @@ export function MainDashboard() {
       'governorate-management': 'إدارة المحافظات',
       'group-management': 'إدارة المجموعات',
       'password-settings': 'إعدادات كلمة المرور',
+      'invoice-voucher-report': 'تقرير الفواتير والسندات',
     };
     return titles[activeScreen];
   };
@@ -74,6 +76,8 @@ export function MainDashboard() {
         return <AccountGroupManagementScreen />;
       case 'password-settings':
         return <PasswordSettingsScreen />;
+      case 'invoice-voucher-report':
+        return <InvoiceVoucherReportScreen />;
       default:
         return <ChartOfAccountsScreen />;
     }
