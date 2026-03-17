@@ -43,6 +43,7 @@ export function MainDashboard() {
       'governorate-management': 'إدارة المحافظات',
       'group-management': 'إدارة المجموعات',
       'password-settings': 'إعدادات كلمة المرور',
+      'invoice-voucher-report': 'تقرير الفواتير والسندات',
     };
     return titles[activeScreen];
   };
