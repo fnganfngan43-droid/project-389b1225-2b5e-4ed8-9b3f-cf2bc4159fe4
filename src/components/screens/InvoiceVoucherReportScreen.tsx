@@ -114,54 +114,239 @@ export function InvoiceVoucherReportScreen() {
 
     const rows = reportData.map((item, idx) => `
       <tr>
-        <td style="border:1px solid #333;padding:6px;text-align:center;">${idx + 1}</td>
-        <td style="border:1px solid #333;padding:6px;text-align:center;">${item.number}</td>
-        <td style="border:1px solid #333;padding:6px;text-align:center;">${item.date}</td>
-        <td style="border:1px solid #333;padding:6px;text-align:right;">${item.accountName}</td>
-        <td style="border:1px solid #333;padding:6px;text-align:right;">${item.groupName}</td>
-        <td style="border:1px solid #333;padding:6px;text-align:center;">${item.amount.toLocaleString()}</td>
-        <td style="border:1px solid #333;padding:6px;text-align:center;">${item.currency}</td>
-        <td style="border:1px solid #333;padding:6px;text-align:right;">${item.description}</td>
+        <td>${idx + 1}</td>
+        <td>${item.number}</td>
+        <td>${item.date}</td>
+        <td>${item.accountName}</td>
+        <td>${item.groupName}</td>
+        <td class="debit">${item.amount.toLocaleString()}</td>
+        <td>${item.currency}</td>
+        <td>${item.description}</td>
       </tr>
     `).join('');
 
+    const filtersText = `من ${dateFrom} إلى ${dateTo}${selectedCurrency && selectedCurrency !== 'all' ? ' | العملة: ' + selectedCurrency : ''}${numberFrom || numberTo ? ' | من رقم ' + (numberFrom || '1') + ' إلى رقم ' + (numberTo || '∞') : ''}`;
+
     printWindow.document.write(`
-      <html dir="rtl">
+      <!DOCTYPE html>
+      <html lang="ar" dir="rtl">
       <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>تقرير ${operationLabels[operationType]}</title>
+        <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
         <style>
-          body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; direction: rtl; }
-          table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-          th { background-color: #87CEEB; color: #000; font-weight: bold; border: 1px solid #333; padding: 8px; text-align: center; }
-          td { font-size: 13px; }
-          .header { text-align: center; margin-bottom: 16px; }
-          .total { margin-top: 12px; font-weight: bold; font-size: 16px; text-align: left; }
-          .filters { margin-bottom: 12px; font-size: 13px; color: #555; }
-          ${settings.footerNote ? '.footer-note { margin-top: 16px; text-align: center; font-size: 12px; color: #777; }' : ''}
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body {
+            font-family: 'Tajawal', 'Arial', sans-serif;
+            direction: rtl;
+            background: #fff;
+            color: #1a1a1a;
+            padding: 15px;
+          }
+          .page-border {
+            border: 3px solid #0d9488;
+            border-radius: 16px;
+            padding: 10px;
+            background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 100%);
+            box-shadow: 0 4px 20px rgba(13, 148, 136, 0.15);
+          }
+          .print-container {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 2px solid #0d9488;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+          }
+          .header {
+            background: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          .header-right { text-align: right; flex: 1; }
+          .header-center { flex: 0 0 100px; display: flex; justify-content: center; align-items: center; }
+          .header-center img { max-width: 80px; max-height: 80px; object-fit: cover; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); }
+          .header-left { text-align: left; flex: 1; direction: ltr; }
+          .header h1, .header h2, .header p { margin: 2px 0; color: #000000; }
+          .header h1 { font-size: 18px; font-weight: bold; color: #000000; }
+          .header h2 { font-size: 14px; color: #1a1a1a; }
+          .header p { font-size: 12px; color: #333333; }
+          .report-header-wrapper {
+            border: 2px solid #0d9488;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 5px 0 5px 0;
+          }
+          .report-info-wrapper { padding: 5px 15px; }
+          .voucher-type {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #0d9488;
+            border: 2px solid #0d9488;
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+          }
+          .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px dashed #ccc;
+          }
+          .info-row:last-child { border-bottom: none; }
+          .info-label { color: #666; font-size: 14px; }
+          .info-value { font-weight: bold; font-size: 16px; }
+          .content { padding: 10px 15px; }
+          .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+          }
+          .report-table th {
+            background: #87CEEB;
+            color: #000000;
+            padding: 10px 6px;
+            font-size: 12px;
+            text-align: center;
+            border: 1px solid #000;
+            font-weight: bold;
+          }
+          .report-table td {
+            padding: 8px 6px;
+            border: 1px solid #000;
+            font-size: 11px;
+            text-align: center;
+            color: #000000;
+          }
+          .report-table tr:nth-child(even) { background: #f9fafb; }
+          .report-table .debit { color: #16a34a; font-weight: bold; }
+          .totals-row {
+            background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%) !important;
+            font-weight: bold;
+            font-size: 12px !important;
+          }
+          .totals-row td { border-top: 2px solid #0d9488 !important; }
+          .page-footer-content {
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+            padding: 6px 0;
+            border-top: 1px solid #e2e8f0;
+          }
+          .print-doc { width: 100%; border-collapse: collapse; }
+          .print-doc > thead > tr > td,
+          .print-doc > tfoot > tr > td,
+          .print-doc > tbody > tr > td {
+            padding: 0; border: none; vertical-align: top;
+          }
+          @media print {
+            body { padding: 0; margin: 0; }
+            @page { size: A4; margin: 10mm; }
+            .page-frame {
+              position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+              border: 3px solid #0d9488; border-radius: 10px;
+              pointer-events: none; z-index: 9999;
+            }
+            .page-border { border: none; box-shadow: none; padding: 0; background: none; border-radius: 0; }
+            .print-container { border: none; border-radius: 0; }
+            .print-doc > thead { display: table-header-group; }
+            .print-doc > tfoot { display: table-footer-group; }
+            .report-table thead { display: table-header-group; }
+            tr { page-break-inside: avoid; }
+            .report-header-wrapper { margin: 8px 12px 5px 12px; }
+            .report-info-wrapper { margin: 0 12px; }
+            .page-footer-content { margin: 0 12px; }
+          }
         </style>
       </head>
       <body>
-        <div class="header">
-          <h2>${operationLabels[operationType]}</h2>
-          <div class="filters">من ${dateFrom} إلى ${dateTo}${selectedCurrency ? ' | العملة: ' + selectedCurrency : ''}${numberFrom || numberTo ? ' | من رقم ' + (numberFrom || '1') + ' إلى رقم ' + (numberTo || '∞') : ''}</div>
+        <div class="page-frame"></div>
+        <div class="page-border">
+        <div class="print-container">
+          <table class="print-doc">
+            <thead>
+              <tr>
+                <td>
+                  <div class="report-header-wrapper">
+                    <div class="header">
+                      <div class="header-right">
+                        <h1>${settings.headerArabic[0]}</h1>
+                        <h2>${settings.headerArabic[1]}</h2>
+                        <p>${settings.headerArabic[2]}</p>
+                      </div>
+                      <div class="header-center">
+                        ${settings.logo ? `<img src="${settings.logo}" alt="Logo" />` : ''}
+                      </div>
+                      <div class="header-left">
+                        <h1>${settings.headerEnglish[0]}</h1>
+                        <h2>${settings.headerEnglish[1]}</h2>
+                        <p>${settings.headerEnglish[2]}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="report-info-wrapper">
+                    <div class="voucher-type">${operationLabels[operationType]}</div>
+                    <div class="info-row">
+                      <span class="info-label">الفترة:</span>
+                      <span class="info-value">${filtersText}</span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </thead>
+            <tfoot>
+              <tr>
+                <td>
+                  <div class="page-footer-content">
+                    <span>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}</span>
+                  </div>
+                </td>
+              </tr>
+            </tfoot>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="content">
+                    <table class="report-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>الرقم</th>
+                          <th>التاريخ</th>
+                          <th>الحساب</th>
+                          <th>المجموعة</th>
+                          <th>المبلغ</th>
+                          <th>العملة</th>
+                          <th>البيان</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${rows}
+                        <tr class="totals-row">
+                          <td colspan="5">الإجمالي</td>
+                          <td class="debit">${totalAmount.toLocaleString()}</td>
+                          <td>${selectedCurrency && selectedCurrency !== 'all' ? selectedCurrency : ''}</td>
+                          <td></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    ${settings.footerNote ? `
+                    <div style="text-align: center; padding: 12px; margin: 15px 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                      <span style="font-size: 13px; color: #333; font-weight: 500;">${settings.footerNote}</span>
+                    </div>` : ''}
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>الرقم</th>
-              <th>التاريخ</th>
-              <th>الحساب</th>
-              <th>المجموعة</th>
-              <th>المبلغ</th>
-              <th>العملة</th>
-              <th>البيان</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-        <div class="total">الإجمالي: ${totalAmount.toLocaleString()} ${selectedCurrency || ''}</div>
-        ${settings.footerNote ? `<div class="footer-note">${settings.footerNote}</div>` : ''}
+        </div>
       </body>
       </html>
     `);
