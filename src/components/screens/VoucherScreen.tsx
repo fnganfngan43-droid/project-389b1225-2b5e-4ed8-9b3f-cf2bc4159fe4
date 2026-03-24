@@ -87,6 +87,35 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
     formData.debitAmount && formData.creditAmount &&
     parseFloat(formData.debitAmount) !== parseFloat(formData.creditAmount);
 
+  const performSave = () => {
+    const voucherData = {
+      date: formData.date,
+      voucherNumber: formData.voucherNumber,
+      debitAccountName: formData.debitAccountName,
+      debitGroupName: formData.debitGroupName,
+      debitAmount: parseFloat(formData.debitAmount),
+      debitCurrency: formData.debitCurrency,
+      debitReference: formData.debitReference,
+      debitDescription: formData.debitDescription || (type === 'receipt' ? 'سند قبض' : 'سند صرف'),
+      creditAccountName: formData.creditAccountName,
+      creditGroupName: formData.creditGroupName,
+      creditAmount: parseFloat(formData.creditAmount),
+      creditCurrency: formData.creditCurrency,
+      creditReference: formData.creditReference,
+      creditDescription: formData.creditDescription || (type === 'receipt' ? 'سند قبض' : 'سند صرف'),
+      type,
+    };
+
+    if (editingVoucher) {
+      updateVoucher(editingVoucher.id, voucherData);
+      toast.success('تم تحديث السند بنجاح');
+    } else {
+      addVoucher(voucherData);
+      toast.success('تم حفظ السند بنجاح');
+    }
+    resetForm();
+  };
+
   const handleSave = () => {
     if (!formData.debitAccountName || !formData.debitAmount || !formData.debitCurrency) {
       toast.error('يرجى ملء حقول الطرف المدين');
@@ -105,22 +134,9 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
       }
     }
 
-    // Check for duplicate reference (debit or credit)
-    const existingDebitRef = formData.debitReference && vouchers.find(v => 
-      v.id !== editingVoucher?.id && 
-      (v.debitReference === formData.debitReference || v.creditReference === formData.debitReference)
-    );
-    const existingCreditRef = formData.creditReference && vouchers.find(v => 
-      v.id !== editingVoucher?.id && 
-      (v.debitReference === formData.creditReference || v.creditReference === formData.creditReference)
-    );
-
-    if (existingDebitRef) {
-      toast.warning(`تنبيه: رقم المرجع "${formData.debitReference}" مستخدم مسبقاً في سند آخر`);
-    }
-    if (existingCreditRef && formData.creditReference !== formData.debitReference) {
-      toast.warning(`تنبيه: رقم المرجع "${formData.creditReference}" مستخدم مسبقاً في سند آخر`);
-    }
+    const refsToCheck = [formData.debitReference, formData.creditReference].filter(Boolean);
+    checkAndProceed(refsToCheck, editingVoucher?.id, performSave);
+  };
 
     const voucherData = {
       date: formData.date,
