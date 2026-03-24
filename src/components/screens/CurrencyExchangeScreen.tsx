@@ -21,6 +21,7 @@ import { CurrencyExchange } from '@/types/accounting';
 
 export function CurrencyExchangeScreen() {
   const { accounts, groups, currencies, currencyExchanges, addCurrencyExchange, updateCurrencyExchange, deleteCurrencyExchange } = useAccounting();
+  const { dialogOpen, duplicateRef, checkAndProceed, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedExchange, setSelectedExchange] = useState<CurrencyExchange | null>(null);
