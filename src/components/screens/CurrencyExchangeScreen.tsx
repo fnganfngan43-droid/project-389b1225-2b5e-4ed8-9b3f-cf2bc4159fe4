@@ -51,12 +51,7 @@ export function CurrencyExchangeScreen() {
   const fromAccounts = accounts.filter(a => a.groupName === formData.fromGroupName);
   const toAccounts = accounts.filter(a => a.groupName === formData.toGroupName);
 
-  const handleSave = () => {
-    if (!formData.fromAccountName || !formData.toAccountName || !formData.fromAmount || !formData.toAmount) {
-      toast.error('يرجى ملء جميع الحقول المطلوبة');
-      return;
-    }
-
+  const performSave = () => {
     if (editingExchange) {
       updateCurrencyExchange(editingExchange.id, {
         date: formData.date,
@@ -91,6 +86,16 @@ export function CurrencyExchangeScreen() {
       toast.success('تم حفظ عملية الصرف بنجاح');
     }
     resetForm();
+  };
+
+  const handleSave = () => {
+    if (!formData.fromAccountName || !formData.toAccountName || !formData.fromAmount || !formData.toAmount) {
+      toast.error('يرجى ملء جميع الحقول المطلوبة');
+      return;
+    }
+
+    const refsToCheck = formData.fromReference ? [formData.fromReference] : [];
+    checkAndProceed(refsToCheck, editingExchange?.id, performSave);
   };
 
   const handleEdit = () => {
