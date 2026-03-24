@@ -29,6 +29,7 @@ interface VoucherScreenProps {
 
 export function VoucherScreen({ type }: VoucherScreenProps) {
   const { vouchers, accounts, groups, currencies, settings, addVoucher, updateVoucher, deleteVoucher } = useAccounting();
+  const { dialogOpen, duplicateRef, checkAndProceed, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
