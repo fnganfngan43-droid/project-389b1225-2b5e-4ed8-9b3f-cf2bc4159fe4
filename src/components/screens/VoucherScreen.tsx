@@ -135,7 +135,10 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
     }
 
     const refsToCheck = [formData.debitReference, formData.creditReference].filter(Boolean);
-    checkAndProceed(refsToCheck, editingVoucher?.id, performSave);
+    const existingRefs = vouchers
+      .filter(v => v.id !== editingVoucher?.id && v.type === type)
+      .flatMap(v => [v.debitReference, v.creditReference]).filter(Boolean) as string[];
+    checkAndProceed(refsToCheck, existingRefs, performSave);
   };
 
 
