@@ -62,12 +62,7 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
 
   const filteredAccounts = accounts.filter(a => a.groupName === formData.groupName);
 
-  const handleSave = () => {
-    if (!formData.accountName || !formData.amount || !formData.currency) {
-      toast.error('يرجى ملء جميع الحقول المطلوبة');
-      return;
-    }
-
+  const performSave = () => {
     if (editingInvoice) {
       updateInvoice(editingInvoice.id, {
         date: formData.date,
@@ -96,6 +91,16 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
       toast.success(`تم حفظ ${isReturn ? 'المرتجع' : 'الفاتورة'} بنجاح`);
     }
     resetForm();
+  };
+
+  const handleSave = () => {
+    if (!formData.accountName || !formData.amount || !formData.currency) {
+      toast.error('يرجى ملء جميع الحقول المطلوبة');
+      return;
+    }
+
+    const refsToCheck = formData.reference ? [formData.reference] : [];
+    checkAndProceed(refsToCheck, editingInvoice?.id, performSave);
   };
 
   const handleEdit = () => {
