@@ -138,33 +138,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
     checkAndProceed(refsToCheck, editingVoucher?.id, performSave);
   };
 
-    const voucherData = {
-      date: formData.date,
-      voucherNumber: formData.voucherNumber,
-      debitAccountName: formData.debitAccountName,
-      debitGroupName: formData.debitGroupName,
-      debitAmount: parseFloat(formData.debitAmount),
-      debitCurrency: formData.debitCurrency,
-      debitReference: formData.debitReference,
-      debitDescription: formData.debitDescription || (type === 'receipt' ? 'سند قبض' : 'سند صرف'),
-      creditAccountName: formData.creditAccountName,
-      creditGroupName: formData.creditGroupName,
-      creditAmount: parseFloat(formData.creditAmount),
-      creditCurrency: formData.creditCurrency,
-      creditReference: formData.creditReference,
-      creditDescription: formData.creditDescription || (type === 'receipt' ? 'سند قبض' : 'سند صرف'),
-      type,
-    };
 
-    if (editingVoucher) {
-      updateVoucher(editingVoucher.id, voucherData);
-      toast.success(`تم تحديث ${type === 'receipt' ? 'سند القبض' : 'سند الصرف'} بنجاح`);
-    } else {
-      addVoucher(voucherData);
-      toast.success(`تم حفظ ${type === 'receipt' ? 'سند القبض' : 'سند الصرف'} بنجاح`);
-    }
-    resetForm();
-  };
 
   const handleEdit = () => {
     if (selectedVoucher) {
