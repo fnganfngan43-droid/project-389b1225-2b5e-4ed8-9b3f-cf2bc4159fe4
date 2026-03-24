@@ -24,6 +24,7 @@ import { DuplicateReferenceDialog } from '@/components/DuplicateReferenceDialog'
 
 export function DiscountScreen() {
   const { accounts, groups, currencies, discounts, addDiscount, updateDiscount, deleteDiscount } = useAccounting();
+  const { dialogOpen, duplicateRef, checkAndProceed, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedDiscount, setSelectedDiscount] = useState<DiscountEntry | null>(null);
