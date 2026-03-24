@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/select";
 import { Save, X, ArrowLeftRight, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
+import { useDuplicateReferenceCheck } from '@/hooks/useDuplicateReferenceCheck';
+import { DuplicateReferenceDialog } from '@/components/DuplicateReferenceDialog';
 
 import { CurrencyExchange } from '@/types/accounting';
 

@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/select";
 import { Save, X, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
+import { useDuplicateReferenceCheck } from '@/hooks/useDuplicateReferenceCheck';
+import { DuplicateReferenceDialog } from '@/components/DuplicateReferenceDialog';
 
 interface SalesScreenProps {
   isReturn?: boolean;

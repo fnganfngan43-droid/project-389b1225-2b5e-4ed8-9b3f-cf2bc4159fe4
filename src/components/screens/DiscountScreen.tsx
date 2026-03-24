@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/select";
 import { Save, X, Percent } from 'lucide-react';
 import { toast } from 'sonner';
+import { useDuplicateReferenceCheck } from '@/hooks/useDuplicateReferenceCheck';
+import { DuplicateReferenceDialog } from '@/components/DuplicateReferenceDialog';
 
 export function DiscountScreen() {
   const { accounts, groups, currencies, discounts, addDiscount, updateDiscount, deleteDiscount } = useAccounting();
