@@ -55,12 +55,7 @@ export function DiscountScreen() {
 
   const filteredAccounts = accounts.filter(a => a.groupName === formData.groupName);
 
-  const handleSave = () => {
-    if (!formData.accountName || !formData.amount || !formData.currency) {
-      toast.error('يرجى ملء جميع الحقول المطلوبة');
-      return;
-    }
-
+  const performSave = () => {
     if (editingDiscount) {
       updateDiscount(editingDiscount.id, {
         date: formData.date,
@@ -89,6 +84,16 @@ export function DiscountScreen() {
       toast.success('تم حفظ الخصم بنجاح');
     }
     resetForm();
+  };
+
+  const handleSave = () => {
+    if (!formData.accountName || !formData.amount || !formData.currency) {
+      toast.error('يرجى ملء جميع الحقول المطلوبة');
+      return;
+    }
+
+    const refsToCheck = formData.reference ? [formData.reference] : [];
+    checkAndProceed(refsToCheck, editingDiscount?.id, performSave);
   };
 
   const handleEdit = () => {
