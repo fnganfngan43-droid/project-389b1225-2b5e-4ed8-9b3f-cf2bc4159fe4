@@ -93,7 +93,10 @@ export function DiscountScreen() {
     }
 
     const refsToCheck = formData.reference ? [formData.reference] : [];
-    checkAndProceed(refsToCheck, editingDiscount?.id, performSave);
+    const existingRefs = discounts
+      .filter(d => d.id !== editingDiscount?.id)
+      .map(d => d.reference).filter(Boolean) as string[];
+    checkAndProceed(refsToCheck, existingRefs, performSave);
   };
 
   const handleEdit = () => {

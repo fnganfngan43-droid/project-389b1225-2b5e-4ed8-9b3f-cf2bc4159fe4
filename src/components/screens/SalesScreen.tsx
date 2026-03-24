@@ -100,7 +100,10 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
     }
 
     const refsToCheck = formData.reference ? [formData.reference] : [];
-    checkAndProceed(refsToCheck, editingInvoice?.id, performSave);
+    const existingRefs = invoices
+      .filter(inv => inv.id !== editingInvoice?.id && (isReturn ? inv.amount < 0 : inv.amount >= 0))
+      .map(inv => inv.reference).filter(Boolean) as string[];
+    checkAndProceed(refsToCheck, existingRefs, performSave);
   };
 
   const handleEdit = () => {

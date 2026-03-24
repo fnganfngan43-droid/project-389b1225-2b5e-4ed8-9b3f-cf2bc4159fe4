@@ -95,7 +95,10 @@ export function CurrencyExchangeScreen() {
     }
 
     const refsToCheck = formData.fromReference ? [formData.fromReference] : [];
-    checkAndProceed(refsToCheck, editingExchange?.id, performSave);
+    const existingRefs = currencyExchanges
+      .filter(e => e.id !== editingExchange?.id)
+      .map(e => e.reference).filter(Boolean) as string[];
+    checkAndProceed(refsToCheck, existingRefs, performSave);
   };
 
   const handleEdit = () => {
