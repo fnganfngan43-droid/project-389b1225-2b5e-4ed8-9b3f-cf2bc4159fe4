@@ -14,11 +14,14 @@ import {
 } from "@/components/ui/select";
 import { Save, X, ArrowLeftRight, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
+import { useDuplicateReferenceCheck } from '@/hooks/useDuplicateReferenceCheck';
+import { DuplicateReferenceDialog } from '@/components/DuplicateReferenceDialog';
 
 import { CurrencyExchange } from '@/types/accounting';
 
 export function CurrencyExchangeScreen() {
   const { accounts, groups, currencies, currencyExchanges, addCurrencyExchange, updateCurrencyExchange, deleteCurrencyExchange } = useAccounting();
+  const { dialogOpen, duplicateRef, checkAndProceed, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedExchange, setSelectedExchange] = useState<CurrencyExchange | null>(null);
@@ -48,12 +51,7 @@ export function CurrencyExchangeScreen() {
   const fromAccounts = accounts.filter(a => a.groupName === formData.fromGroupName);
   const toAccounts = accounts.filter(a => a.groupName === formData.toGroupName);
 
-  const handleSave = () => {
-    if (!formData.fromAccountName || !formData.toAccountName || !formData.fromAmount || !formData.toAmount) {
-      toast.error('يرجى ملء جميع الحقول المطلوبة');
-      return;
-    }
-
+  const performSave = () => {
     if (editingExchange) {
       updateCurrencyExchange(editingExchange.id, {
         date: formData.date,
@@ -88,6 +86,16 @@ export function CurrencyExchangeScreen() {
       toast.success('تم حفظ عملية الصرف بنجاح');
     }
     resetForm();
+  };
+
+  const handleSave = () => {
+    if (!formData.fromAccountName || !formData.toAccountName || !formData.fromAmount || !formData.toAmount) {
+      toast.error('يرجى ملء جميع الحقول المطلوبة');
+      return;
+    }
+
+    const refsToCheck = formData.fromReference ? [formData.fromReference] : [];
+    checkAndProceed(refsToCheck, editingExchange?.id, performSave);
   };
 
   const handleEdit = () => {
@@ -420,6 +428,13 @@ export function CurrencyExchangeScreen() {
           />
         </div>
       </div>
+
+      <DuplicateReferenceDialog
+        open={dialogOpen}
+        referenceNumber={duplicateRef}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </div>
   );
 }

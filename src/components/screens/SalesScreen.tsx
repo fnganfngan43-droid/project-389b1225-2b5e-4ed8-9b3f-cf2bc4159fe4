@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/select";
 import { Save, X, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
+import { useDuplicateReferenceCheck } from '@/hooks/useDuplicateReferenceCheck';
+import { DuplicateReferenceDialog } from '@/components/DuplicateReferenceDialog';
 
 interface SalesScreenProps {
   isReturn?: boolean;
@@ -26,6 +28,7 @@ interface SalesScreenProps {
 
 export function SalesScreen({ isReturn = false }: SalesScreenProps) {
   const { invoices, accounts, groups, currencies, addInvoice, updateInvoice, deleteInvoice } = useAccounting();
+  const { dialogOpen, duplicateRef, checkAndProceed, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
@@ -59,12 +62,7 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
 
   const filteredAccounts = accounts.filter(a => a.groupName === formData.groupName);
 
-  const handleSave = () => {
-    if (!formData.accountName || !formData.amount || !formData.currency) {
-      toast.error('يرجى ملء جميع الحقول المطلوبة');
-      return;
-    }
-
+  const performSave = () => {
     if (editingInvoice) {
       updateInvoice(editingInvoice.id, {
         date: formData.date,
@@ -93,6 +91,16 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
       toast.success(`تم حفظ ${isReturn ? 'المرتجع' : 'الفاتورة'} بنجاح`);
     }
     resetForm();
+  };
+
+  const handleSave = () => {
+    if (!formData.accountName || !formData.amount || !formData.currency) {
+      toast.error('يرجى ملء جميع الحقول المطلوبة');
+      return;
+    }
+
+    const refsToCheck = formData.reference ? [formData.reference] : [];
+    checkAndProceed(refsToCheck, editingInvoice?.id, performSave);
   };
 
   const handleEdit = () => {
@@ -466,6 +474,13 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
           />
         </div>
       </div>
+
+      <DuplicateReferenceDialog
+        open={dialogOpen}
+        referenceNumber={duplicateRef}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </div>
   );
 }

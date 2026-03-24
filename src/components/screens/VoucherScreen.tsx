@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/select";
 import { Save, X, Calendar, Printer, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
+import { useDuplicateReferenceCheck } from '@/hooks/useDuplicateReferenceCheck';
+import { DuplicateReferenceDialog } from '@/components/DuplicateReferenceDialog';
 
 interface VoucherScreenProps {
   type: 'receipt' | 'payment';
@@ -27,6 +29,7 @@ interface VoucherScreenProps {
 
 export function VoucherScreen({ type }: VoucherScreenProps) {
   const { vouchers, accounts, groups, currencies, settings, addVoucher, updateVoucher, deleteVoucher } = useAccounting();
+  const { dialogOpen, duplicateRef, checkAndProceed, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
@@ -84,41 +87,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
     formData.debitAmount && formData.creditAmount &&
     parseFloat(formData.debitAmount) !== parseFloat(formData.creditAmount);
 
-  const handleSave = () => {
-    if (!formData.debitAccountName || !formData.debitAmount || !formData.debitCurrency) {
-      toast.error('يرجى ملء حقول الطرف المدين');
-      return;
-    }
-    if (!formData.creditAccountName || !formData.creditAmount || !formData.creditCurrency) {
-      toast.error('يرجى ملء حقول الطرف الدائن');
-      return;
-    }
-
-    // Check balance if same currency
-    if (formData.debitCurrency === formData.creditCurrency) {
-      if (parseFloat(formData.debitAmount) !== parseFloat(formData.creditAmount)) {
-        toast.error('المبلغ المدين والدائن غير متوازنين');
-        return;
-      }
-    }
-
-    // Check for duplicate reference (debit or credit)
-    const existingDebitRef = formData.debitReference && vouchers.find(v => 
-      v.id !== editingVoucher?.id && 
-      (v.debitReference === formData.debitReference || v.creditReference === formData.debitReference)
-    );
-    const existingCreditRef = formData.creditReference && vouchers.find(v => 
-      v.id !== editingVoucher?.id && 
-      (v.debitReference === formData.creditReference || v.creditReference === formData.creditReference)
-    );
-
-    if (existingDebitRef) {
-      toast.warning(`تنبيه: رقم المرجع "${formData.debitReference}" مستخدم مسبقاً في سند آخر`);
-    }
-    if (existingCreditRef && formData.creditReference !== formData.debitReference) {
-      toast.warning(`تنبيه: رقم المرجع "${formData.creditReference}" مستخدم مسبقاً في سند آخر`);
-    }
-
+  const performSave = () => {
     const voucherData = {
       date: formData.date,
       voucherNumber: formData.voucherNumber,
@@ -139,13 +108,37 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
 
     if (editingVoucher) {
       updateVoucher(editingVoucher.id, voucherData);
-      toast.success(`تم تحديث ${type === 'receipt' ? 'سند القبض' : 'سند الصرف'} بنجاح`);
+      toast.success('تم تحديث السند بنجاح');
     } else {
       addVoucher(voucherData);
-      toast.success(`تم حفظ ${type === 'receipt' ? 'سند القبض' : 'سند الصرف'} بنجاح`);
+      toast.success('تم حفظ السند بنجاح');
     }
     resetForm();
   };
+
+  const handleSave = () => {
+    if (!formData.debitAccountName || !formData.debitAmount || !formData.debitCurrency) {
+      toast.error('يرجى ملء حقول الطرف المدين');
+      return;
+    }
+    if (!formData.creditAccountName || !formData.creditAmount || !formData.creditCurrency) {
+      toast.error('يرجى ملء حقول الطرف الدائن');
+      return;
+    }
+
+    // Check balance if same currency
+    if (formData.debitCurrency === formData.creditCurrency) {
+      if (parseFloat(formData.debitAmount) !== parseFloat(formData.creditAmount)) {
+        toast.error('المبلغ المدين والدائن غير متوازنين');
+        return;
+      }
+    }
+
+    const refsToCheck = [formData.debitReference, formData.creditReference].filter(Boolean);
+    checkAndProceed(refsToCheck, editingVoucher?.id, performSave);
+  };
+
+
 
   const handleEdit = () => {
     if (selectedVoucher) {
@@ -816,6 +809,13 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
           />
         </div>
       </div>
+
+      <DuplicateReferenceDialog
+        open={dialogOpen}
+        referenceNumber={duplicateRef}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </div>
   );
 }
