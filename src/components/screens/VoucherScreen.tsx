@@ -835,6 +835,13 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
           />
         </div>
       </div>
+
+      <DuplicateReferenceDialog
+        open={dialogOpen}
+        referenceNumber={duplicateRef}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </div>
   );
 }

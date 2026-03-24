@@ -439,6 +439,13 @@ export function DiscountScreen() {
           />
         </div>
       </div>
+
+      <DuplicateReferenceDialog
+        open={dialogOpen}
+        referenceNumber={duplicateRef}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </div>
   );
 }
