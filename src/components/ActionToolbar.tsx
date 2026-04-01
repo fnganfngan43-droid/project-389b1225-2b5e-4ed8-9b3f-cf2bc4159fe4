@@ -152,6 +152,10 @@ export function ActionToolbar({
             استيراد Excel
           </Button>
         )}
+        {showCalculator && (
+          <Button onClick={() => setShowCalc(true)} size="sm" variant="secondary">
+            <CalculatorIcon className="w-4 h-4" />
+          </Button>
         {onEdit && (
           <Button onClick={onEdit} size="sm" variant="secondary">
             <Edit className="w-4 h-4" />
