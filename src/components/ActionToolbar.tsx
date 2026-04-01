@@ -184,6 +184,7 @@ export function ActionToolbar({
           />
         </div>
       )}
+      {showCalc && <Calculator onClose={() => setShowCalc(false)} />}
     </div>
   );
 }
