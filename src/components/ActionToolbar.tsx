@@ -37,11 +37,13 @@ export function ActionToolbar({
   onSearchChange,
   searchPlaceholder = 'بحث...',
   showDuplicate = false,
+  showCalculator = false,
   importColumns = [],
   importTitle = 'استيراد من Excel',
 }: ActionToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showCalc, setShowCalc] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
