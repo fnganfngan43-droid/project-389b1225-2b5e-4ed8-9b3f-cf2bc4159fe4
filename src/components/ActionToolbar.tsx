@@ -22,6 +22,7 @@ interface ActionToolbarProps {
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
   showDuplicate?: boolean;
+  showCalculator?: boolean;
   importColumns?: string[];
   importTitle?: string;
 }
