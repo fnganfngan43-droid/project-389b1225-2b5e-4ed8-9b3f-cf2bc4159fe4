@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Trash2, Edit, Download, Copy, Search, FileSpreadsheet, Info } from 'lucide-react';
+import { Plus, Trash2, Edit, Download, Copy, Search, FileSpreadsheet, Info, Calculator as CalculatorIcon } from 'lucide-react';
+import { Calculator } from '@/components/Calculator';
 import {
   Dialog,
   DialogContent,
