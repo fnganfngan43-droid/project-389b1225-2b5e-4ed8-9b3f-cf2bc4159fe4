@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Trash2, Edit, Download, Copy, Search, FileSpreadsheet, Info } from 'lucide-react';
+import { Plus, Trash2, Edit, Download, Copy, Search, FileSpreadsheet, Info, Calculator as CalculatorIcon } from 'lucide-react';
+import { Calculator } from '@/components/Calculator';
 import {
   Dialog,
   DialogContent,
@@ -21,6 +22,7 @@ interface ActionToolbarProps {
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
   showDuplicate?: boolean;
+  showCalculator?: boolean;
   importColumns?: string[];
   importTitle?: string;
 }
@@ -35,11 +37,13 @@ export function ActionToolbar({
   onSearchChange,
   searchPlaceholder = 'بحث...',
   showDuplicate = false,
+  showCalculator = false,
   importColumns = [],
   importTitle = 'استيراد من Excel',
 }: ActionToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showCalc, setShowCalc] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -148,6 +152,11 @@ export function ActionToolbar({
             استيراد Excel
           </Button>
         )}
+        {showCalculator && (
+          <Button onClick={() => setShowCalc(true)} size="sm" variant="secondary">
+            <CalculatorIcon className="w-4 h-4" />
+          </Button>
+        )}
         {onEdit && (
           <Button onClick={onEdit} size="sm" variant="secondary">
             <Edit className="w-4 h-4" />
@@ -175,6 +184,7 @@ export function ActionToolbar({
           />
         </div>
       )}
+      {showCalc && <Calculator onClose={() => setShowCalc(false)} />}
     </div>
   );
 }

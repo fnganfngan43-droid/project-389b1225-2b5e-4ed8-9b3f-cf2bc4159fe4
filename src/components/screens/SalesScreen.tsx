@@ -273,6 +273,7 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
           onDelete={selectedInvoice ? handleDelete : undefined}
           onImport={handleImport}
           showDuplicate
+          showCalculator
           onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
           searchValue={searchTerm}
         onSearchChange={setSearchTerm}
