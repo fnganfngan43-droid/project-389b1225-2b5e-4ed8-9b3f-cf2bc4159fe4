@@ -205,6 +205,7 @@ export function CurrencyExchangeScreen() {
           onDelete={selectedExchange ? handleDelete : undefined}
           onImport={() => toast.info('سيتم إضافة خاصية الاستيراد قريباً')}
           showDuplicate
+          showCalculator
           onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}

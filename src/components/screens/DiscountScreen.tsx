@@ -263,6 +263,7 @@ export function DiscountScreen() {
           onDelete={selectedDiscount ? handleDelete : undefined}
           onImport={handleImport}
           showDuplicate
+          showCalculator
           onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}

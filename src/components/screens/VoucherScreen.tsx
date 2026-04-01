@@ -291,6 +291,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
           onDelete={selectedVoucher ? handleDelete : undefined}
           onImport={handleImport}
           showDuplicate
+          showCalculator
           onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
