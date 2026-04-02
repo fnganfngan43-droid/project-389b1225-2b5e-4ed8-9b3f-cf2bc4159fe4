@@ -9,7 +9,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Save, User, FileText, Image, Upload, X } from 'lucide-react';
+import { Save, User, FileText, Image, Upload, X, Download, UploadCloud, DatabaseBackup } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SettingsDialogProps {
