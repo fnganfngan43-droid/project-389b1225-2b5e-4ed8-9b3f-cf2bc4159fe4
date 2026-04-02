@@ -29,6 +29,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const backupInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
