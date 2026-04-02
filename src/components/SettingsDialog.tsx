@@ -233,6 +233,83 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             </CardContent>
           </Card>
 
+          {/* Backup & Restore */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <DatabaseBackup className="w-4 h-4" />
+                النسخ الاحتياطي واستعادة البيانات
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  try {
+                    const data = localStorage.getItem('accounting_data');
+                    if (!data) {
+                      toast.error('لا توجد بيانات للنسخ');
+                      return;
+                    }
+                    const blob = new Blob([data], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    const date = new Date().toISOString().slice(0, 10);
+                    a.href = url;
+                    a.download = `accounting-backup-${date}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success('تم تنزيل النسخة الاحتياطية بنجاح');
+                  } catch {
+                    toast.error('فشل في إنشاء النسخة الاحتياطية');
+                  }
+                }}
+              >
+                <Download className="w-4 h-4 ml-2" />
+                تنزيل نسخة احتياطية
+              </Button>
+
+              <input
+                type="file"
+                ref={backupInputRef}
+                accept=".json"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    try {
+                      const content = ev.target?.result as string;
+                      const parsed = JSON.parse(content);
+                      // Basic validation
+                      if (!parsed.accounts && !parsed.vouchers && !parsed.settings) {
+                        toast.error('ملف النسخة الاحتياطية غير صالح');
+                        return;
+                      }
+                      localStorage.setItem('accounting_data', content);
+                      toast.success('تم استعادة البيانات بنجاح. سيتم إعادة تحميل التطبيق...');
+                      setTimeout(() => window.location.reload(), 1500);
+                    } catch {
+                      toast.error('فشل في قراءة ملف النسخة الاحتياطية');
+                    }
+                  };
+                  reader.readAsText(file);
+                  if (backupInputRef.current) backupInputRef.current.value = '';
+                }}
+              />
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => backupInputRef.current?.click()}
+              >
+                <UploadCloud className="w-4 h-4 ml-2" />
+                استعادة من نسخة احتياطية
+              </Button>
+            </CardContent>
+          </Card>
+
           {/* Save Button */}
           <Button onClick={handleSave} className="w-full" size="lg">
             <Save className="w-4 h-4" />
