@@ -14,7 +14,7 @@ export function triggerBackupDownload() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'نسخة المحاسب.json';
+    a.download = 'نسخ المحاسب المحبوب/نسخة المحاسب.json';
     a.click();
     URL.revokeObjectURL(url);
 
