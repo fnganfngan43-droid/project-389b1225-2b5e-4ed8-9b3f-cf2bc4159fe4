@@ -234,16 +234,35 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           </Card>
 
           {/* Backup & Restore */}
-          <Card>
+          <Card className="border-primary/30">
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <DatabaseBackup className="w-4 h-4" />
+                <DatabaseBackup className="w-4 h-4 text-primary" />
                 النسخ الاحتياطي واستعادة البيانات
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
+              {/* Last backup info */}
+              {(() => {
+                const lastBackup = localStorage.getItem('last_backup_date');
+                return (
+                  <div className="p-3 rounded-lg bg-muted/50 text-sm">
+                    <p className="text-muted-foreground">
+                      آخر نسخة احتياطية: {' '}
+                      <span className="font-medium text-foreground">
+                        {lastBackup || 'لم يتم إنشاء نسخة بعد'}
+                      </span>
+                    </p>
+                  </div>
+                );
+              })()}
+
+              <p className="text-xs text-muted-foreground">
+                💡 احفظ نسخة احتياطية في ذاكرة هاتفك لاستعادة بياناتك عند الحاجة
+              </p>
+
               <Button
-                variant="outline"
+                variant="default"
                 className="w-full"
                 onClick={() => {
                   try {
@@ -255,19 +274,23 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     const blob = new Blob([data], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
-                    const date = new Date().toISOString().slice(0, 10);
+                    const now = new Date();
+                    const date = now.toISOString().slice(0, 10);
+                    const time = now.toTimeString().slice(0, 5).replace(':', '-');
                     a.href = url;
-                    a.download = `accounting-backup-${date}.json`;
+                    a.download = `accounting-backup-${date}_${time}.json`;
                     a.click();
                     URL.revokeObjectURL(url);
-                    toast.success('تم تنزيل النسخة الاحتياطية بنجاح');
+                    const displayDate = now.toLocaleDateString('ar-SA') + ' ' + now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+                    localStorage.setItem('last_backup_date', displayDate);
+                    toast.success('تم حفظ النسخة الاحتياطية في ذاكرة الهاتف');
                   } catch {
                     toast.error('فشل في إنشاء النسخة الاحتياطية');
                   }
                 }}
               >
                 <Download className="w-4 h-4 ml-2" />
-                تنزيل نسخة احتياطية
+                حفظ نسخة احتياطية في الهاتف
               </Button>
 
               <input
@@ -283,7 +306,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     try {
                       const content = ev.target?.result as string;
                       const parsed = JSON.parse(content);
-                      // Basic validation
                       if (!parsed.accounts && !parsed.vouchers && !parsed.settings) {
                         toast.error('ملف النسخة الاحتياطية غير صالح');
                         return;
@@ -305,7 +327,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 onClick={() => backupInputRef.current?.click()}
               >
                 <UploadCloud className="w-4 h-4 ml-2" />
-                استعادة من نسخة احتياطية
+                استعادة من نسخة احتياطية من الهاتف
               </Button>
             </CardContent>
           </Card>
