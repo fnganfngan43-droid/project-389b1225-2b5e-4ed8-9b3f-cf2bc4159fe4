@@ -9,7 +9,10 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Save, User, FileText, Image, Upload, X, Download, UploadCloud, DatabaseBackup } from 'lucide-react';
+import { Save, User, FileText, Image, Upload, X, Download, UploadCloud, DatabaseBackup, RefreshCw } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { isAutoBackupEnabled, setAutoBackupEnabled, triggerBackupDownload } from '@/hooks/useAutoBackup';
 import { toast } from 'sonner';
 
 interface SettingsDialogProps {
@@ -30,6 +33,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const backupInputRef = useRef<HTMLInputElement>(null);
+  const [autoBackup, setAutoBackup] = useState(isAutoBackupEnabled());
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -261,36 +265,39 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 💡 احفظ نسخة احتياطية في ذاكرة هاتفك لاستعادة بياناتك عند الحاجة
               </p>
 
+              {/* Auto backup toggle */}
+              <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                <div className="flex items-center gap-2">
+                  <RefreshCw className="w-4 h-4 text-primary" />
+                  <Label htmlFor="auto-backup" className="text-sm font-medium cursor-pointer">
+                    نسخ احتياطي تلقائي (كل 30 دقيقة)
+                  </Label>
+                </div>
+                <Switch
+                  id="auto-backup"
+                  checked={autoBackup}
+                  onCheckedChange={(checked) => {
+                    setAutoBackup(checked);
+                    setAutoBackupEnabled(checked);
+                    toast.success(checked ? 'تم تفعيل النسخ الاحتياطي التلقائي' : 'تم إيقاف النسخ الاحتياطي التلقائي');
+                  }}
+                />
+              </div>
+
               <Button
                 variant="default"
                 className="w-full"
                 onClick={() => {
-                  try {
-                    const data = localStorage.getItem('accounting_data');
-                    if (!data) {
-                      toast.error('لا توجد بيانات للنسخ');
-                      return;
-                    }
-                    const blob = new Blob([data], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    const now = new Date();
-                    const date = now.toISOString().slice(0, 10);
-                    const time = now.toTimeString().slice(0, 5).replace(':', '-');
-                    a.href = url;
-                    a.download = `accounting-backup-${date}_${time}.json`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    const displayDate = now.toLocaleDateString('ar-SA') + ' ' + now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
-                    localStorage.setItem('last_backup_date', displayDate);
-                    toast.success('تم حفظ النسخة الاحتياطية في ذاكرة الهاتف');
-                  } catch {
-                    toast.error('فشل في إنشاء النسخة الاحتياطية');
+                  const success = triggerBackupDownload();
+                  if (success) {
+                    toast.success('تم حفظ نسخة المحاسب في ذاكرة الهاتف');
+                  } else {
+                    toast.error('لا توجد بيانات للنسخ');
                   }
                 }}
               >
                 <Download className="w-4 h-4 ml-2" />
-                حفظ نسخة احتياطية في الهاتف
+                حفظ نسخة المحاسب في الهاتف
               </Button>
 
               <input
