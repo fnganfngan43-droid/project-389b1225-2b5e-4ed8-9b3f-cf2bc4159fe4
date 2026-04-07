@@ -578,9 +578,7 @@ export async function generateSummaryReportPDF(data: SummaryPDFData): Promise<Bl
   const htmlContent = getSummaryReportHTML(data);
   return generateSectionBasedPDF(htmlContent);
 }
-  document.body.appendChild(iframe);
-  
-  const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+
   if (!iframeDoc) {
     document.body.removeChild(iframe);
     throw new Error('Could not access iframe document');
