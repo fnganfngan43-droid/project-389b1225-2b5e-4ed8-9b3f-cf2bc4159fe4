@@ -579,9 +579,7 @@ export async function generateSummaryReportPDF(data: SummaryPDFData): Promise<Bl
   return generateSectionBasedPDF(htmlContent);
 }
 
-
-
-  
+export async function sharePDFViaWhatsApp(pdfBlob: Blob, filename: string): Promise<void> {
   iframeDoc.open();
   iframeDoc.write(htmlContent);
   iframeDoc.close();
