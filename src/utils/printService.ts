@@ -371,7 +371,7 @@ const getCommonStyles = () => `
     
     @page { 
       size: A4;
-      margin: 10mm; 
+      margin: 8mm; 
     }
     
     /* Page border frame - appears on every printed page */
@@ -387,24 +387,33 @@ const getCommonStyles = () => `
       z-index: 9999;
     }
     
+    /* Remove outer wrappers so table pagination works */
     .page-border { 
-      border: none; 
-      box-shadow: none;
-      padding: 0;
-      background: none;
-      border-radius: 0;
+      border: none !important; 
+      box-shadow: none !important;
+      padding: 0 !important;
+      background: none !important;
+      border-radius: 0 !important;
     }
     .print-container { 
-      border: none; 
-      border-radius: 0;
+      border: none !important; 
+      border-radius: 0 !important;
+      overflow: visible !important;
     }
     
-    /* Repeat outer table header/footer on every page */
-    .print-doc > thead { display: table-header-group; }
-    .print-doc > tfoot { display: table-footer-group; }
+    /* CRITICAL: Repeat outer table header/footer on every page */
+    .print-doc { 
+      width: 100%; 
+      border-collapse: collapse;
+    }
+    .print-doc > thead { display: table-header-group !important; }
+    .print-doc > tfoot { display: table-footer-group !important; }
     
-    /* Inner report table header also repeats */
-    .report-table thead { display: table-header-group; }
+    /* Inner report table header also repeats on every page */
+    .report-table { 
+      page-break-inside: auto;
+    }
+    .report-table thead { display: table-header-group !important; }
     
     /* Avoid breaking inside rows */
     tr { page-break-inside: avoid; }
@@ -414,23 +423,49 @@ const getCommonStyles = () => `
       border: 2px solid #0d9488;
       border-radius: 10px;
       overflow: hidden;
-      margin: 8px 12px 5px 12px;
+      margin: 4px 8px 3px 8px;
     }
     
-    /* Report info section */
+    /* Compact header for print to save space */
+    .report-header-wrapper .header {
+      padding: 10px 15px;
+    }
+    .report-header-wrapper .header h1 {
+      font-size: 14px;
+    }
+    .report-header-wrapper .header h2 {
+      font-size: 11px;
+    }
+    .report-header-wrapper .header p {
+      font-size: 10px;
+    }
+    .report-header-wrapper .header-center img {
+      max-width: 50px;
+      max-height: 50px;
+    }
+    
+    /* Report info section - compact */
     .report-info-wrapper {
-      margin: 0 12px;
-      padding: 5px 15px;
+      margin: 0 8px;
+      padding: 3px 10px;
+    }
+    .report-info-wrapper .voucher-type {
+      font-size: 14px !important;
+      padding: 5px !important;
+      margin-bottom: 5px !important;
+    }
+    .report-info-wrapper .info-row {
+      padding: 3px 0 !important;
     }
     
     /* Footer area for page numbers */
     .page-footer-content {
       text-align: center;
-      font-size: 11px;
+      font-size: 10px;
       color: #666;
-      padding: 8px 12px;
+      padding: 4px 8px;
       border-top: 1px solid #e2e8f0;
-      margin: 0 12px;
+      margin: 0 8px;
     }
   }
 `;
