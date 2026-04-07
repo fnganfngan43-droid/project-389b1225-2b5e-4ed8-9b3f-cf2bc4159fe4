@@ -580,8 +580,6 @@ export async function generateSummaryReportPDF(data: SummaryPDFData): Promise<Bl
 }
 
 export async function sharePDFViaWhatsApp(pdfBlob: Blob, filename: string): Promise<void> {
-
-export async function sharePDFViaWhatsApp(pdfBlob: Blob, filename: string): Promise<void> {
   // Create a file from the blob
   const file = new File([pdfBlob], filename, { type: 'application/pdf' });
   
