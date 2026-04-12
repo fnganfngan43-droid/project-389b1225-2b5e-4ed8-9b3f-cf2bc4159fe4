@@ -96,7 +96,6 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
       voucherNumber: formData.voucherNumber,
       debitAccountName: formData.debitAccountName,
       debitGroupName: formData.debitGroupName,
-        debitAccountNumber: '',
       debitAmount: parseFloat(formData.debitAmount),
       debitCurrency: formData.debitCurrency,
       debitReference: formData.debitReference,
