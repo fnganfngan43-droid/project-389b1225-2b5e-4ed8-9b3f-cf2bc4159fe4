@@ -375,7 +375,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                 <div className="border-2 border-primary/30 rounded-lg p-3 space-y-3">
                   <h3 className="text-sm font-semibold text-primary text-center bg-primary/10 rounded py-1">الطرف المدين</h3>
                   
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <div>
                       <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
                       <Select 
@@ -393,6 +393,15 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">رقم الحساب</label>
+                      <AccountNumberInput
+                        accounts={accounts}
+                        value={formData.debitAccountNumber}
+                        onChange={(val) => setFormData(prev => ({ ...prev, debitAccountNumber: val }))}
+                        onAccountFound={(acc) => setFormData(prev => ({ ...prev, debitGroupName: acc.groupName, debitAccountNumber: acc.accountNumber, debitAccountName: acc.accountName }))}
+                      />
                     </div>
                     <div>
                       <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
