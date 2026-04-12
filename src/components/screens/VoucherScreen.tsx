@@ -29,7 +29,7 @@ interface VoucherScreenProps {
 
 export function VoucherScreen({ type }: VoucherScreenProps) {
   const { vouchers, accounts, groups, currencies, settings, addVoucher, updateVoucher, deleteVoucher } = useAccounting();
-  const { dialogOpen, duplicateRef, checkAndProceed, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
+  const { dialogOpen, duplicateRef, checkAndProceed, warnIfDuplicate, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
@@ -441,6 +441,12 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       <Input
                         value={formData.debitReference}
                         onChange={(e) => setFormData(prev => ({ ...prev, debitReference: e.target.value }))}
+                        onBlur={() => {
+                          const existingRefs = vouchers
+                            .filter(v => v.id !== editingVoucher?.id && v.type === type)
+                            .flatMap(v => [v.debitReference, v.creditReference]).filter(Boolean) as string[];
+                          warnIfDuplicate(formData.debitReference, existingRefs);
+                        }}
                         placeholder="رقم المرجع"
                       />
                     </div>
@@ -528,6 +534,12 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       <Input
                         value={formData.creditReference}
                         onChange={(e) => setFormData(prev => ({ ...prev, creditReference: e.target.value }))}
+                        onBlur={() => {
+                          const existingRefs = vouchers
+                            .filter(v => v.id !== editingVoucher?.id && v.type === type)
+                            .flatMap(v => [v.debitReference, v.creditReference]).filter(Boolean) as string[];
+                          warnIfDuplicate(formData.creditReference, existingRefs);
+                        }}
                         placeholder="رقم المرجع"
                       />
                     </div>
@@ -617,6 +629,12 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       <Input
                         value={formData.creditReference}
                         onChange={(e) => setFormData(prev => ({ ...prev, creditReference: e.target.value }))}
+                        onBlur={() => {
+                          const existingRefs = vouchers
+                            .filter(v => v.id !== editingVoucher?.id && v.type === type)
+                            .flatMap(v => [v.debitReference, v.creditReference]).filter(Boolean) as string[];
+                          warnIfDuplicate(formData.creditReference, existingRefs);
+                        }}
                         placeholder="رقم المرجع"
                       />
                     </div>
@@ -704,6 +722,12 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       <Input
                         value={formData.debitReference}
                         onChange={(e) => setFormData(prev => ({ ...prev, debitReference: e.target.value }))}
+                        onBlur={() => {
+                          const existingRefs = vouchers
+                            .filter(v => v.id !== editingVoucher?.id && v.type === type)
+                            .flatMap(v => [v.debitReference, v.creditReference]).filter(Boolean) as string[];
+                          warnIfDuplicate(formData.debitReference, existingRefs);
+                        }}
                         placeholder="رقم المرجع"
                       />
                     </div>
