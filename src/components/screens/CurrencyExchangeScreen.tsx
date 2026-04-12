@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Save, X, ArrowLeftRight, ArrowDown } from 'lucide-react';
+import { AccountNumberInput } from '@/components/AccountNumberInput';
 import { toast } from 'sonner';
 import { useDuplicateReferenceCheck } from '@/hooks/useDuplicateReferenceCheck';
 import { DuplicateReferenceDialog } from '@/components/DuplicateReferenceDialog';
@@ -37,11 +38,13 @@ export function CurrencyExchangeScreen() {
     date: new Date().toISOString().split('T')[0],
     exchangeNumber: String(currencyExchanges.length + 1).padStart(4, '0'),
     fromGroupName: '',
+    fromAccountNumber: '',
     fromAccountName: '',
     fromAmount: '',
     fromCurrency: '',
     fromReference: '',
     toGroupName: '',
+    toAccountNumber: '',
     toAccountName: '',
     toAmount: '',
     toCurrency: '',
@@ -108,11 +111,13 @@ export function CurrencyExchangeScreen() {
         date: selectedExchange.date,
         exchangeNumber: selectedExchange.exchangeNumber,
         fromGroupName: selectedExchange.fromGroupName,
+        fromAccountNumber: accounts.find(a => a.accountName === selectedExchange.fromAccountName)?.accountNumber || '',
         fromAccountName: selectedExchange.fromAccountName,
         fromAmount: selectedExchange.fromAmount.toString(),
         fromCurrency: selectedExchange.fromCurrency,
         fromReference: selectedExchange.reference || '',
         toGroupName: selectedExchange.toGroupName,
+        toAccountNumber: accounts.find(a => a.accountName === selectedExchange.toAccountName)?.accountNumber || '',
         toAccountName: selectedExchange.toAccountName,
         toAmount: selectedExchange.toAmount.toString(),
         toCurrency: selectedExchange.toCurrency,
@@ -135,11 +140,13 @@ export function CurrencyExchangeScreen() {
       date: new Date().toISOString().split('T')[0],
       exchangeNumber: String(currencyExchanges.length + 2).padStart(4, '0'),
       fromGroupName: '',
+      fromAccountNumber: '',
       fromAccountName: '',
       fromAmount: '',
       fromCurrency: '',
       fromReference: '',
       toGroupName: '',
+      toAccountNumber: '',
       toAccountName: '',
       toAmount: '',
       toCurrency: '',
@@ -255,12 +262,12 @@ export function CurrencyExchangeScreen() {
             <div className="bg-destructive/5 p-4 rounded-xl border border-destructive/20">
               <p className="text-sm font-semibold text-destructive mb-3">الطرف المحول منه (دائن)</p>
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                   <div>
                     <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
                     <Select 
                       value={formData.fromGroupName} 
-                      onValueChange={(val) => setFormData(prev => ({ ...prev, fromGroupName: val, fromAccountName: '' }))}
+                      onValueChange={(val) => setFormData(prev => ({ ...prev, fromGroupName: val, fromAccountNumber: '', fromAccountName: '' }))}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="اختر المجموعة" />
@@ -273,6 +280,15 @@ export function CurrencyExchangeScreen() {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-1 block">رقم الحساب</label>
+                    <AccountNumberInput
+                      accounts={accounts}
+                      value={formData.fromAccountNumber}
+                      onChange={(val) => setFormData(prev => ({ ...prev, fromAccountNumber: val }))}
+                      onAccountFound={(acc) => setFormData(prev => ({ ...prev, fromGroupName: acc.groupName, fromAccountNumber: acc.accountNumber, fromAccountName: acc.accountName }))}
+                    />
                   </div>
                   <div>
                     <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
@@ -338,12 +354,12 @@ export function CurrencyExchangeScreen() {
             <div className="bg-success/5 p-4 rounded-xl border border-success/20">
               <p className="text-sm font-semibold text-success mb-3">الطرف المحول إليه (مدين)</p>
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                   <div>
                     <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
                     <Select 
                       value={formData.toGroupName} 
-                      onValueChange={(val) => setFormData(prev => ({ ...prev, toGroupName: val, toAccountName: '' }))}
+                      onValueChange={(val) => setFormData(prev => ({ ...prev, toGroupName: val, toAccountNumber: '', toAccountName: '' }))}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="اختر المجموعة" />
@@ -356,6 +372,15 @@ export function CurrencyExchangeScreen() {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-1 block">رقم الحساب</label>
+                    <AccountNumberInput
+                      accounts={accounts}
+                      value={formData.toAccountNumber}
+                      onChange={(val) => setFormData(prev => ({ ...prev, toAccountNumber: val }))}
+                      onAccountFound={(acc) => setFormData(prev => ({ ...prev, toGroupName: acc.groupName, toAccountNumber: acc.accountNumber, toAccountName: acc.accountName }))}
+                    />
                   </div>
                   <div>
                     <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
