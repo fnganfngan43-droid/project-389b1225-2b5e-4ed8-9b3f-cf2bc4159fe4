@@ -221,7 +221,6 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
             voucherNumber: mapped.voucherNumber || String(vouchers.length + successCount + 1).padStart(4, '0'),
             debitAccountName: findClosestMatch(mapped.debitAccountName, accountNames),
             debitGroupName: findClosestMatch(mapped.debitGroupName, groupNames),
-        debitAccountNumber: '',
             debitAmount: mapped.debitAmount,
             debitCurrency: mapped.debitCurrency,
             debitReference: mapped.debitReference,
