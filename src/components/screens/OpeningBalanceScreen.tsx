@@ -6,6 +6,7 @@ import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { OpeningBalance } from '@/types/accounting';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
+import { AccountNumberInput } from '@/components/AccountNumberInput';
 import { parseExcelFile, mapOpeningBalanceRow } from '@/utils/excelImport';
 import { findClosestMatch } from '@/utils/fuzzyMatch';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
