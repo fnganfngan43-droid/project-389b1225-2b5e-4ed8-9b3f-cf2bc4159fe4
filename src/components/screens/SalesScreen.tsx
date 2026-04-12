@@ -443,6 +443,12 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
                 <Input
                   value={formData.reference}
                   onChange={(e) => setFormData(prev => ({ ...prev, reference: e.target.value }))}
+                  onBlur={() => {
+                    const existingRefs = invoices
+                      .filter(inv => inv.id !== editingInvoice?.id && (isReturn ? inv.amount < 0 : inv.amount >= 0))
+                      .map(inv => inv.reference).filter(Boolean) as string[];
+                    warnIfDuplicate(formData.reference, existingRefs);
+                  }}
                   placeholder="رقم المرجع"
                 />
               </div>

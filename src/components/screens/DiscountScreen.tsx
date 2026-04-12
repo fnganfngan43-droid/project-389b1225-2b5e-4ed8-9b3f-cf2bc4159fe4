@@ -24,7 +24,7 @@ import { DuplicateReferenceDialog } from '@/components/DuplicateReferenceDialog'
 
 export function DiscountScreen() {
   const { accounts, groups, currencies, discounts, addDiscount, updateDiscount, deleteDiscount } = useAccounting();
-  const { dialogOpen, duplicateRef, checkAndProceed, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
+  const { dialogOpen, duplicateRef, checkAndProceed, warnIfDuplicate, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedDiscount, setSelectedDiscount] = useState<DiscountEntry | null>(null);
@@ -408,6 +408,12 @@ export function DiscountScreen() {
                 <Input
                   value={formData.reference}
                   onChange={(e) => setFormData(prev => ({ ...prev, reference: e.target.value }))}
+                  onBlur={() => {
+                    const existingRefs = discounts
+                      .filter(d => d.id !== editingDiscount?.id)
+                      .map(d => d.reference).filter(Boolean) as string[];
+                    warnIfDuplicate(formData.reference, existingRefs);
+                  }}
                   placeholder="رقم المرجع"
                 />
               </div>
