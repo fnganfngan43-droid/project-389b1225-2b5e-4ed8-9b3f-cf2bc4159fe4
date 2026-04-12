@@ -20,12 +20,10 @@ import { ScreenType } from '@/types/accounting';
 export function MainDashboard() {
   const { logout } = useAccounting();
   const [activeScreen, setActiveScreen] = useState<ScreenType>('chart-of-accounts');
-  const [screenResetKey, setScreenResetKey] = useState(0);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const handleScreenChange = (screen: ScreenType) => {
     setActiveScreen(screen);
-    setScreenResetKey((prev) => prev + 1);
   };
 
   const getScreenTitle = () => {
@@ -94,7 +92,7 @@ export function MainDashboard() {
         activeScreen={activeScreen}
         onScreenChange={handleScreenChange}
       />
-      <main className="flex-1 flex flex-col overflow-hidden min-h-0" key={`${activeScreen}-${screenResetKey}`}>
+      <main className="flex-1 flex flex-col overflow-hidden min-h-0">
         {renderScreen()}
       </main>
       <SettingsDialog 
