@@ -28,7 +28,7 @@ interface SalesScreenProps {
 
 export function SalesScreen({ isReturn = false }: SalesScreenProps) {
   const { invoices, accounts, groups, currencies, addInvoice, updateInvoice, deleteInvoice } = useAccounting();
-  const { dialogOpen, duplicateRef, checkAndProceed, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
+  const { dialogOpen, duplicateRef, checkAndProceed, warnIfDuplicate, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
