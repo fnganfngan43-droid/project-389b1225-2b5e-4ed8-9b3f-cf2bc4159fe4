@@ -383,8 +383,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
                       <Select 
                         value={formData.debitGroupName} 
-                        onValueChange={(val) => setFormData(prev => ({ ...prev, debitGroupName: val, debitAccountName: '' }))}
-        debitAccountNumber: '',
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, debitGroupName: val, debitAccountNumber: '', debitAccountName: '' }))}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="اختر المجموعة" />
@@ -665,8 +664,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
                       <Select 
                         value={formData.debitGroupName} 
-                        onValueChange={(val) => setFormData(prev => ({ ...prev, debitGroupName: val, debitAccountName: '' }))}
-        debitAccountNumber: '',
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, debitGroupName: val, debitAccountNumber: '', debitAccountName: '' }))}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="اختر المجموعة" />
