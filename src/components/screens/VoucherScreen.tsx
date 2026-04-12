@@ -61,6 +61,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
     voucherNumber: nextVoucherNumber,
     // Debit side
     debitGroupName: '',
+    debitAccountNumber: '',
     debitAccountName: '',
     debitCurrency: '',
     debitAmount: '',
@@ -68,6 +69,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
     debitReference: '',
     // Credit side
     creditGroupName: '',
+    creditAccountNumber: '',
     creditAccountName: '',
     creditCurrency: '',
     creditAmount: '',
