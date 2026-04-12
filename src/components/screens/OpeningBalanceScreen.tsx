@@ -78,6 +78,7 @@ export function OpeningBalanceScreen() {
       setFormData({
         date: selectedBalance.date,
         groupName: account?.groupName || '',
+        accountNumber: account?.accountNumber || '',
         accountName: selectedBalance.accountName,
         debit: selectedBalance.debit.toString(),
         credit: selectedBalance.credit.toString(),
@@ -99,6 +100,7 @@ export function OpeningBalanceScreen() {
     setFormData({
       date: new Date().toISOString().split('T')[0],
       groupName: '',
+      accountNumber: '',
       accountName: '',
       debit: '',
       credit: '',
