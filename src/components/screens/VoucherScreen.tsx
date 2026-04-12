@@ -61,6 +61,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
     voucherNumber: nextVoucherNumber,
     // Debit side
     debitGroupName: '',
+        debitAccountNumber: '',
     debitAccountNumber: '',
     debitAccountName: '',
     debitCurrency: '',
@@ -96,6 +97,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
       voucherNumber: formData.voucherNumber,
       debitAccountName: formData.debitAccountName,
       debitGroupName: formData.debitGroupName,
+        debitAccountNumber: '',
       debitAmount: parseFloat(formData.debitAmount),
       debitCurrency: formData.debitCurrency,
       debitReference: formData.debitReference,
@@ -153,12 +155,14 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
         date: selectedVoucher.date,
         voucherNumber: selectedVoucher.voucherNumber,
         debitGroupName: selectedVoucher.debitGroupName,
+        debitAccountNumber: '',
         debitAccountName: selectedVoucher.debitAccountName,
         debitCurrency: selectedVoucher.debitCurrency,
         debitAmount: selectedVoucher.debitAmount.toString(),
         debitDescription: selectedVoucher.debitDescription || '',
         debitReference: selectedVoucher.debitReference || '',
         creditGroupName: selectedVoucher.creditGroupName,
+        creditAccountNumber: accounts.find(a => a.accountName === selectedVoucher.creditAccountName)?.accountNumber || '',
         creditAccountName: selectedVoucher.creditAccountName,
         creditCurrency: selectedVoucher.creditCurrency,
         creditAmount: selectedVoucher.creditAmount.toString(),
@@ -186,12 +190,14 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
       date: new Date().toISOString().split('T')[0],
       voucherNumber: newNumber,
       debitGroupName: '',
+        debitAccountNumber: '',
       debitAccountName: '',
       debitCurrency: '',
       debitAmount: '',
       debitDescription: '',
       debitReference: '',
       creditGroupName: '',
+      creditAccountNumber: '',
       creditAccountName: '',
       creditCurrency: '',
       creditAmount: '',
@@ -217,6 +223,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
             voucherNumber: mapped.voucherNumber || String(vouchers.length + successCount + 1).padStart(4, '0'),
             debitAccountName: findClosestMatch(mapped.debitAccountName, accountNames),
             debitGroupName: findClosestMatch(mapped.debitGroupName, groupNames),
+        debitAccountNumber: '',
             debitAmount: mapped.debitAmount,
             debitCurrency: mapped.debitCurrency,
             debitReference: mapped.debitReference,
@@ -256,12 +263,14 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                 date: new Date().toISOString().split('T')[0],
                 voucherNumber: newNumber,
                 debitGroupName: selectedVoucher.debitGroupName,
+        debitAccountNumber: '',
                 debitAccountName: selectedVoucher.debitAccountName,
                 debitCurrency: selectedVoucher.debitCurrency,
                 debitAmount: selectedVoucher.debitAmount.toString(),
                 debitDescription: selectedVoucher.debitDescription || '',
                 debitReference: selectedVoucher.debitReference || '',
                 creditGroupName: selectedVoucher.creditGroupName,
+                creditAccountNumber: accounts.find(a => a.accountName === selectedVoucher.creditAccountName)?.accountNumber || '',
                 creditAccountName: selectedVoucher.creditAccountName,
                 creditCurrency: selectedVoucher.creditCurrency,
                 creditAmount: selectedVoucher.creditAmount.toString(),
@@ -274,12 +283,14 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                 date: new Date().toISOString().split('T')[0],
                 voucherNumber: newNumber,
                 debitGroupName: '',
+        debitAccountNumber: '',
                 debitAccountName: '',
                 debitCurrency: '',
                 debitAmount: '',
                 debitDescription: '',
                 debitReference: '',
                 creditGroupName: '',
+                creditAccountNumber: '',
                 creditAccountName: '',
                 creditCurrency: '',
                 creditAmount: '',
@@ -373,6 +384,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       <Select 
                         value={formData.debitGroupName} 
                         onValueChange={(val) => setFormData(prev => ({ ...prev, debitGroupName: val, debitAccountName: '' }))}
+        debitAccountNumber: '',
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="اختر المجموعة" />
@@ -654,6 +666,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       <Select 
                         value={formData.debitGroupName} 
                         onValueChange={(val) => setFormData(prev => ({ ...prev, debitGroupName: val, debitAccountName: '' }))}
+        debitAccountNumber: '',
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="اختر المجموعة" />
