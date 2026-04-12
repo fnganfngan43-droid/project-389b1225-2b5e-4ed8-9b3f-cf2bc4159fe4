@@ -34,6 +34,7 @@ export function OpeningBalanceScreen() {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     groupName: '',
+    accountNumber: '',
     accountName: '',
     debit: '',
     credit: '',

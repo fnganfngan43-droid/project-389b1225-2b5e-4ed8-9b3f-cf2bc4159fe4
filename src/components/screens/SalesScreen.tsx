@@ -54,6 +54,7 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
     invoiceNumber: nextInvoiceNumber,
     type: 'cash' as 'cash' | 'credit',
     groupName: '',
+    accountNumber: '',
     accountName: '',
     amount: '',
     currency: '',

@@ -47,6 +47,7 @@ export function DiscountScreen() {
     discountNumber: nextDiscountNumber,
     type: 'cash' as 'cash' | 'credit',
     groupName: '',
+    accountNumber: '',
     accountName: '',
     amount: '',
     currency: '',
