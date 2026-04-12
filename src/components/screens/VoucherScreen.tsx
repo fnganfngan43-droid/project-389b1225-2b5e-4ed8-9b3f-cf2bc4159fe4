@@ -477,12 +477,12 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                 <div className="border-2 border-success/30 rounded-lg p-3 space-y-3">
                   <h3 className="text-sm font-semibold text-success text-center bg-success/10 rounded py-1">الطرف الدائن</h3>
                   
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <div>
                       <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
                       <Select 
                         value={formData.creditGroupName} 
-                        onValueChange={(val) => setFormData(prev => ({ ...prev, creditGroupName: val, creditAccountName: '' }))}
+                        onValueChange={(val) => setFormData(prev => ({ ...prev, creditGroupName: val, creditAccountNumber: '', creditAccountName: '' }))}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="اختر المجموعة" />
@@ -495,6 +495,15 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">رقم الحساب</label>
+                      <AccountNumberInput
+                        accounts={accounts}
+                        value={formData.creditAccountNumber}
+                        onChange={(val) => setFormData(prev => ({ ...prev, creditAccountNumber: val }))}
+                        onAccountFound={(acc) => setFormData(prev => ({ ...prev, creditGroupName: acc.groupName, creditAccountNumber: acc.accountNumber, creditAccountName: acc.accountName }))}
+                      />
                     </div>
                     <div>
                       <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
