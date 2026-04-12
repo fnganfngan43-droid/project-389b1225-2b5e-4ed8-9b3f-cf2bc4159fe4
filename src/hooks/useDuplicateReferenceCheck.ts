@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { toast } from 'sonner';
 
 export function useDuplicateReferenceCheck() {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -21,6 +22,17 @@ export function useDuplicateReferenceCheck() {
     }
   }, []);
 
+  const warnIfDuplicate = useCallback((
+    reference: string,
+    existingReferences: string[]
+  ) => {
+    if (reference && existingReferences.includes(reference)) {
+      toast.warning(`تنبيه: رقم المرجع "${reference}" مستخدم مسبقاً`, {
+        duration: 4000,
+      });
+    }
+  }, []);
+
   const handleConfirm = useCallback(() => {
     setDialogOpen(false);
     pendingAction?.();
@@ -36,6 +48,7 @@ export function useDuplicateReferenceCheck() {
     dialogOpen,
     duplicateRef,
     checkAndProceed,
+    warnIfDuplicate,
     handleConfirm,
     handleCancel,
   };

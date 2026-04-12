@@ -28,7 +28,7 @@ interface SalesScreenProps {
 
 export function SalesScreen({ isReturn = false }: SalesScreenProps) {
   const { invoices, accounts, groups, currencies, addInvoice, updateInvoice, deleteInvoice } = useAccounting();
-  const { dialogOpen, duplicateRef, checkAndProceed, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
+  const { dialogOpen, duplicateRef, checkAndProceed, warnIfDuplicate, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
@@ -443,6 +443,12 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
                 <Input
                   value={formData.reference}
                   onChange={(e) => setFormData(prev => ({ ...prev, reference: e.target.value }))}
+                  onBlur={() => {
+                    const existingRefs = invoices
+                      .filter(inv => inv.id !== editingInvoice?.id && (isReturn ? inv.amount < 0 : inv.amount >= 0))
+                      .map(inv => inv.reference).filter(Boolean) as string[];
+                    warnIfDuplicate(formData.reference, existingRefs);
+                  }}
                   placeholder="رقم المرجع"
                 />
               </div>
