@@ -289,6 +289,7 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
           'رقم الفاتورة',
           'النوع (نقدي/آجل)',
           'اسم المجموعة',
+          'رقم الحساب',
           'اسم الحساب',
           'المبلغ',
           'رمز العملة',
