@@ -159,11 +159,22 @@ export function DiscountScreen() {
       for (const row of rows) {
         const mapped = mapDiscountRow(row);
         if (mapped && mapped.accountName) {
+          let finalAccountName = findClosestMatch(mapped.accountName, accountNames);
+          let finalGroupName = findClosestMatch(mapped.groupName || '', groupNames);
+          
+          if (mapped.accountNumber) {
+            const foundByNumber = accounts.find(a => a.accountNumber === mapped.accountNumber);
+            if (foundByNumber) {
+              finalAccountName = foundByNumber.accountName;
+              finalGroupName = foundByNumber.groupName;
+            }
+          }
+          
           addDiscount({
             date: mapped.date,
             discountNumber: mapped.discountNumber || String(discounts.length + successCount + 1).padStart(4, '0'),
-            accountName: findClosestMatch(mapped.accountName, accountNames),
-            groupName: findClosestMatch(mapped.groupName || '', groupNames),
+            accountName: finalAccountName,
+            groupName: finalGroupName,
             amount: mapped.amount,
             currency: mapped.currency,
             type: mapped.type,

@@ -119,9 +119,18 @@ export function OpeningBalanceScreen() {
       for (const row of rows) {
         const mapped = mapOpeningBalanceRow(row);
         if (mapped && mapped.accountName) {
+          let finalAccountName = findClosestMatch(mapped.accountName, accountNames);
+          
+          if (mapped.accountNumber) {
+            const foundByNumber = accounts.find(a => a.accountNumber === mapped.accountNumber);
+            if (foundByNumber) {
+              finalAccountName = foundByNumber.accountName;
+            }
+          }
+          
           addOpeningBalance({
             date: mapped.date,
-            accountName: findClosestMatch(mapped.accountName, accountNames),
+            accountName: finalAccountName,
             currency: mapped.currency,
             debit: mapped.debit,
             credit: mapped.credit,
