@@ -6,7 +6,7 @@ import { Search } from 'lucide-react';
 interface AccountSearchInputProps {
   accounts: Account[];
   value: string;
-  onSelect: (accountName: string) => void;
+  onSelect: (accountName: string, account?: Account) => void;
   placeholder?: string;
   disabled?: boolean;
 }
@@ -49,13 +49,14 @@ export function AccountSearchInput({
     // If exact match, select it
     const exactMatch = accounts.find(acc => acc.accountName === newValue);
     if (exactMatch) {
-      onSelect(exactMatch.accountName);
+      onSelect(exactMatch.accountName, exactMatch);
     }
   };
 
   const handleSelect = (accountName: string) => {
     setSearchTerm(accountName);
-    onSelect(accountName);
+    const account = accounts.find(acc => acc.accountName === accountName);
+    onSelect(accountName, account);
     setShowSuggestions(false);
   };
 

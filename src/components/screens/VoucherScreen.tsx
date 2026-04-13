@@ -216,17 +216,31 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
       for (const row of rows) {
         const mapped = mapVoucherRow(row);
         if (mapped && (mapped.debitAccountName || mapped.creditAccountName)) {
+          let debitAccName = findClosestMatch(mapped.debitAccountName, accountNames);
+          let debitGrpName = findClosestMatch(mapped.debitGroupName, groupNames);
+          let creditAccName = findClosestMatch(mapped.creditAccountName, accountNames);
+          let creditGrpName = findClosestMatch(mapped.creditGroupName, groupNames);
+          
+          if (mapped.debitAccountNumber) {
+            const found = accounts.find(a => a.accountNumber === mapped.debitAccountNumber);
+            if (found) { debitAccName = found.accountName; debitGrpName = found.groupName; }
+          }
+          if (mapped.creditAccountNumber) {
+            const found = accounts.find(a => a.accountNumber === mapped.creditAccountNumber);
+            if (found) { creditAccName = found.accountName; creditGrpName = found.groupName; }
+          }
+          
           addVoucher({
             date: mapped.date,
             voucherNumber: mapped.voucherNumber || String(vouchers.length + successCount + 1).padStart(4, '0'),
-            debitAccountName: findClosestMatch(mapped.debitAccountName, accountNames),
-            debitGroupName: findClosestMatch(mapped.debitGroupName, groupNames),
+            debitAccountName: debitAccName,
+            debitGroupName: debitGrpName,
             debitAmount: mapped.debitAmount,
             debitCurrency: mapped.debitCurrency,
             debitReference: mapped.debitReference,
             debitDescription: mapped.debitDescription || (type === 'receipt' ? 'سند قبض' : 'سند صرف'),
-            creditAccountName: findClosestMatch(mapped.creditAccountName, accountNames),
-            creditGroupName: findClosestMatch(mapped.creditGroupName, groupNames),
+            creditAccountName: creditAccName,
+            creditGroupName: creditGrpName,
             creditAmount: mapped.creditAmount || 0,
             creditCurrency: mapped.creditCurrency || '',
             creditReference: mapped.creditReference,
@@ -312,12 +326,14 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
             'رقم السند',
             'التاريخ',
             'اسم المجموعة (مدين)',
+            'رقم الحساب (مدين)',
             'اسم الحساب (مدين)',
             'رمز العملة (مدين)',
             'المبلغ (مدين)',
             'البيان (مدين)',
             'رقم المرجع (مدين)',
             'اسم المجموعة (دائن)',
+            'رقم الحساب (دائن)',
             'اسم الحساب (دائن)',
             'رمز العملة (دائن)',
             'المبلغ (دائن)',
@@ -408,7 +424,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       <AccountSearchInput
                         accounts={debitFilteredAccounts}
                         value={formData.debitAccountName}
-                        onSelect={(val) => setFormData(prev => ({ ...prev, debitAccountName: val }))}
+                        onSelect={(val, acc) => setFormData(prev => ({ ...prev, debitAccountName: val, debitAccountNumber: acc?.accountNumber || prev.debitAccountNumber }))}
                         placeholder="ابحث عن الحساب..."
                         disabled={!formData.debitGroupName}
                       />
@@ -510,7 +526,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       <AccountSearchInput
                         accounts={creditFilteredAccounts}
                         value={formData.creditAccountName}
-                        onSelect={(val) => setFormData(prev => ({ ...prev, creditAccountName: val }))}
+                        onSelect={(val, acc) => setFormData(prev => ({ ...prev, creditAccountName: val, creditAccountNumber: acc?.accountNumber || prev.creditAccountNumber }))}
                         placeholder="ابحث عن الحساب..."
                         disabled={!formData.creditGroupName}
                       />
@@ -614,7 +630,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       <AccountSearchInput
                         accounts={creditFilteredAccounts}
                         value={formData.creditAccountName}
-                        onSelect={(val) => setFormData(prev => ({ ...prev, creditAccountName: val }))}
+                        onSelect={(val, acc) => setFormData(prev => ({ ...prev, creditAccountName: val, creditAccountNumber: acc?.accountNumber || prev.creditAccountNumber }))}
                         placeholder="ابحث عن الحساب..."
                         disabled={!formData.creditGroupName}
                       />
@@ -716,7 +732,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       <AccountSearchInput
                         accounts={debitFilteredAccounts}
                         value={formData.debitAccountName}
-                        onSelect={(val) => setFormData(prev => ({ ...prev, debitAccountName: val }))}
+                        onSelect={(val, acc) => setFormData(prev => ({ ...prev, debitAccountName: val, debitAccountNumber: acc?.accountNumber || prev.debitAccountNumber }))}
                         placeholder="ابحث عن الحساب..."
                         disabled={!formData.debitGroupName}
                       />

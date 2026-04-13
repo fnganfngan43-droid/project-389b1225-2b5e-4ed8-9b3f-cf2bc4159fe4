@@ -119,9 +119,18 @@ export function OpeningBalanceScreen() {
       for (const row of rows) {
         const mapped = mapOpeningBalanceRow(row);
         if (mapped && mapped.accountName) {
+          let finalAccountName = findClosestMatch(mapped.accountName, accountNames);
+          
+          if (mapped.accountNumber) {
+            const foundByNumber = accounts.find(a => a.accountNumber === mapped.accountNumber);
+            if (foundByNumber) {
+              finalAccountName = foundByNumber.accountName;
+            }
+          }
+          
           addOpeningBalance({
             date: mapped.date,
-            accountName: findClosestMatch(mapped.accountName, accountNames),
+            accountName: finalAccountName,
             currency: mapped.currency,
             debit: mapped.debit,
             credit: mapped.credit,
@@ -194,6 +203,7 @@ export function OpeningBalanceScreen() {
             'التاريخ',
             'رمز العملة',
             'اسم المجموعة',
+            'رقم الحساب',
             'اسم الحساب',
             'مدين',
             'دائن',
@@ -282,7 +292,7 @@ export function OpeningBalanceScreen() {
                 <AccountSearchInput
                   accounts={filteredAccounts}
                   value={formData.accountName}
-                  onSelect={(val) => setFormData(prev => ({ ...prev, accountName: val }))}
+                  onSelect={(val, acc) => setFormData(prev => ({ ...prev, accountName: val, accountNumber: acc?.accountNumber || prev.accountNumber }))}
                   placeholder="ابحث عن الحساب..."
                   disabled={!formData.groupName}
                 />

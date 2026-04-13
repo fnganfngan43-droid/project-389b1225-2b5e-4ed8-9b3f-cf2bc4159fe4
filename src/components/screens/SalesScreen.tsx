@@ -166,13 +166,23 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
       for (const row of rows) {
         const mapped = mapInvoiceRow(row);
         if (mapped && mapped.accountName) {
-          const correctedAccountName = findClosestMatch(mapped.accountName, accountNames);
-          const correctedGroupName = findClosestMatch(mapped.groupName, groupNames);
+          // Try to find account by number first, then by name
+          let finalAccountName = findClosestMatch(mapped.accountName, accountNames);
+          let finalGroupName = findClosestMatch(mapped.groupName, groupNames);
+          
+          if (mapped.accountNumber) {
+            const foundByNumber = accounts.find(a => a.accountNumber === mapped.accountNumber);
+            if (foundByNumber) {
+              finalAccountName = foundByNumber.accountName;
+              finalGroupName = foundByNumber.groupName;
+            }
+          }
+          
           addInvoice({
             date: mapped.date,
             invoiceNumber: mapped.invoiceNumber || String(invoices.length + successCount + 1).padStart(4, '0'),
-            accountName: correctedAccountName,
-            groupName: correctedGroupName,
+            accountName: finalAccountName,
+            groupName: finalGroupName,
             amount: isReturn ? -Math.abs(mapped.amount) : mapped.amount,
             currency: mapped.currency,
             type: mapped.type,
@@ -289,6 +299,7 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
           'رقم الفاتورة',
           'النوع (نقدي/آجل)',
           'اسم المجموعة',
+          'رقم الحساب',
           'اسم الحساب',
           'المبلغ',
           'رمز العملة',
@@ -408,7 +419,7 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
                 <AccountSearchInput
                   accounts={filteredAccounts}
                   value={formData.accountName}
-                  onSelect={(val) => setFormData(prev => ({ ...prev, accountName: val }))}
+                  onSelect={(val, acc) => setFormData(prev => ({ ...prev, accountName: val, accountNumber: acc?.accountNumber || prev.accountNumber }))}
                   placeholder="ابحث عن الحساب..."
                   disabled={!formData.groupName}
                 />
