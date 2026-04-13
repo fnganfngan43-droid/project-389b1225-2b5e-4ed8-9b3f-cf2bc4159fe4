@@ -408,7 +408,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       <AccountSearchInput
                         accounts={debitFilteredAccounts}
                         value={formData.debitAccountName}
-                        onSelect={(val) => setFormData(prev => ({ ...prev, debitAccountName: val }))}
+                        onSelect={(val, acc) => setFormData(prev => ({ ...prev, debitAccountName: val, debitAccountNumber: acc?.accountNumber || prev.debitAccountNumber }))}
                         placeholder="ابحث عن الحساب..."
                         disabled={!formData.debitGroupName}
                       />
@@ -510,7 +510,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       <AccountSearchInput
                         accounts={creditFilteredAccounts}
                         value={formData.creditAccountName}
-                        onSelect={(val) => setFormData(prev => ({ ...prev, creditAccountName: val }))}
+                        onSelect={(val, acc) => setFormData(prev => ({ ...prev, creditAccountName: val, creditAccountNumber: acc?.accountNumber || prev.creditAccountNumber }))}
                         placeholder="ابحث عن الحساب..."
                         disabled={!formData.creditGroupName}
                       />
@@ -614,7 +614,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       <AccountSearchInput
                         accounts={creditFilteredAccounts}
                         value={formData.creditAccountName}
-                        onSelect={(val) => setFormData(prev => ({ ...prev, creditAccountName: val }))}
+                        onSelect={(val, acc) => setFormData(prev => ({ ...prev, creditAccountName: val, creditAccountNumber: acc?.accountNumber || prev.creditAccountNumber }))}
                         placeholder="ابحث عن الحساب..."
                         disabled={!formData.creditGroupName}
                       />
@@ -716,7 +716,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                       <AccountSearchInput
                         accounts={debitFilteredAccounts}
                         value={formData.debitAccountName}
-                        onSelect={(val) => setFormData(prev => ({ ...prev, debitAccountName: val }))}
+                        onSelect={(val, acc) => setFormData(prev => ({ ...prev, debitAccountName: val, debitAccountNumber: acc?.accountNumber || prev.debitAccountNumber }))}
                         placeholder="ابحث عن الحساب..."
                         disabled={!formData.debitGroupName}
                       />

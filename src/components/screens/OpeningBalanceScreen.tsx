@@ -282,7 +282,7 @@ export function OpeningBalanceScreen() {
                 <AccountSearchInput
                   accounts={filteredAccounts}
                   value={formData.accountName}
-                  onSelect={(val) => setFormData(prev => ({ ...prev, accountName: val }))}
+                  onSelect={(val, acc) => setFormData(prev => ({ ...prev, accountName: val, accountNumber: acc?.accountNumber || prev.accountNumber }))}
                   placeholder="ابحث عن الحساب..."
                   disabled={!formData.groupName}
                 />
