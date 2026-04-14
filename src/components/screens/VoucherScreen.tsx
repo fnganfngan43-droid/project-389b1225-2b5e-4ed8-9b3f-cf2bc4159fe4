@@ -579,7 +579,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                 <div className="border-2 border-success/30 rounded-lg p-3 space-y-3">
                   <h3 className="text-sm font-semibold text-success text-center bg-success/10 rounded py-1">الطرف الدائن</h3>
                   
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
                       <Select 
