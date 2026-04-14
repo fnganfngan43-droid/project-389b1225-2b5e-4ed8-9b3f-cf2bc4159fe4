@@ -1011,42 +1011,11 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
   openPrintWindow(printContent);
 }
 
-function openPrintWindow(content: string) {
-  const printWindow = window.open('', '_blank', 'width=900,height=700');
-  if (printWindow) {
-    printWindow.document.write(content);
-    printWindow.document.close();
-    printWindow.focus();
-
-    const waitForImages = () => {
-      const images = Array.from(printWindow.document.images || []);
-      if (images.length === 0) return Promise.resolve();
-
-      return Promise.all(
-        images.map(
-          (img) =>
-            img.complete
-              ? Promise.resolve()
-              : new Promise<void>((resolve) => {
-                  img.onload = () => resolve();
-                  img.onerror = () => resolve();
-                })
-        )
-      ).then(() => undefined);
-    };
-
-    // Wait for fonts/images so the header/logo render correctly, then calculate pages and print
-    const maybeFontsReady = (printWindow.document as any).fonts?.ready;
-    const fontsReady = maybeFontsReady ? maybeFontsReady.catch(() => undefined) : Promise.resolve();
-
-    Promise.all([fontsReady, waitForImages()]).finally(() => {
-      setTimeout(() => {
-        // Calculate total pages and inject page numbers
-        injectPageNumbers(printWindow);
-        setTimeout(() => printWindow.print(), 100);
-      }, 200);
-    });
-  }
+async function openPrintWindow(content: string) {
+  const { printHTML } = await import('./webviewPrint');
+  printHTML(content, (doc) => {
+    injectPageNumbers({ document: doc } as unknown as Window);
+  });
 }
 
 /**

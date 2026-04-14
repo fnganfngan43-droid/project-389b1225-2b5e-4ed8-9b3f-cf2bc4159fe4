@@ -108,9 +108,8 @@ export function InvoiceVoucherReportScreen() {
     toast.success(`تم إنشاء تقرير ${operationLabels[operationType]}`);
   };
 
-  const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
+  const handlePrint = async () => {
+    const { printHTML } = await import('@/utils/webviewPrint');
 
     const rows = reportData.map((item, idx) => `
       <tr>
@@ -127,7 +126,7 @@ export function InvoiceVoucherReportScreen() {
 
     const filtersText = `من ${dateFrom} إلى ${dateTo}${selectedCurrency && selectedCurrency !== 'all' ? ' | العملة: ' + selectedCurrency : ''}${numberFrom || numberTo ? ' | من رقم ' + (numberFrom || '1') + ' إلى رقم ' + (numberTo || '∞') : ''}`;
 
-    printWindow.document.write(`
+    const htmlContent = `
       <!DOCTYPE html>
       <html lang="ar" dir="rtl">
       <head>
@@ -349,9 +348,9 @@ export function InvoiceVoucherReportScreen() {
         </div>
       </body>
       </html>
-    `);
-    printWindow.document.close();
-    printWindow.print();
+    `;
+
+    printHTML(htmlContent);
   };
 
   const columns = [
