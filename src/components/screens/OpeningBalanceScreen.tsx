@@ -259,7 +259,7 @@ export function OpeningBalanceScreen() {
             </div>
 
             {/* Row 2 */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
                 <Select 
@@ -277,15 +277,6 @@ export function OpeningBalanceScreen() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">رقم الحساب</label>
-                <AccountNumberInput
-                  accounts={accounts}
-                  value={formData.accountNumber || ''}
-                  onChange={(val) => setFormData(prev => ({ ...prev, accountNumber: val }))}
-                  onAccountFound={(acc) => setFormData(prev => ({ ...prev, groupName: acc.groupName, accountName: acc.accountName, accountNumber: acc.accountNumber }))}
-                />
               </div>
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>

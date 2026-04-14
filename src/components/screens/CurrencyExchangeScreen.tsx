@@ -262,7 +262,7 @@ export function CurrencyExchangeScreen() {
             <div className="bg-destructive/5 p-4 rounded-xl border border-destructive/20">
               <p className="text-sm font-semibold text-destructive mb-3">الطرف المحول منه (دائن)</p>
               <div className="space-y-3">
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
                     <Select 
@@ -280,15 +280,6 @@ export function CurrencyExchangeScreen() {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">رقم الحساب</label>
-                    <AccountNumberInput
-                      accounts={accounts}
-                      value={formData.fromAccountNumber}
-                      onChange={(val) => setFormData(prev => ({ ...prev, fromAccountNumber: val }))}
-                      onAccountFound={(acc) => setFormData(prev => ({ ...prev, fromGroupName: acc.groupName, fromAccountNumber: acc.accountNumber, fromAccountName: acc.accountName }))}
-                    />
                   </div>
                   <div>
                     <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
@@ -354,7 +345,7 @@ export function CurrencyExchangeScreen() {
             <div className="bg-success/5 p-4 rounded-xl border border-success/20">
               <p className="text-sm font-semibold text-success mb-3">الطرف المحول إليه (مدين)</p>
               <div className="space-y-3">
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
                     <Select 
@@ -372,15 +363,6 @@ export function CurrencyExchangeScreen() {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">رقم الحساب</label>
-                    <AccountNumberInput
-                      accounts={accounts}
-                      value={formData.toAccountNumber}
-                      onChange={(val) => setFormData(prev => ({ ...prev, toAccountNumber: val }))}
-                      onAccountFound={(acc) => setFormData(prev => ({ ...prev, toGroupName: acc.groupName, toAccountNumber: acc.accountNumber, toAccountName: acc.accountName }))}
-                    />
                   </div>
                   <div>
                     <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
