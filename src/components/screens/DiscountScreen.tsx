@@ -9,7 +9,7 @@ import { findClosestMatch } from '@/utils/fuzzyMatch';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { getNextSequentialNumber } from '@/utils/sequentialNumber';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
-import { AccountNumberInput } from '@/components/AccountNumberInput';
+
 import { DiscountEntry } from '@/types/accounting';
 import { 
   Select,
@@ -354,7 +354,7 @@ export function DiscountScreen() {
             </div>
 
             {/* Row 2 */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
                 <Select 
@@ -372,15 +372,6 @@ export function DiscountScreen() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">رقم الحساب</label>
-                <AccountNumberInput
-                  accounts={accounts}
-                  value={formData.accountNumber || ''}
-                  onChange={(val) => setFormData(prev => ({ ...prev, accountNumber: val }))}
-                  onAccountFound={(acc) => setFormData(prev => ({ ...prev, groupName: acc.groupName, accountName: acc.accountName, accountNumber: acc.accountNumber }))}
-                />
               </div>
               <div>
                 <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
