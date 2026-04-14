@@ -7,7 +7,7 @@ import { useAccounting } from '@/contexts/AccountingContext';
 import { Voucher } from '@/types/accounting';
 import { printVoucher } from '@/utils/printService';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
-import { AccountNumberInput } from '@/components/AccountNumberInput';
+
 import { parseExcelFile, mapVoucherRow } from '@/utils/excelImport';
 import { findClosestMatch } from '@/utils/fuzzyMatch';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
