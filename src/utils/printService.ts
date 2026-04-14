@@ -1011,8 +1011,7 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
   openPrintWindow(printContent);
 }
 
-function openPrintWindow(content: string) {
-  // Use WebView-compatible printing
+async function openPrintWindow(content: string) {
   const { printHTML } = await import('./webviewPrint');
   printHTML(content, (doc) => {
     injectPageNumbers({ document: doc } as unknown as Window);
