@@ -1,4 +1,5 @@
 import * as XLSX from '@datalens-tech/xlsx';
+import { smartDownload } from '@/utils/webviewPrint';
 import { Settings } from '@/types/accounting';
 
 // Convert currency symbol to full name
