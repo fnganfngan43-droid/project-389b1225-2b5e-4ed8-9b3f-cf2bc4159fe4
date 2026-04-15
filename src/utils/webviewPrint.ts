@@ -95,20 +95,56 @@ export function printHTML(htmlContent: string, onReady?: (doc: Document) => void
 /** Download HTML content as a file */
 function downloadAsHTML(htmlContent: string): void {
   const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+  smartDownload(blob, 'تقرير.html');
+}
+
+/**
+ * Smart download that works in WebView environments.
+ * Tries multiple approaches in order:
+ * 1. Web Share API (best for mobile/WebView)
+ * 2. Data URI approach (bypasses some WebView restrictions)
+ * 3. Standard Blob URL download
+ */
+export function smartDownload(blob: Blob, filename: string): void {
+  // Try Web Share API first (works best in mobile/WebView)
+  if (navigator.share && navigator.canShare) {
+    const file = new File([blob], filename, { type: blob.type });
+    const shareData = { title: filename, files: [file] };
+    
+    if (navigator.canShare(shareData)) {
+      navigator.share(shareData).catch(() => {
+        fallbackDownload(blob, filename);
+      });
+      return;
+    }
+  }
+  
+  fallbackDownload(blob, filename);
+}
+
+function fallbackDownload(blob: Blob, filename: string): void {
+  // Try opening blob in new tab (works in some WebViews)
   const url = URL.createObjectURL(blob);
   
-  // Try Web Share API first (works on mobile)
-  if (navigator.share) {
-    const file = new File([blob], 'تقرير.html', { type: 'text/html' });
-    navigator.share({
-      title: 'تقرير',
-      files: [file]
-    }).catch(() => {
-      // Fallback to download
-      triggerDownload(url, 'تقرير.html');
-    });
+  // Method 1: Use data URI for small files
+  if (blob.size < 2 * 1024 * 1024) { // < 2MB
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUri = reader.result as string;
+      const link = document.createElement('a');
+      link.href = dataUri;
+      link.download = filename;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+      }, 200);
+    };
+    reader.readAsDataURL(blob);
   } else {
-    triggerDownload(url, 'تقرير.html');
+    // Method 2: Standard blob URL
+    triggerDownload(url, filename);
   }
 }
 
