@@ -1,4 +1,5 @@
 import * as XLSX from '@datalens-tech/xlsx';
+import { smartDownload } from '@/utils/webviewPrint';
 import { Settings } from '@/types/accounting';
 
 // Convert currency symbol to full name
@@ -206,8 +207,10 @@ export function exportAnalyticalReportToExcel(data: AnalyticalReportData): void 
   // Generate filename
   const filename = `كشف_تحليلي_${accountName}_${currency}_${new Date().toISOString().split('T')[0]}.xlsx`;
   
-  // Download file
-  XLSX.writeFile(wb, filename);
+  // Use smartDownload for WebView compatibility
+  const wbOut = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([wbOut], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  smartDownload(blob, filename);
 }
 
 export function exportSummaryReportToExcel(data: SummaryReportData): void {
@@ -293,6 +296,8 @@ export function exportSummaryReportToExcel(data: SummaryReportData): void {
   // Generate filename
   const filename = `كشف_إجمالي_${groupName}_${new Date().toISOString().split('T')[0]}.xlsx`;
   
-  // Download file
-  XLSX.writeFile(wb, filename);
+  // Use smartDownload for WebView compatibility
+  const wbOut = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([wbOut], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  smartDownload(blob, filename);
 }
