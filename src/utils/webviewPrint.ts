@@ -109,6 +109,71 @@ function downloadAsHTML(htmlContent: string): void {
   smartDownload(blob, 'تقرير.html');
 }
 
+/** Render the iframe content to a multi-page A4 PDF and download/share it */
+async function downloadIframeAsPDF(iframe: HTMLIFrameElement, filename: string): Promise<void> {
+  const [{ default: html2canvas }, jsPDFModule] = await Promise.all([
+    import('html2canvas'),
+    import('jspdf'),
+  ]);
+  const JsPDF = (jsPDFModule as any).jsPDF || (jsPDFModule as any).default;
+
+  const doc = iframe.contentDocument;
+  const win = iframe.contentWindow;
+  if (!doc || !win) throw new Error('iframe not available');
+
+  const target = (doc.body) as HTMLElement;
+
+  const canvas = await html2canvas(target, {
+    scale: 2,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: '#ffffff',
+    windowWidth: target.scrollWidth,
+    windowHeight: target.scrollHeight,
+  });
+
+  const pdf = new JsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+
+  const imgWidth = pageWidth;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+  if (imgHeight <= pageHeight) {
+    pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+  } else {
+    // Slice the canvas into page-sized chunks
+    const pageHeightPx = (canvas.width * pageHeight) / pageWidth;
+    let renderedHeight = 0;
+    let pageIndex = 0;
+    while (renderedHeight < canvas.height) {
+      const sliceHeight = Math.min(pageHeightPx, canvas.height - renderedHeight);
+      const pageCanvas = document.createElement('canvas');
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = sliceHeight;
+      const ctx = pageCanvas.getContext('2d')!;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+      ctx.drawImage(
+        canvas,
+        0, renderedHeight, canvas.width, sliceHeight,
+        0, 0, canvas.width, sliceHeight
+      );
+      const pageImg = pageCanvas.toDataURL('image/jpeg', 0.95);
+      const pageImgHeight = (sliceHeight * imgWidth) / canvas.width;
+      if (pageIndex > 0) pdf.addPage();
+      pdf.addImage(pageImg, 'JPEG', 0, 0, imgWidth, pageImgHeight);
+      renderedHeight += sliceHeight;
+      pageIndex++;
+    }
+  }
+
+  const blob = pdf.output('blob');
+  smartDownload(blob, filename);
+}
+
 /**
  * Smart download that works in WebView environments.
  * Tries multiple approaches in order:
