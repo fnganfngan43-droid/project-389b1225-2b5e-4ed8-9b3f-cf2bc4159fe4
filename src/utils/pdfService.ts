@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Settings } from '@/types/accounting';
+import { e, escapeUrl } from './htmlEscape';
 
 // Convert number to Arabic words
 const numberToArabicWords = (num: number): string => {
@@ -129,15 +130,15 @@ const getHeaderHTML = (settings: Settings): string => {
   return `
     <div class="report-header" style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
       <div style="text-align: right; flex: 1;">
-        <h1 style="font-size: 18px; font-weight: bold; margin: 2px 0; color: #000000;">${settings.headerArabic[0]}</h1>
-        <h2 style="font-size: 14px; color: #1a1a1a; margin: 2px 0;">${settings.headerArabic[1]}</h2>
-        <p style="font-size: 12px; color: #333333; margin: 2px 0;">${settings.headerArabic[2]}</p>
+        <h1 style="font-size: 18px; font-weight: bold; margin: 2px 0; color: #000000;">${e(settings.headerArabic[0])}</h1>
+        <h2 style="font-size: 14px; color: #1a1a1a; margin: 2px 0;">${e(settings.headerArabic[1])}</h2>
+        <p style="font-size: 12px; color: #333333; margin: 2px 0;">${e(settings.headerArabic[2])}</p>
       </div>
-      ${settings.logo ? `<div style="flex: 0 0 100px; display: flex; justify-content: center; align-items: center;"><img src="${settings.logo}" alt="Logo" style="max-width: 80px; max-height: 80px; object-fit: cover; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5);" /></div>` : ''}
+      ${settings.logo ? `<div style="flex: 0 0 100px; display: flex; justify-content: center; align-items: center;"><img src="${escapeUrl(settings.logo)}" alt="Logo" style="max-width: 80px; max-height: 80px; object-fit: cover; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5);" /></div>` : ''}
       <div style="text-align: left; flex: 1; direction: ltr;">
-        <h1 style="font-size: 18px; font-weight: bold; margin: 2px 0; color: #000000;">${settings.headerEnglish[0]}</h1>
-        <h2 style="font-size: 14px; color: #1a1a1a; margin: 2px 0;">${settings.headerEnglish[1]}</h2>
-        <p style="font-size: 12px; color: #333333; margin: 2px 0;">${settings.headerEnglish[2]}</p>
+        <h1 style="font-size: 18px; font-weight: bold; margin: 2px 0; color: #000000;">${e(settings.headerEnglish[0])}</h1>
+        <h2 style="font-size: 14px; color: #1a1a1a; margin: 2px 0;">${e(settings.headerEnglish[1])}</h2>
+        <p style="font-size: 12px; color: #333333; margin: 2px 0;">${e(settings.headerEnglish[2])}</p>
       </div>
     </div>
   `;
@@ -157,14 +158,14 @@ const getReportHTML = (data: ReportPDFData): string => {
   
   const transactionsRows = transactions.map(t => `
     <tr${t.isPreviousBalance ? ' style="background: #fef3f2;"' : ''}>
-      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${t.date}</td>
-      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626; font-weight: bold;' : ''}">${t.type}</td>
-      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${stripLeadingZeros(t.documentNumber)}</td>
-      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${t.description}</td>
-      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;">${t.reference || '-'}</td>
-      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #16a34a; font-weight: bold;">${t.debit > 0 ? t.debit.toLocaleString() : '-'}</td>
-      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #dc2626; font-weight: bold;">${t.credit > 0 ? t.credit.toLocaleString() : '-'}</td>
-      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: ${t.balance >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold;">${t.balance.toLocaleString()}</td>
+      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(t.date)}</td>
+      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626; font-weight: bold;' : ''}">${e(t.type)}</td>
+      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(stripLeadingZeros(t.documentNumber))}</td>
+      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(t.description)}</td>
+      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;">${e(t.reference || '-')}</td>
+      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #16a34a; font-weight: bold;">${t.debit > 0 ? e(t.debit.toLocaleString()) : '-'}</td>
+      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #dc2626; font-weight: bold;">${t.credit > 0 ? e(t.credit.toLocaleString()) : '-'}</td>
+      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: ${t.balance >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold;">${e(t.balance.toLocaleString())}</td>
     </tr>
   `).join('');
 
@@ -186,14 +187,14 @@ const getReportHTML = (data: ReportPDFData): string => {
     <div data-pdf-section="row-${i}" style="width: 100%;">
       <table style="width: 100%; border-collapse: collapse;">
         <tr${t.isPreviousBalance ? ' style="background: #fef3f2;"' : ''}>
-          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${t.date}</td>
-          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626; font-weight: bold;' : ''}">${t.type}</td>
-          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${stripLeadingZeros(t.documentNumber)}</td>
-          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${t.description}</td>
-          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;">${t.reference || '-'}</td>
-          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #16a34a; font-weight: bold;">${t.debit > 0 ? t.debit.toLocaleString() : '-'}</td>
-          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #dc2626; font-weight: bold;">${t.credit > 0 ? t.credit.toLocaleString() : '-'}</td>
-          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: ${t.balance >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold;">${t.balance.toLocaleString()}</td>
+          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(t.date)}</td>
+          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626; font-weight: bold;' : ''}">${e(t.type)}</td>
+          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(stripLeadingZeros(t.documentNumber))}</td>
+          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(t.description)}</td>
+          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;">${e(t.reference || '-')}</td>
+          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #16a34a; font-weight: bold;">${t.debit > 0 ? e(t.debit.toLocaleString()) : '-'}</td>
+          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #dc2626; font-weight: bold;">${t.credit > 0 ? e(t.credit.toLocaleString()) : '-'}</td>
+          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: ${t.balance >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold;">${e(t.balance.toLocaleString())}</td>
         </tr>
       </table>
     </div>
@@ -218,15 +219,15 @@ const getReportHTML = (data: ReportPDFData): string => {
           ${getHeaderHTML(settings)}
           <div style="padding: 15px 25px;">
             <div style="text-align: center; font-size: 22px; font-weight: bold; color: #0d9488; border: 2px solid #0d9488; border-radius: 8px; padding: 10px; margin-bottom: 15px; background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);">
-              ${title}
+              ${e(title)}
             </div>
             <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ccc;">
               <span style="color: #666; font-size: 14px;">اسم الحساب:</span>
-              <span style="font-weight: bold; font-size: 16px;">${accountName}</span>
+              <span style="font-weight: bold; font-size: 16px;">${e(accountName)}</span>
             </div>
             <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ccc;">
               <span style="color: #666; font-size: 14px;">العملة:</span>
-              <span style="font-weight: bold; font-size: 16px;">${getCurrencyFullName(currency)}</span>
+              <span style="font-weight: bold; font-size: 16px;">${e(getCurrencyFullName(currency))}</span>
             </div>
           </div>
         </div>
@@ -248,9 +249,9 @@ const getReportHTML = (data: ReportPDFData): string => {
           <table style="width: 100%; border-collapse: collapse;">
             <tr style="background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%); font-weight: bold; font-size: 14px;">
               <td colspan="5" style="padding: 10px 8px; border: 1px solid #000; text-align: center; border-top: 3px solid #0d9488;">الإجمالي</td>
-              <td style="padding: 10px 8px; border: 1px solid #000; text-align: center; color: #16a34a; font-weight: bold; border-top: 3px solid #0d9488;">${totals.debit.toLocaleString()}</td>
-              <td style="padding: 10px 8px; border: 1px solid #000; text-align: center; color: #dc2626; font-weight: bold; border-top: 3px solid #0d9488;">${totals.credit.toLocaleString()}</td>
-              <td style="padding: 10px 8px; border: 1px solid #000; text-align: center; color: ${totals.balance >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold; border-top: 3px solid #0d9488;">${totals.balance.toLocaleString()}</td>
+              <td style="padding: 10px 8px; border: 1px solid #000; text-align: center; color: #16a34a; font-weight: bold; border-top: 3px solid #0d9488;">${e(totals.debit.toLocaleString())}</td>
+              <td style="padding: 10px 8px; border: 1px solid #000; text-align: center; color: #dc2626; font-weight: bold; border-top: 3px solid #0d9488;">${e(totals.credit.toLocaleString())}</td>
+              <td style="padding: 10px 8px; border: 1px solid #000; text-align: center; color: ${totals.balance >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold; border-top: 3px solid #0d9488;">${e(totals.balance.toLocaleString())}</td>
             </tr>
           </table>
         </div>
@@ -259,12 +260,12 @@ const getReportHTML = (data: ReportPDFData): string => {
         <div data-pdf-section="balance" style="padding: 10px 25px;">
           <div style="padding: 15px; background: #f0fdfa; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 10px;">
             <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
-              ${balanceLabel}: ${absBalance.toLocaleString()} ${getCurrencyFullName(currency)}
+              ${e(balanceLabel)}: ${e(absBalance.toLocaleString())} ${e(getCurrencyFullName(currency))}
             </span>
           </div>
           <div style="padding: 15px; background: #f8fafc; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 10px;">
             <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
-              ${balanceLabel}: ${numberToArabicWords(absBalance)} ${getCurrencyFullName(currency)}
+              ${e(balanceLabel)}: ${e(numberToArabicWords(absBalance))} ${e(getCurrencyFullName(currency))}
             </span>
           </div>
         </div>
@@ -272,7 +273,7 @@ const getReportHTML = (data: ReportPDFData): string => {
         ${settings.footerNote ? `
         <div data-pdf-section="footer-note" style="padding: 0 25px;">
           <div style="text-align: center; padding: 12px; margin: 10px 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
-            <span style="font-size: 13px; color: #333; font-weight: 500;">${settings.footerNote}</span>
+            <span style="font-size: 13px; color: #333; font-weight: 500;">${e(settings.footerNote)}</span>
           </div>
         </div>
         ` : ''}
@@ -309,11 +310,11 @@ const getSummaryReportHTML = (data: SummaryPDFData): string => {
       <div data-pdf-section="row-${ci}-${ai}" style="width: 100%;">
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
-            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #000;">${acc.accountNumber}</td>
-            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: right; color: #000;">${acc.accountName}</td>
-            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #16a34a; font-weight: bold;">${acc.totalDebit > 0 ? acc.totalDebit.toLocaleString() : '-'}</td>
-            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #dc2626; font-weight: bold;">${acc.totalCredit > 0 ? acc.totalCredit.toLocaleString() : '-'}</td>
-            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: ${acc.balance >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold;">${acc.balance.toLocaleString()}</td>
+            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #000;">${e(acc.accountNumber)}</td>
+            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: right; color: #000;">${e(acc.accountName)}</td>
+            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #16a34a; font-weight: bold;">${acc.totalDebit > 0 ? e(acc.totalDebit.toLocaleString()) : '-'}</td>
+            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #dc2626; font-weight: bold;">${acc.totalCredit > 0 ? e(acc.totalCredit.toLocaleString()) : '-'}</td>
+            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: ${acc.balance >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold;">${e(acc.balance.toLocaleString())}</td>
           </tr>
         </table>
       </div>
@@ -322,7 +323,7 @@ const getSummaryReportHTML = (data: SummaryPDFData): string => {
     return `
       <div data-pdf-section="currency-title-${ci}" style="padding: 0 25px;">
         <h3 style="background: linear-gradient(135deg, #0d9488 0%, #115e59 100%); color: white; padding: 10px 15px; border-radius: 8px; margin-bottom: 5px;">
-          العملة: ${cd.currency}
+          العملة: ${e(cd.currency)}
         </h3>
       </div>
       
@@ -346,9 +347,9 @@ const getSummaryReportHTML = (data: SummaryPDFData): string => {
         <table style="width: 100%; border-collapse: collapse;">
           <tr style="background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%); font-weight: bold; font-size: 14px;">
             <td colspan="2" style="padding: 10px 8px; border: 1px solid #ddd; text-align: center; border-top: 3px solid #0d9488;">الإجمالي</td>
-            <td style="padding: 10px 8px; border: 1px solid #ddd; text-align: center; color: #16a34a; font-weight: bold; border-top: 3px solid #0d9488;">${cd.totalDebit.toLocaleString()}</td>
-            <td style="padding: 10px 8px; border: 1px solid #ddd; text-align: center; color: #dc2626; font-weight: bold; border-top: 3px solid #0d9488;">${cd.totalCredit.toLocaleString()}</td>
-            <td style="padding: 10px 8px; border: 1px solid #ddd; text-align: center; color: ${cd.totalBalance >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold; border-top: 3px solid #0d9488;">${cd.totalBalance.toLocaleString()}</td>
+            <td style="padding: 10px 8px; border: 1px solid #ddd; text-align: center; color: #16a34a; font-weight: bold; border-top: 3px solid #0d9488;">${e(cd.totalDebit.toLocaleString())}</td>
+            <td style="padding: 10px 8px; border: 1px solid #ddd; text-align: center; color: #dc2626; font-weight: bold; border-top: 3px solid #0d9488;">${e(cd.totalCredit.toLocaleString())}</td>
+            <td style="padding: 10px 8px; border: 1px solid #ddd; text-align: center; color: ${cd.totalBalance >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold; border-top: 3px solid #0d9488;">${e(cd.totalBalance.toLocaleString())}</td>
           </tr>
         </table>
       </div>
@@ -356,12 +357,12 @@ const getSummaryReportHTML = (data: SummaryPDFData): string => {
       <div data-pdf-section="balance-${ci}" style="padding: 10px 25px;">
         <div style="padding: 15px; background: #f0fdfa; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 10px;">
           <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
-            ${balanceLabel}: ${absBalance.toLocaleString()} ${getCurrencyFullName(cd.currency)}
+            ${e(balanceLabel)}: ${e(absBalance.toLocaleString())} ${e(getCurrencyFullName(cd.currency))}
           </span>
         </div>
         <div style="padding: 15px; background: #f8fafc; border: 2px solid #0d9488; border-radius: 8px; text-align: center;">
           <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
-            ${balanceLabel}: ${numberToArabicWords(absBalance)} ${getCurrencyFullName(cd.currency)}
+            ${e(balanceLabel)}: ${e(numberToArabicWords(absBalance))} ${e(getCurrencyFullName(cd.currency))}
           </span>
         </div>
       </div>
@@ -387,15 +388,15 @@ const getSummaryReportHTML = (data: SummaryPDFData): string => {
           ${getHeaderHTML(settings)}
           <div style="padding: 15px 25px;">
             <div style="text-align: center; font-size: 22px; font-weight: bold; color: #0d9488; border: 2px solid #0d9488; border-radius: 8px; padding: 10px; margin-bottom: 15px; background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);">
-              ${title}
+              ${e(title)}
             </div>
             <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ccc;">
               <span style="color: #666; font-size: 14px;">المجموعة:</span>
-              <span style="font-weight: bold; font-size: 16px;">${groupName}</span>
+              <span style="font-weight: bold; font-size: 16px;">${e(groupName)}</span>
             </div>
             <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ccc;">
               <span style="color: #666; font-size: 14px;">الفترة:</span>
-              <span style="font-weight: bold; font-size: 16px;">من ${dateFrom} إلى ${dateTo}</span>
+              <span style="font-weight: bold; font-size: 16px;">من ${e(dateFrom)} إلى ${e(dateTo)}</span>
             </div>
           </div>
         </div>
@@ -409,7 +410,7 @@ const getSummaryReportHTML = (data: SummaryPDFData): string => {
         ${settings.footerNote ? `
         <div data-pdf-section="footer-note" style="padding: 0 25px;">
           <div style="text-align: center; padding: 12px; margin: 10px 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
-            <span style="font-size: 13px; color: #333; font-weight: 500;">${settings.footerNote}</span>
+            <span style="font-size: 13px; color: #333; font-weight: 500;">${e(settings.footerNote)}</span>
           </div>
         </div>
         ` : ''}

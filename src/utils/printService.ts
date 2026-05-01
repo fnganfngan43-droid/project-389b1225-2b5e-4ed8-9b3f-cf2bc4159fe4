@@ -1,4 +1,5 @@
 import { Voucher, Settings } from '@/types/accounting';
+import { e, escapeUrl } from './htmlEscape';
 
 // Convert number to Arabic words
 const numberToArabicWords = (num: number): string => {
@@ -594,17 +595,17 @@ const buildHeaderBlock = (settings: Settings) => `
   <div class="report-header-wrapper">
     <div class="header report-header">
       <div class="header-right">
-        <h1>${settings.headerArabic[0]}</h1>
-        <h2>${settings.headerArabic[1]}</h2>
-        <p>${settings.headerArabic[2]}</p>
+        <h1>${e(settings.headerArabic[0])}</h1>
+        <h2>${e(settings.headerArabic[1])}</h2>
+        <p>${e(settings.headerArabic[2])}</p>
       </div>
       <div class="header-center">
-        ${settings.logo ? `<img src="${settings.logo}" alt="Logo" style="border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover;" />` : ''}
+        ${settings.logo ? `<img src="${escapeUrl(settings.logo)}" alt="Logo" style="border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover;" />` : ''}
       </div>
       <div class="header-left">
-        <h1>${settings.headerEnglish[0]}</h1>
-        <h2>${settings.headerEnglish[1]}</h2>
-        <p>${settings.headerEnglish[2]}</p>
+        <h1>${e(settings.headerEnglish[0])}</h1>
+        <h2>${e(settings.headerEnglish[1])}</h2>
+        <p>${e(settings.headerEnglish[2])}</p>
       </div>
     </div>
   </div>
@@ -620,7 +621,7 @@ export function printVoucher({ voucher, settings }: PrintVoucherData) {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${voucherTypeName} - ${voucher.voucherNumber}</title>
+      <title>${e(voucherTypeName)} - ${e(voucher.voucherNumber)}</title>
       <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
       <style>${getCommonStyles()}</style>
     </head>
@@ -629,59 +630,59 @@ export function printVoucher({ voucher, settings }: PrintVoucherData) {
       <div class="print-container">
         <div class="header">
           <div class="header-right">
-            <h1>${settings.headerArabic[0]}</h1>
-            <h2>${settings.headerArabic[1]}</h2>
-            <p>${settings.headerArabic[2]}</p>
+            <h1>${e(settings.headerArabic[0])}</h1>
+            <h2>${e(settings.headerArabic[1])}</h2>
+            <p>${e(settings.headerArabic[2])}</p>
           </div>
           <div class="header-center">
-            ${settings.logo ? `<img src="${settings.logo}" alt="Logo" style="border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover;" />` : ''}
+            ${settings.logo ? `<img src="${escapeUrl(settings.logo)}" alt="Logo" style="border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover;" />` : ''}
           </div>
           <div class="header-left">
-            <h1>${settings.headerEnglish[0]}</h1>
-            <h2>${settings.headerEnglish[1]}</h2>
-            <p>${settings.headerEnglish[2]}</p>
+            <h1>${e(settings.headerEnglish[0])}</h1>
+            <h2>${e(settings.headerEnglish[1])}</h2>
+            <p>${e(settings.headerEnglish[2])}</p>
           </div>
         </div>
         
         <div class="content">
-          <div class="voucher-type">${voucherTypeName}</div>
+          <div class="voucher-type">${e(voucherTypeName)}</div>
           
           <div class="info-row">
             <span class="info-label">رقم السند:</span>
-            <span class="info-value">#${voucher.voucherNumber}</span>
+            <span class="info-value">#${e(voucher.voucherNumber)}</span>
           </div>
           
           <div class="info-row">
             <span class="info-label">التاريخ:</span>
-            <span class="info-value">${voucher.date}</span>
+            <span class="info-value">${e(voucher.date)}</span>
           </div>
           
           <div class="info-row">
             <span class="info-label">اسم الحساب:</span>
-            <span class="info-value">${voucher.accountName}</span>
+            <span class="info-value">${e(voucher.accountName)}</span>
           </div>
           
           <div class="info-row">
             <span class="info-label">المجموعة:</span>
-            <span class="info-value">${voucher.groupName}</span>
+            <span class="info-value">${e(voucher.groupName)}</span>
           </div>
           
           ${voucher.reference ? `
           <div class="info-row">
             <span class="info-label">رقم المرجع:</span>
-            <span class="info-value">${voucher.reference}</span>
+            <span class="info-value">${e(voucher.reference)}</span>
           </div>
           ` : ''}
           
           <div class="info-row">
             <span class="info-label">البيان:</span>
-            <span class="info-value">${voucher.description}</span>
+            <span class="info-value">${e(voucher.description)}</span>
           </div>
           
           <div class="amount-box">
-            <div class="amount-label">${amountLabel}</div>
-            <div class="amount-value">${voucher.amount.toLocaleString()}</div>
-            <div class="amount-currency">${voucher.currency}</div>
+            <div class="amount-label">${e(amountLabel)}</div>
+            <div class="amount-value">${e(voucher.amount.toLocaleString())}</div>
+            <div class="amount-currency">${e(voucher.currency)}</div>
           </div>
           
           <div class="footer">
@@ -718,14 +719,14 @@ export function printReport({ title, accountName, currency, transactions, settin
 
   const transactionsRows = transactions.map(t => `
     <tr${t.isPreviousBalance ? ' class="previous-balance-row"' : ''}>
-      <td>${t.date}</td>
-      <td${t.isPreviousBalance ? ' style="color: #dc2626; font-weight: bold;"' : ''}>${t.type}</td>
-      <td${t.isPreviousBalance ? ' style="color: #dc2626;"' : ''}>${stripLeadingZeros(t.documentNumber)}</td>
-      <td${t.isPreviousBalance ? ' style="color: #dc2626;"' : ''}>${t.description}</td>
-      <td>${t.reference || '-'}</td>
-      <td class="debit"${t.isPreviousBalance ? ' style="color: #dc2626; font-weight: bold;"' : ''}>${t.debit > 0 ? t.debit.toLocaleString() : '-'}</td>
-      <td class="credit"${t.isPreviousBalance ? ' style="color: #dc2626; font-weight: bold;"' : ''}>${t.credit > 0 ? t.credit.toLocaleString() : '-'}</td>
-      <td class="${t.balance >= 0 ? 'balance-positive' : 'balance-negative'}"${t.isPreviousBalance ? ' style="color: #dc2626; font-weight: bold;"' : ''}>${t.balance.toLocaleString()}</td>
+      <td>${e(t.date)}</td>
+      <td${t.isPreviousBalance ? ' style="color: #dc2626; font-weight: bold;"' : ''}>${e(t.type)}</td>
+      <td${t.isPreviousBalance ? ' style="color: #dc2626;"' : ''}>${e(stripLeadingZeros(t.documentNumber))}</td>
+      <td${t.isPreviousBalance ? ' style="color: #dc2626;"' : ''}>${e(t.description)}</td>
+      <td>${e(t.reference || '-')}</td>
+      <td class="debit"${t.isPreviousBalance ? ' style="color: #dc2626; font-weight: bold;"' : ''}>${t.debit > 0 ? e(t.debit.toLocaleString()) : '-'}</td>
+      <td class="credit"${t.isPreviousBalance ? ' style="color: #dc2626; font-weight: bold;"' : ''}>${t.credit > 0 ? e(t.credit.toLocaleString()) : '-'}</td>
+      <td class="${t.balance >= 0 ? 'balance-positive' : 'balance-negative'}"${t.isPreviousBalance ? ' style="color: #dc2626; font-weight: bold;"' : ''}>${e(t.balance.toLocaleString())}</td>
     </tr>
   `).join('');
 
@@ -735,7 +736,7 @@ export function printReport({ title, accountName, currency, transactions, settin
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${title} - ${accountName}</title>
+      <title>${e(title)} - ${e(accountName)}</title>
       <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
       <style>
         ${getCommonStyles()}
@@ -755,14 +756,14 @@ export function printReport({ title, accountName, currency, transactions, settin
               <td>
                 ${buildHeaderBlock(settings)}
                 <div class="report-info-wrapper">
-                  <div class="voucher-type">${title}</div>
+                  <div class="voucher-type">${e(title)}</div>
                   <div class="info-row">
                     <span class="info-label">اسم الحساب:</span>
-                    <span class="info-value">${accountName}</span>
+                    <span class="info-value">${e(accountName)}</span>
                   </div>
                   <div class="info-row">
                     <span class="info-label">العملة:</span>
-                    <span class="info-value">${getCurrencyFullName(currency)}</span>
+                    <span class="info-value">${e(getCurrencyFullName(currency))}</span>
                   </div>
                 </div>
               </td>
@@ -804,9 +805,9 @@ export function printReport({ title, accountName, currency, transactions, settin
                       ${transactionsRows}
                       <tr class="totals-row">
                         <td colspan="5">الإجمالي</td>
-                        <td class="debit">${totals.debit.toLocaleString()}</td>
-                        <td class="credit">${totals.credit.toLocaleString()}</td>
-                        <td class="${totals.balance >= 0 ? 'balance-positive' : 'balance-negative'}">${totals.balance.toLocaleString()}</td>
+                        <td class="debit">${e(totals.debit.toLocaleString())}</td>
+                        <td class="credit">${e(totals.credit.toLocaleString())}</td>
+                        <td class="${totals.balance >= 0 ? 'balance-positive' : 'balance-negative'}">${e(totals.balance.toLocaleString())}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -814,14 +815,14 @@ export function printReport({ title, accountName, currency, transactions, settin
                   <!-- Balance in numbers -->
                   <div class="balance-row numbers">
                     <span class="balance-text ${isDebit ? 'debit' : 'credit'}">
-                      ${balanceLabel}: ${absBalance.toLocaleString()} ${getCurrencyFullName(currency)}
+                      ${e(balanceLabel)}: ${e(absBalance.toLocaleString())} ${e(getCurrencyFullName(currency))}
                     </span>
                   </div>
 
                   <!-- Balance in Arabic words -->
                   <div class="balance-row words">
                     <span class="balance-text ${isDebit ? 'debit' : 'credit'}">
-                      ${balanceLabel}: ${numberToArabicWords(absBalance)} ${getCurrencyFullName(currency)}
+                      ${e(balanceLabel)}: ${e(numberToArabicWords(absBalance))} ${e(getCurrencyFullName(currency))}
                     </span>
                   </div>
                   ` : `
@@ -832,7 +833,7 @@ export function printReport({ title, accountName, currency, transactions, settin
 
                   ${settings.footerNote ? `
                   <div style="text-align: center; padding: 12px; margin: 15px 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
-                    <span style="font-size: 13px; color: #333; font-weight: 500;">${settings.footerNote}</span>
+                    <span style="font-size: 13px; color: #333; font-weight: 500;">${e(settings.footerNote)}</span>
                   </div>
                   ` : ''}
 
@@ -866,12 +867,12 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
     cd.accounts.forEach(acc => {
       allAccountRows.push(`
         <tr>
-          <td>${acc.accountNumber}</td>
-          <td style="text-align: right;">${acc.accountName}</td>
-          <td style="text-align: center;">${cd.currency}</td>
-          <td class="debit">${acc.totalDebit > 0 ? acc.totalDebit.toLocaleString() : '-'}</td>
-          <td class="credit">${acc.totalCredit > 0 ? acc.totalCredit.toLocaleString() : '-'}</td>
-          <td class="${acc.balance >= 0 ? 'balance-positive' : 'balance-negative'}">${acc.balance.toLocaleString()}</td>
+          <td>${e(acc.accountNumber)}</td>
+          <td style="text-align: right;">${e(acc.accountName)}</td>
+          <td style="text-align: center;">${e(cd.currency)}</td>
+          <td class="debit">${acc.totalDebit > 0 ? e(acc.totalDebit.toLocaleString()) : '-'}</td>
+          <td class="credit">${acc.totalCredit > 0 ? e(acc.totalCredit.toLocaleString()) : '-'}</td>
+          <td class="${acc.balance >= 0 ? 'balance-positive' : 'balance-negative'}">${e(acc.balance.toLocaleString())}</td>
         </tr>
       `);
     });
@@ -885,19 +886,19 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
 
     return `
       <tr class="totals-row">
-        <td colspan="3">إجمالي ${getCurrencyFullName(cd.currency)}</td>
-        <td class="debit">${cd.totalDebit.toLocaleString()}</td>
-        <td class="credit">${cd.totalCredit.toLocaleString()}</td>
-        <td class="${cd.totalBalance >= 0 ? 'balance-positive' : 'balance-negative'}">${cd.totalBalance.toLocaleString()}</td>
+        <td colspan="3">إجمالي ${e(getCurrencyFullName(cd.currency))}</td>
+        <td class="debit">${e(cd.totalDebit.toLocaleString())}</td>
+        <td class="credit">${e(cd.totalCredit.toLocaleString())}</td>
+        <td class="${cd.totalBalance >= 0 ? 'balance-positive' : 'balance-negative'}">${e(cd.totalBalance.toLocaleString())}</td>
       </tr>
       <tr>
         <td colspan="6" style="background: #f0fdfa; text-align: center; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
-          ${balanceLabel}: ${absBalance.toLocaleString()} ${getCurrencyFullName(cd.currency)}
+          ${e(balanceLabel)}: ${e(absBalance.toLocaleString())} ${e(getCurrencyFullName(cd.currency))}
         </td>
       </tr>
       <tr>
         <td colspan="6" style="background: #f8fafc; text-align: center; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
-          ${balanceLabel}: ${numberToArabicWords(absBalance)} ${getCurrencyFullName(cd.currency)}
+          ${e(balanceLabel)}: ${e(numberToArabicWords(absBalance))} ${e(getCurrencyFullName(cd.currency))}
         </td>
       </tr>
     `;
@@ -909,7 +910,7 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${title} - ${groupName}</title>
+      <title>${e(title)} - ${e(groupName)}</title>
       <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
       <style>
         ${getCommonStyles()}
@@ -929,14 +930,14 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
               <td>
                 ${buildHeaderBlock(settings)}
                 <div class="report-info-wrapper">
-                  <div class="voucher-type">${title}</div>
+                  <div class="voucher-type">${e(title)}</div>
                   <div class="info-row">
                     <span class="info-label">المجموعة:</span>
-                    <span class="info-value">${groupName}</span>
+                    <span class="info-value">${e(groupName)}</span>
                   </div>
                   <div class="info-row">
                     <span class="info-label">الفترة:</span>
-                    <span class="info-value">من ${dateFrom} إلى ${dateTo}</span>
+                    <span class="info-value">من ${e(dateFrom)} إلى ${e(dateTo)}</span>
                   </div>
                 </div>
               </td>
@@ -985,7 +986,7 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
 
                   ${settings.footerNote ? `
                   <div style="text-align: center; padding: 12px; margin: 15px 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
-                    <span style="font-size: 13px; color: #333; font-weight: 500;">${settings.footerNote}</span>
+                    <span style="font-size: 13px; color: #333; font-weight: 500;">${e(settings.footerNote)}</span>
                   </div>
                   ` : ''}
 

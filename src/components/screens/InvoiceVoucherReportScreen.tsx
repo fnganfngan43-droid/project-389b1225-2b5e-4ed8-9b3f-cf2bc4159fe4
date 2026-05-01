@@ -110,21 +110,22 @@ export function InvoiceVoucherReportScreen() {
 
   const handlePrint = async () => {
     const { printHTML } = await import('@/utils/webviewPrint');
+    const { e, escapeUrl } = await import('@/utils/htmlEscape');
 
     const rows = reportData.map((item, idx) => `
       <tr>
         <td>${idx + 1}</td>
-        <td>${item.number}</td>
-        <td>${item.date}</td>
-        <td>${item.accountName}</td>
-        <td>${item.groupName}</td>
-        <td class="debit">${item.amount.toLocaleString()}</td>
-        <td>${item.currency}</td>
-        <td>${item.description}</td>
+        <td>${e(item.number)}</td>
+        <td>${e(item.date)}</td>
+        <td>${e(item.accountName)}</td>
+        <td>${e(item.groupName)}</td>
+        <td class="debit">${e(item.amount.toLocaleString())}</td>
+        <td>${e(item.currency)}</td>
+        <td>${e(item.description)}</td>
       </tr>
     `).join('');
 
-    const filtersText = `من ${dateFrom} إلى ${dateTo}${selectedCurrency && selectedCurrency !== 'all' ? ' | العملة: ' + selectedCurrency : ''}${numberFrom || numberTo ? ' | من رقم ' + (numberFrom || '1') + ' إلى رقم ' + (numberTo || '∞') : ''}`;
+    const filtersText = `من ${e(dateFrom)} إلى ${e(dateTo)}${selectedCurrency && selectedCurrency !== 'all' ? ' | العملة: ' + e(selectedCurrency) : ''}${numberFrom || numberTo ? ' | من رقم ' + e(numberFrom || '1') + ' إلى رقم ' + e(numberTo || '∞') : ''}`;
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -132,7 +133,7 @@ export function InvoiceVoucherReportScreen() {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>تقرير ${operationLabels[operationType]}</title>
+        <title>تقرير ${e(operationLabels[operationType])}</title>
         <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -275,22 +276,22 @@ export function InvoiceVoucherReportScreen() {
                   <div class="report-header-wrapper">
                     <div class="header">
                       <div class="header-right">
-                        <h1>${settings.headerArabic[0]}</h1>
-                        <h2>${settings.headerArabic[1]}</h2>
-                        <p>${settings.headerArabic[2]}</p>
+                        <h1>${e(settings.headerArabic[0])}</h1>
+                        <h2>${e(settings.headerArabic[1])}</h2>
+                        <p>${e(settings.headerArabic[2])}</p>
                       </div>
                       <div class="header-center">
-                        ${settings.logo ? `<img src="${settings.logo}" alt="Logo" />` : ''}
+                        ${settings.logo ? `<img src="${escapeUrl(settings.logo)}" alt="Logo" />` : ''}
                       </div>
                       <div class="header-left">
-                        <h1>${settings.headerEnglish[0]}</h1>
-                        <h2>${settings.headerEnglish[1]}</h2>
-                        <p>${settings.headerEnglish[2]}</p>
+                        <h1>${e(settings.headerEnglish[0])}</h1>
+                        <h2>${e(settings.headerEnglish[1])}</h2>
+                        <p>${e(settings.headerEnglish[2])}</p>
                       </div>
                     </div>
                   </div>
                   <div class="report-info-wrapper">
-                    <div class="voucher-type">${operationLabels[operationType]}</div>
+                    <div class="voucher-type">${e(operationLabels[operationType])}</div>
                     <div class="info-row">
                       <span class="info-label">الفترة:</span>
                       <span class="info-value">${filtersText}</span>
@@ -329,15 +330,15 @@ export function InvoiceVoucherReportScreen() {
                         ${rows}
                         <tr class="totals-row">
                           <td colspan="5">الإجمالي</td>
-                          <td class="debit">${totalAmount.toLocaleString()}</td>
-                          <td>${selectedCurrency && selectedCurrency !== 'all' ? selectedCurrency : ''}</td>
+                          <td class="debit">${e(totalAmount.toLocaleString())}</td>
+                          <td>${selectedCurrency && selectedCurrency !== 'all' ? e(selectedCurrency) : ''}</td>
                           <td></td>
                         </tr>
                       </tbody>
                     </table>
                     ${settings.footerNote ? `
                     <div style="text-align: center; padding: 12px; margin: 15px 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
-                      <span style="font-size: 13px; color: #333; font-weight: 500;">${settings.footerNote}</span>
+                      <span style="font-size: 13px; color: #333; font-weight: 500;">${e(settings.footerNote)}</span>
                     </div>` : ''}
                   </div>
                 </td>
