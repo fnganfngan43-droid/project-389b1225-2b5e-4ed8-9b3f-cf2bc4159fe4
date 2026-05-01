@@ -1,27 +1,45 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
+import { writeBackupToFolder, getBackupFolderHandle } from '@/utils/backupFolder';
 
 const AUTO_BACKUP_INTERVAL = 30 * 60 * 1000; // 30 minutes
 const LAST_AUTO_BACKUP_KEY = 'last_auto_backup_time';
 const AUTO_BACKUP_ENABLED_KEY = 'auto_backup_enabled';
 
-export function triggerBackupDownload() {
+function recordBackupTimestamp() {
+  const now = new Date();
+  const displayDate = now.toLocaleDateString('ar-SA') + ' ' + now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+  localStorage.setItem('last_backup_date', displayDate);
+  localStorage.setItem(LAST_AUTO_BACKUP_KEY, Date.now().toString());
+}
+
+export async function triggerBackupDownload(): Promise<boolean> {
   try {
     const data = localStorage.getItem('accounting_data');
     if (!data) return false;
 
+    // Try saved folder first
+    const dir = await getBackupFolderHandle();
+    if (dir) {
+      const ts = new Date();
+      const fileName = `نسخة المحاسب - ${ts.getFullYear()}-${String(ts.getMonth()+1).padStart(2,'0')}-${String(ts.getDate()).padStart(2,'0')}.json`;
+      const ok = await writeBackupToFolder(fileName, data);
+      if (ok) {
+        recordBackupTimestamp();
+        return true;
+      }
+    }
+
+    // Fallback: regular browser download
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'نسخ المحاسب المحبوب/نسخة المحاسب.json';
+    a.download = 'نسخة المحاسب.json';
     a.click();
     URL.revokeObjectURL(url);
 
-    const now = new Date();
-    const displayDate = now.toLocaleDateString('ar-SA') + ' ' + now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
-    localStorage.setItem('last_backup_date', displayDate);
-    localStorage.setItem(LAST_AUTO_BACKUP_KEY, Date.now().toString());
+    recordBackupTimestamp();
     return true;
   } catch {
     return false;
