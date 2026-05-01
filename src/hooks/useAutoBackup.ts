@@ -57,14 +57,14 @@ export function setAutoBackupEnabled(enabled: boolean) {
 export function useAutoBackup() {
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
 
-  const checkAndBackup = useCallback(() => {
+  const checkAndBackup = useCallback(async () => {
     if (!isAutoBackupEnabled()) return;
 
     const lastBackup = localStorage.getItem(LAST_AUTO_BACKUP_KEY);
     const now = Date.now();
 
     if (!lastBackup || (now - parseInt(lastBackup)) >= AUTO_BACKUP_INTERVAL) {
-      const success = triggerBackupDownload();
+      const success = await triggerBackupDownload();
       if (success) {
         toast.success('تم حفظ نسخة احتياطية تلقائية - نسخة المحاسب', { duration: 3000 });
       }
