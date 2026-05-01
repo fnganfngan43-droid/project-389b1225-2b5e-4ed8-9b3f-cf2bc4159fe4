@@ -133,7 +133,7 @@ export function InvoiceVoucherReportScreen() {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>تقرير ${operationLabels[operationType]}</title>
+        <title>تقرير ${e(operationLabels[operationType])}</title>
         <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -276,22 +276,22 @@ export function InvoiceVoucherReportScreen() {
                   <div class="report-header-wrapper">
                     <div class="header">
                       <div class="header-right">
-                        <h1>${settings.headerArabic[0]}</h1>
-                        <h2>${settings.headerArabic[1]}</h2>
-                        <p>${settings.headerArabic[2]}</p>
+                        <h1>${e(settings.headerArabic[0])}</h1>
+                        <h2>${e(settings.headerArabic[1])}</h2>
+                        <p>${e(settings.headerArabic[2])}</p>
                       </div>
                       <div class="header-center">
-                        ${settings.logo ? `<img src="${settings.logo}" alt="Logo" />` : ''}
+                        ${settings.logo ? `<img src="${escapeUrl(settings.logo)}" alt="Logo" />` : ''}
                       </div>
                       <div class="header-left">
-                        <h1>${settings.headerEnglish[0]}</h1>
-                        <h2>${settings.headerEnglish[1]}</h2>
-                        <p>${settings.headerEnglish[2]}</p>
+                        <h1>${e(settings.headerEnglish[0])}</h1>
+                        <h2>${e(settings.headerEnglish[1])}</h2>
+                        <p>${e(settings.headerEnglish[2])}</p>
                       </div>
                     </div>
                   </div>
                   <div class="report-info-wrapper">
-                    <div class="voucher-type">${operationLabels[operationType]}</div>
+                    <div class="voucher-type">${e(operationLabels[operationType])}</div>
                     <div class="info-row">
                       <span class="info-label">الفترة:</span>
                       <span class="info-value">${filtersText}</span>
@@ -330,15 +330,15 @@ export function InvoiceVoucherReportScreen() {
                         ${rows}
                         <tr class="totals-row">
                           <td colspan="5">الإجمالي</td>
-                          <td class="debit">${totalAmount.toLocaleString()}</td>
-                          <td>${selectedCurrency && selectedCurrency !== 'all' ? selectedCurrency : ''}</td>
+                          <td class="debit">${e(totalAmount.toLocaleString())}</td>
+                          <td>${selectedCurrency && selectedCurrency !== 'all' ? e(selectedCurrency) : ''}</td>
                           <td></td>
                         </tr>
                       </tbody>
                     </table>
                     ${settings.footerNote ? `
                     <div style="text-align: center; padding: 12px; margin: 15px 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
-                      <span style="font-size: 13px; color: #333; font-weight: 500;">${settings.footerNote}</span>
+                      <span style="font-size: 13px; color: #333; font-weight: 500;">${e(settings.footerNote)}</span>
                     </div>` : ''}
                   </div>
                 </td>
