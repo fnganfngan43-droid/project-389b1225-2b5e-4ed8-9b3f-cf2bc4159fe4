@@ -268,6 +268,59 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 💡 احفظ نسخة احتياطية في ذاكرة هاتفك لاستعادة بياناتك عند الحاجة
               </p>
 
+              {/* Backup folder selector */}
+              <div className="p-3 rounded-lg border border-border space-y-2">
+                <div className="flex items-center gap-2">
+                  <FolderOpen className="w-4 h-4 text-primary" />
+                  <Label className="text-sm font-medium">مسار حفظ النسخة الاحتياطية</Label>
+                </div>
+                <div className="text-xs text-muted-foreground break-all">
+                  {backupFolder
+                    ? <>المجلد المختار: <span className="font-medium text-foreground">{backupFolder}</span></>
+                    : 'لم يتم اختيار مجلد - سيتم استخدام مجلد التنزيلات الافتراضي'}
+                </div>
+                {!folderSupported && (
+                  <div className="text-xs text-destructive">
+                    اختيار المجلد غير مدعوم في هذا المتصفح/التطبيق. سيتم استخدام مجلد التنزيلات الافتراضي.
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    disabled={!folderSupported}
+                    onClick={async () => {
+                      const name = await pickBackupFolder();
+                      if (name) {
+                        setBackupFolder(name);
+                        toast.success(`تم اختيار المجلد: ${name}`);
+                      } else {
+                        toast.error('لم يتم اختيار مجلد');
+                      }
+                    }}
+                  >
+                    <FolderOpen className="w-4 h-4 ml-1" />
+                    {backupFolder ? 'تغيير المجلد' : 'اختيار مجلد'}
+                  </Button>
+                  {backupFolder && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        clearBackupFolder();
+                        setBackupFolder(null);
+                        toast.success('تم إلغاء المجلد المحدد');
+                      }}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+
               {/* Auto backup toggle */}
               <div className="flex items-center justify-between p-3 rounded-lg border border-border">
                 <div className="flex items-center gap-2">
@@ -290,10 +343,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               <Button
                 variant="default"
                 className="w-full"
-                onClick={() => {
-                  const success = triggerBackupDownload();
+                onClick={async () => {
+                  const success = await triggerBackupDownload();
                   if (success) {
-                    toast.success('تم حفظ نسخة المحاسب في ذاكرة الهاتف');
+                    toast.success(backupFolder
+                      ? `تم حفظ النسخة في المجلد: ${backupFolder}`
+                      : 'تم حفظ نسخة المحاسب في ذاكرة الهاتف');
                   } else {
                     toast.error('لا توجد بيانات للنسخ');
                   }
