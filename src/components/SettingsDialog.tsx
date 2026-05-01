@@ -35,6 +35,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const backupInputRef = useRef<HTMLInputElement>(null);
   const [autoBackup, setAutoBackup] = useState(isAutoBackupEnabled());
+  const [backupFolder, setBackupFolder] = useState<string | null>(getBackupFolderName());
+  const folderSupported = isFolderPickerSupported();
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
