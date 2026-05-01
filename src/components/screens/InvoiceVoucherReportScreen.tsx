@@ -110,21 +110,22 @@ export function InvoiceVoucherReportScreen() {
 
   const handlePrint = async () => {
     const { printHTML } = await import('@/utils/webviewPrint');
+    const { e, escapeUrl } = await import('@/utils/htmlEscape');
 
     const rows = reportData.map((item, idx) => `
       <tr>
         <td>${idx + 1}</td>
-        <td>${item.number}</td>
-        <td>${item.date}</td>
-        <td>${item.accountName}</td>
-        <td>${item.groupName}</td>
-        <td class="debit">${item.amount.toLocaleString()}</td>
-        <td>${item.currency}</td>
-        <td>${item.description}</td>
+        <td>${e(item.number)}</td>
+        <td>${e(item.date)}</td>
+        <td>${e(item.accountName)}</td>
+        <td>${e(item.groupName)}</td>
+        <td class="debit">${e(item.amount.toLocaleString())}</td>
+        <td>${e(item.currency)}</td>
+        <td>${e(item.description)}</td>
       </tr>
     `).join('');
 
-    const filtersText = `من ${dateFrom} إلى ${dateTo}${selectedCurrency && selectedCurrency !== 'all' ? ' | العملة: ' + selectedCurrency : ''}${numberFrom || numberTo ? ' | من رقم ' + (numberFrom || '1') + ' إلى رقم ' + (numberTo || '∞') : ''}`;
+    const filtersText = `من ${e(dateFrom)} إلى ${e(dateTo)}${selectedCurrency && selectedCurrency !== 'all' ? ' | العملة: ' + e(selectedCurrency) : ''}${numberFrom || numberTo ? ' | من رقم ' + e(numberFrom || '1') + ' إلى رقم ' + e(numberTo || '∞') : ''}`;
 
     const htmlContent = `
       <!DOCTYPE html>
