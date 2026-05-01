@@ -80,12 +80,23 @@ export function printHTML(htmlContent: string, onReady?: (doc: Document) => void
       };
       document.body.appendChild(closeBtn);
 
-      // Add download/share button
+      // Add download/share button (PDF)
       const downloadBtn = document.createElement('button');
-      downloadBtn.textContent = '📥 تحميل / مشاركة';
+      downloadBtn.textContent = '📥 تحميل PDF / مشاركة';
       downloadBtn.style.cssText = 'position:fixed;top:10px;right:110px;z-index:100000;background:#0d9488;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:16px;cursor:pointer;font-family:Tajawal,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.3);';
-      downloadBtn.onclick = () => {
-        downloadAsHTML(htmlContent);
+      downloadBtn.onclick = async () => {
+        const originalText = downloadBtn.textContent;
+        downloadBtn.textContent = '⏳ جارٍ إنشاء PDF...';
+        downloadBtn.disabled = true;
+        try {
+          await downloadIframeAsPDF(iframe, 'تقرير.pdf');
+        } catch (err) {
+          console.error('PDF download failed', err);
+          downloadAsHTML(htmlContent);
+        } finally {
+          downloadBtn.textContent = originalText;
+          downloadBtn.disabled = false;
+        }
       };
       document.body.appendChild(downloadBtn);
     }, 400);
