@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { Lock, Plus, Edit, Save, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { verifyPassword } from '@/utils/secureStorage';
 
 type Mode = 'none' | 'add' | 'edit';
 
