@@ -145,32 +145,67 @@ const saveToStorage = async (data: any) => {
 };
 
 export function AccountingProvider({ children }: { children: ReactNode }) {
-  // Load stored data or use initial data
-  const storedData = loadFromStorage();
-  
+  const [isReady, setIsReady] = useState(false);
+  const hydratedRef = useRef(false);
+
   // Always start on the Welcome screen when the app opens
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [password, setPasswordState] = useState<string | null>(storedData?.password ?? null);
-  const [settings, setSettings] = useState<Settings>(storedData?.settings ?? {
+  const [password, setPasswordStateRaw] = useState<string | null>(null);
+  const [settings, setSettings] = useState<Settings>({
     userName: 'المستخدم',
     headerArabic: ['رفيق المحاسب', 'برنامج محاسبي متكامل', 'إدارة الحسابات بسهولة'],
     headerEnglish: ['Accountant Companion', 'Integrated Accounting System', 'Easy Account Management'],
   });
 
-  const [accounts, setAccounts] = useState<Account[]>(storedData?.accounts ?? initialAccounts);
-  const [groups, setGroups] = useState<AccountGroup[]>(storedData?.groups ?? initialGroups);
-  const [currencies, setCurrencies] = useState<Currency[]>(storedData?.currencies ?? initialCurrencies);
-  const [governorates, setGovernorates] = useState<Governorate[]>(storedData?.governorates ?? initialGovernorates);
-  const [vouchers, setVouchers] = useState<Voucher[]>(storedData?.vouchers ?? []);
-  const [openingBalances, setOpeningBalances] = useState<OpeningBalance[]>(storedData?.openingBalances ?? []);
-  const [invoices, setInvoices] = useState<Invoice[]>(storedData?.invoices ?? []);
-  const [currencyExchanges, setCurrencyExchanges] = useState<CurrencyExchange[]>(storedData?.currencyExchanges ?? []);
-  const [discounts, setDiscounts] = useState<DiscountEntry[]>(storedData?.discounts ?? []);
+  const [accounts, setAccounts] = useState<Account[]>(initialAccounts);
+  const [groups, setGroups] = useState<AccountGroup[]>(initialGroups);
+  const [currencies, setCurrencies] = useState<Currency[]>(initialCurrencies);
+  const [governorates, setGovernorates] = useState<Governorate[]>(initialGovernorates);
+  const [vouchers, setVouchers] = useState<Voucher[]>([]);
+  const [openingBalances, setOpeningBalances] = useState<OpeningBalance[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [currencyExchanges, setCurrencyExchanges] = useState<CurrencyExchange[]>([]);
+  const [discounts, setDiscounts] = useState<DiscountEntry[]>([]);
 
-  // Save to localStorage whenever data changes
-  React.useEffect(() => {
+  // Async hydrate from encrypted storage on mount
+  useEffect(() => {
+    (async () => {
+      const storedData = await loadFromStorage();
+      if (storedData) {
+        if (storedData.password != null) setPasswordStateRaw(storedData.password);
+        if (storedData.settings) setSettings(storedData.settings);
+        if (storedData.accounts) setAccounts(storedData.accounts);
+        if (storedData.groups) setGroups(storedData.groups);
+        if (storedData.currencies) setCurrencies(storedData.currencies);
+        if (storedData.governorates) setGovernorates(storedData.governorates);
+        if (storedData.vouchers) setVouchers(storedData.vouchers);
+        if (storedData.openingBalances) setOpeningBalances(storedData.openingBalances);
+        if (storedData.invoices) setInvoices(storedData.invoices);
+        if (storedData.currencyExchanges) setCurrencyExchanges(storedData.currencyExchanges);
+        if (storedData.discounts) setDiscounts(storedData.discounts);
+      }
+      hydratedRef.current = true;
+      setIsReady(true);
+    })();
+  }, []);
+
+  // Wrap setPassword: hash plaintext before storing
+  const setPassword = (pwd: string | null) => {
+    if (pwd == null || pwd === '') {
+      setPasswordStateRaw(null);
+      return;
+    }
+    if (isHashedPassword(pwd)) {
+      setPasswordStateRaw(pwd);
+      return;
+    }
+    hashPassword(pwd).then(setPasswordStateRaw);
+  };
+
+  // Save (encrypted) to localStorage whenever data changes — only after hydration
+  useEffect(() => {
+    if (!hydratedRef.current) return;
     saveToStorage({
-      isLoggedIn,
       password,
       settings,
       accounts,
@@ -183,7 +218,16 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
       currencyExchanges,
       discounts,
     });
-  }, [isLoggedIn, password, settings, accounts, groups, currencies, governorates, vouchers, openingBalances, invoices, currencyExchanges, discounts]);
+  }, [password, settings, accounts, groups, currencies, governorates, vouchers, openingBalances, invoices, currencyExchanges, discounts]);
+
+  if (!isReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-muted-foreground text-sm">جاري التحميل...</div>
+      </div>
+    );
+  }
+
 
   const value: AccountingContextType = {
     settings,
