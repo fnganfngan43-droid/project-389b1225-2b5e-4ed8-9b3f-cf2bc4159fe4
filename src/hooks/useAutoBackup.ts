@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import { writeBackupToFolder, getBackupFolderHandle } from '@/utils/backupFolder';
+import { decryptString, isEncrypted } from '@/utils/secureStorage';
 
 const AUTO_BACKUP_INTERVAL = 30 * 60 * 1000; // 30 minutes
 const LAST_AUTO_BACKUP_KEY = 'last_auto_backup_time';
