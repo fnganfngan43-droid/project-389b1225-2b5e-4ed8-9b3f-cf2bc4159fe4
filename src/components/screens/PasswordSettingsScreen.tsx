@@ -48,12 +48,13 @@ export function PasswordSettingsScreen() {
     setConfirmPassword('');
   };
 
-  const handleEditPassword = () => {
+  const handleEditPassword = async () => {
     if (!oldPassword.trim()) {
       toast.error('الرجاء إدخال كلمة المرور السابقة');
       return;
     }
-    if (oldPassword !== password) {
+    const valid = await verifyPassword(oldPassword, password);
+    if (!valid) {
       toast.error('كلمة المرور السابقة غير صحيحة');
       return;
     }
