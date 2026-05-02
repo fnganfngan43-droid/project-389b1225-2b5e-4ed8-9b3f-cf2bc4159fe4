@@ -180,7 +180,7 @@ export async function generatePdfBlobFromDoc(
   const def = await buildDoc(content, opts);
   return new Promise<Blob>((resolve, reject) => {
     try {
-      pdfMake.createPdf(def as any).getBlob((blob) => resolve(blob));
+      (pdfMake as any).createPdf(def).getBlob((blob: Blob) => resolve(blob));
     } catch (e) {
       reject(e);
     }
