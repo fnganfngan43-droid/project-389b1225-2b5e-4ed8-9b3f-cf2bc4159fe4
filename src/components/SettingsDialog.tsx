@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { isAutoBackupEnabled, setAutoBackupEnabled, triggerBackupDownload } from '@/hooks/useAutoBackup';
 import { pickBackupFolder, getBackupFolderName, clearBackupFolder, isFolderPickerSupported } from '@/utils/backupFolder';
 import { toast } from 'sonner';
+import { encryptString } from '@/utils/secureStorage';
 
 interface SettingsDialogProps {
   open: boolean;
