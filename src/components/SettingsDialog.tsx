@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { isAutoBackupEnabled, setAutoBackupEnabled, triggerBackupDownload } from '@/hooks/useAutoBackup';
 import { pickBackupFolder, getBackupFolderName, clearBackupFolder, isFolderPickerSupported } from '@/utils/backupFolder';
 import { toast } from 'sonner';
+import { encryptString } from '@/utils/secureStorage';
 
 interface SettingsDialogProps {
   open: boolean;
@@ -367,7 +368,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   const file = e.target.files?.[0];
                   if (!file) return;
                   const reader = new FileReader();
-                  reader.onload = (ev) => {
+                  reader.onload = async (ev) => {
                     try {
                       const content = ev.target?.result as string;
                       const parsed = JSON.parse(content);
@@ -375,7 +376,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                         toast.error('ملف النسخة الاحتياطية غير صالح');
                         return;
                       }
-                      localStorage.setItem('accounting_data', content);
+                      // Re-encrypt restored data with the device key before storing
+                      const payload = await encryptString(content);
+                      localStorage.setItem('accounting_data', payload);
                       toast.success('تم استعادة البيانات بنجاح. سيتم إعادة تحميل التطبيق...');
                       setTimeout(() => window.location.reload(), 1500);
                     } catch {

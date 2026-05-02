@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { Lock, Plus, Edit, Save, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { verifyPassword } from '@/utils/secureStorage';
 
 type Mode = 'none' | 'add' | 'edit';
 
@@ -47,12 +48,13 @@ export function PasswordSettingsScreen() {
     setConfirmPassword('');
   };
 
-  const handleEditPassword = () => {
+  const handleEditPassword = async () => {
     if (!oldPassword.trim()) {
       toast.error('الرجاء إدخال كلمة المرور السابقة');
       return;
     }
-    if (oldPassword !== password) {
+    const valid = await verifyPassword(oldPassword, password);
+    if (!valid) {
       toast.error('كلمة المرور السابقة غير صحيحة');
       return;
     }

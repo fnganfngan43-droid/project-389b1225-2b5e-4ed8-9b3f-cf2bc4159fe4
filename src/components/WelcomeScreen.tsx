@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { Calculator, LogIn, LogOut, User, Eye, EyeOff, Lock } from 'lucide-react';
+import { verifyPassword } from '@/utils/secureStorage';
 import { toast } from 'sonner';
 
 export function WelcomeScreen() {
@@ -21,8 +22,9 @@ export function WelcomeScreen() {
     }
   };
 
-  const handlePasswordSubmit = () => {
-    if (enteredPassword === password) {
+  const handlePasswordSubmit = async () => {
+    const ok = await verifyPassword(enteredPassword, password);
+    if (ok) {
       login();
       setShowPasswordInput(false);
       setEnteredPassword('');
