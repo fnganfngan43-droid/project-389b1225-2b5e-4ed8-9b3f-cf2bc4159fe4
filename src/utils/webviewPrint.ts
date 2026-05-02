@@ -109,100 +109,10 @@ function downloadAsHTML(htmlContent: string): void {
   smartDownload(blob, 'تقرير.html');
 }
 
-/** Render the iframe content to a multi-page A4 PDF and download/share it */
+/** Render the iframe content to an A4 PDF using pdfmake (WebView-compatible). */
 async function downloadIframeAsPDF(iframe: HTMLIFrameElement, filename: string): Promise<void> {
-  const [{ default: html2canvas }, jsPDFModule] = await Promise.all([
-    import('html2canvas'),
-    import('jspdf'),
-  ]);
-  const JsPDF = (jsPDFModule as any).jsPDF || (jsPDFModule as any).default;
-
-  const doc = iframe.contentDocument;
-  const win = iframe.contentWindow;
-  if (!doc || !win) throw new Error('iframe not available');
-
-  // A4 dimensions
-  const A4_WIDTH_MM = 210;
-  const A4_HEIGHT_MM = 297;
-  const MARGIN_MM = 8;
-  const CONTENT_WIDTH_MM = A4_WIDTH_MM - MARGIN_MM * 2;
-  const CONTENT_HEIGHT_MM = A4_HEIGHT_MM - MARGIN_MM * 2;
-
-  // Force iframe body to A4 content width in CSS pixels (96dpi: 1mm ≈ 3.7795px)
-  const PX_PER_MM = 96 / 25.4;
-  const contentWidthPx = Math.round(CONTENT_WIDTH_MM * PX_PER_MM); // ~734px
-
-  const target = doc.body as HTMLElement;
-  const prevWidth = target.style.width;
-  const prevMaxWidth = target.style.maxWidth;
-  const prevMargin = target.style.margin;
-  const prevPadding = target.style.padding;
-  target.style.width = contentWidthPx + 'px';
-  target.style.maxWidth = contentWidthPx + 'px';
-  target.style.margin = '0 auto';
-  target.style.padding = '0';
-
-  // Wait for fonts inside iframe
-  try {
-    await ((doc as any).fonts?.ready ?? Promise.resolve());
-  } catch { /* ignore */ }
-
-  // Allow layout to settle
-  await new Promise(r => setTimeout(r, 150));
-
-  const canvas = await html2canvas(target, {
-    scale: 3,
-    useCORS: true,
-    allowTaint: true,
-    backgroundColor: '#ffffff',
-    width: contentWidthPx,
-    windowWidth: contentWidthPx,
-    windowHeight: target.scrollHeight,
-  });
-
-  // Restore body styles
-  target.style.width = prevWidth;
-  target.style.maxWidth = prevMaxWidth;
-  target.style.margin = prevMargin;
-  target.style.padding = prevPadding;
-
-  const pdf = new JsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
-
-  const imgWidthMM = CONTENT_WIDTH_MM;
-  const fullImgHeightMM = (canvas.height * imgWidthMM) / canvas.width;
-
-  if (fullImgHeightMM <= CONTENT_HEIGHT_MM) {
-    const imgData = canvas.toDataURL('image/png');
-    pdf.addImage(imgData, 'PNG', MARGIN_MM, MARGIN_MM, imgWidthMM, fullImgHeightMM, undefined, 'FAST');
-  } else {
-    // Slice the canvas into page-sized chunks
-    const pageHeightPx = (canvas.width * CONTENT_HEIGHT_MM) / CONTENT_WIDTH_MM;
-    let renderedHeight = 0;
-    let pageIndex = 0;
-    while (renderedHeight < canvas.height) {
-      const sliceHeight = Math.min(pageHeightPx, canvas.height - renderedHeight);
-      const pageCanvas = document.createElement('canvas');
-      pageCanvas.width = canvas.width;
-      pageCanvas.height = Math.ceil(sliceHeight);
-      const ctx = pageCanvas.getContext('2d')!;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-      ctx.drawImage(
-        canvas,
-        0, renderedHeight, canvas.width, sliceHeight,
-        0, 0, canvas.width, sliceHeight
-      );
-      const pageImg = pageCanvas.toDataURL('image/png');
-      const pageImgHeightMM = (sliceHeight * imgWidthMM) / canvas.width;
-      if (pageIndex > 0) pdf.addPage();
-      pdf.addImage(pageImg, 'PNG', MARGIN_MM, MARGIN_MM, imgWidthMM, pageImgHeightMM, undefined, 'FAST');
-      renderedHeight += sliceHeight;
-      pageIndex++;
-    }
-  }
-
-  const blob = pdf.output('blob');
-  smartDownload(blob, filename);
+  const { downloadIframeAsPdf } = await import('./pdfMakeService');
+  await downloadIframeAsPdf(iframe, filename);
 }
 
 /**
