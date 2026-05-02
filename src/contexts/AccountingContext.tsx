@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
+import { encryptString, decryptString, hashPassword, isHashedPassword } from '@/utils/secureStorage';
 import { 
   Account, 
   AccountGroup, 
