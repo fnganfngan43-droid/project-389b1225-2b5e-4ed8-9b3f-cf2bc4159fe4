@@ -16,8 +16,14 @@ function recordBackupTimestamp() {
 
 export async function triggerBackupDownload(): Promise<boolean> {
   try {
-    const data = localStorage.getItem('accounting_data');
+    let data = localStorage.getItem('accounting_data');
     if (!data) return false;
+    // Decrypt before exporting so the backup file is restorable elsewhere
+    if (isEncrypted(data)) {
+      const plain = await decryptString(data);
+      if (!plain) return false;
+      data = plain;
+    }
 
     // Try saved folder first
     const dir = await getBackupFolderHandle();
