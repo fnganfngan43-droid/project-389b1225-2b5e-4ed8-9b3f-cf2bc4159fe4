@@ -116,23 +116,29 @@ const initialAccounts: Account[] = [
   { id: '5', accountNumber: '12001', accountName: 'الصندوق الرئيسي', groupName: 'الصندوق', currency: 'ر.ي', balance: 75000, type: 'debit' },
 ];
 
-// Load data from localStorage
-const loadFromStorage = () => {
+// Load data from localStorage (supports legacy plaintext + encrypted payloads).
+// Decryption is async, so callers must await. Plain JSON is migrated on next save.
+const loadFromStorage = async () => {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
-    if (data) {
-      return JSON.parse(data);
+    if (!data) return null;
+    if (data.startsWith('ENC1:')) {
+      const plain = await decryptString(data);
+      return plain ? JSON.parse(plain) : null;
     }
+    // Legacy plaintext payload — return parsed; will be re-saved encrypted.
+    return JSON.parse(data);
   } catch (error) {
     console.error('Error loading from localStorage:', error);
+    return null;
   }
-  return null;
 };
 
-// Save data to localStorage
-const saveToStorage = (data: any) => {
+// Save data to localStorage (always encrypted).
+const saveToStorage = async (data: any) => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    const payload = await encryptString(JSON.stringify(data));
+    localStorage.setItem(STORAGE_KEY, payload);
   } catch (error) {
     console.error('Error saving to localStorage:', error);
   }
