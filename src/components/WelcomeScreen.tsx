@@ -22,8 +22,9 @@ export function WelcomeScreen() {
     }
   };
 
-  const handlePasswordSubmit = () => {
-    if (enteredPassword === password) {
+  const handlePasswordSubmit = async () => {
+    const ok = await verifyPassword(enteredPassword, password);
+    if (ok) {
       login();
       setShowPasswordInput(false);
       setEnteredPassword('');
