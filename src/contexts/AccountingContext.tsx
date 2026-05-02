@@ -237,7 +237,7 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
     logout: () => setIsLoggedIn(false),
     
     password,
-    setPassword: setPasswordState,
+    setPassword,
 
     accounts,
     addAccount: (account) => setAccounts(prev => [...prev, { ...account, id: generateId() }]),
