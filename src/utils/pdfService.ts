@@ -1,5 +1,4 @@
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { generatePdfBlobFromHtml } from './pdfMakeService';
 import { Settings } from '@/types/accounting';
 import { e, escapeUrl } from './htmlEscape';
 
