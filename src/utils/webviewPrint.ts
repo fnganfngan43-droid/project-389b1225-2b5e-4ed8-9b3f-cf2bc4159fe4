@@ -92,7 +92,7 @@ export function printHTML(htmlContent: string, onReady?: (doc: Document) => void
           await downloadIframeAsPDF(iframe, 'تقرير.pdf');
         } catch (err) {
           console.error('PDF download failed', err);
-          downloadAsHTML(htmlContent);
+          alert('تعذّر إنشاء ملف PDF. حاول مرة أخرى.');
         } finally {
           downloadBtn.textContent = originalText;
           downloadBtn.disabled = false;
@@ -101,12 +101,6 @@ export function printHTML(htmlContent: string, onReady?: (doc: Document) => void
       document.body.appendChild(downloadBtn);
     }, 400);
   });
-}
-
-/** Download HTML content as a file */
-function downloadAsHTML(htmlContent: string): void {
-  const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-  smartDownload(blob, 'تقرير.html');
 }
 
 /** Render the iframe content to an A4 PDF using pdfmake (WebView-compatible). */
