@@ -46,40 +46,42 @@ export function MainDashboard() {
     return titles[activeScreen];
   };
 
-  const renderScreen = () => {
-    switch (activeScreen) {
-      case 'chart-of-accounts':
-        return <ChartOfAccountsScreen />;
-      case 'receipt':
-        return <VoucherScreen type="receipt" />;
-      case 'payment':
-        return <VoucherScreen type="payment" />;
-      case 'sales':
-        return <SalesScreen />;
-      case 'sales-return':
-        return <SalesScreen isReturn />;
-      case 'opening-balance':
-        return <OpeningBalanceScreen />;
-      case 'reports':
-        return <ReportsScreen />;
-      case 'discount':
-        return <DiscountScreen />;
-      case 'currency-exchange':
-        return <CurrencyExchangeScreen />;
-      case 'currency-management':
-        return <CurrencyManagementScreen />;
-      case 'governorate-management':
-        return <GovernorateManagementScreen />;
-      case 'group-management':
-        return <AccountGroupManagementScreen />;
-      case 'password-settings':
-        return <PasswordSettingsScreen />;
-      case 'invoice-voucher-report':
-        return <InvoiceVoucherReportScreen />;
-      default:
-        return <ChartOfAccountsScreen />;
-    }
+  // Keep mounted screens alive to preserve their internal state across navigation.
+  // Screens are mounted lazily on first visit, then hidden (not unmounted) when inactive.
+  const [visited, setVisited] = useState<Set<ScreenType>>(new Set([activeScreen]));
+  if (!visited.has(activeScreen)) {
+    visited.add(activeScreen);
+    setVisited(new Set(visited));
+  }
+
+  const screenMap: Partial<Record<ScreenType, JSX.Element>> = {
+    'chart-of-accounts': <ChartOfAccountsScreen />,
+    'receipt': <VoucherScreen type="receipt" />,
+    'payment': <VoucherScreen type="payment" />,
+    'sales': <SalesScreen />,
+    'sales-return': <SalesScreen isReturn />,
+    'opening-balance': <OpeningBalanceScreen />,
+    'reports': <ReportsScreen />,
+    'discount': <DiscountScreen />,
+    'currency-exchange': <CurrencyExchangeScreen />,
+    'currency-management': <CurrencyManagementScreen />,
+    'governorate-management': <GovernorateManagementScreen />,
+    'group-management': <AccountGroupManagementScreen />,
+    'password-settings': <PasswordSettingsScreen />,
+    'invoice-voucher-report': <InvoiceVoucherReportScreen />,
   };
+
+  const renderScreens = () =>
+    (Object.keys(screenMap) as ScreenType[])
+      .filter((key) => visited.has(key))
+      .map((key) => (
+        <div
+          key={key}
+          className={`flex-1 flex flex-col overflow-hidden min-h-0 ${activeScreen === key ? '' : 'hidden'}`}
+        >
+          {screenMap[key]}
+        </div>
+      ));
 
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
