@@ -746,34 +746,51 @@ export function ReportsScreen() {
 
       // Create file for sharing
       const file = new File([pdfBlob], filename, { type: 'application/pdf' });
-      
-      // Check if Web Share API is available and supports file sharing
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+
+      // 1) Try Web Share API with file (opens native "Share via" sheet)
+      const canShareFiles = !!(navigator.canShare && navigator.canShare({ files: [file] }));
+      if (navigator.share && canShareFiles) {
         try {
           await navigator.share({
             files: [file],
             title: filename,
             text: 'تقرير محاسبي',
           });
-          toast.success('تم مشاركة ملف PDF بنجاح');
+          toast.success('تم فتح نافذة المشاركة');
           return;
-        } catch (error) {
-          // User cancelled or share failed, fall back to download
-          console.log('Web Share API failed, falling back to download');
+        } catch (error: any) {
+          if (error?.name === 'AbortError') return; // user cancelled
+          console.log('Web Share API failed, falling back', error);
         }
       }
-      
-      // Fallback: Download the PDF
-      const url = URL.createObjectURL(pdfBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      toast.success('تم تحميل ملف PDF بنجاح');
+
+      // 2) Try Web Share without file (some WebViews only allow url/text)
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: filename, text: filename, url: blobUrl });
+          toast.success('تم فتح نافذة المشاركة');
+          return;
+        } catch (error: any) {
+          if (error?.name === 'AbortError') {
+            URL.revokeObjectURL(blobUrl);
+            return;
+          }
+        }
+      }
+
+      // 3) Fallback: open PDF in new tab so user can view/share/print, plus download link
+      const opened = window.open(blobUrl, '_blank');
+      if (!opened) {
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+      toast.success('تم إنشاء ملف PDF');
     } catch (error) {
       console.error('Error generating PDF:', error);
       toast.error('حدث خطأ أثناء إنشاء ملف PDF');
