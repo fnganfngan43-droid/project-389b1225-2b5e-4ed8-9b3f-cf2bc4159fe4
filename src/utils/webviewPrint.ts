@@ -118,39 +118,52 @@ async function downloadIframeAsPDF(iframe: HTMLIFrameElement, filename: string):
  *      mistake it for HTML.
  */
 export async function smartDownload(blob: Blob, filename: string): Promise<void> {
-  // Force a proper PDF MIME type so Android WebView doesn't save as .html.
-  const pdfBlob = blob.type === 'application/pdf'
+  // Infer/normalize MIME so Android WebView writes the correct file extension.
+  const inferredType = inferMime(blob, filename);
+  const finalBlob = blob.type === inferredType
     ? blob
-    : new Blob([blob], { type: 'application/pdf' });
+    : new Blob([blob], { type: inferredType });
 
-  // 1) Native share sheet with file (best UX on mobile / WebView)
+  // 1) Native share sheet with file (best UX on mobile / WebView for PDFs)
   try {
-    const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+    const file = new File([finalBlob], filename, { type: inferredType });
     const nav: any = navigator;
     if (nav.canShare && nav.canShare({ files: [file] }) && typeof nav.share === 'function') {
       await nav.share({ title: filename, files: [file] });
       return;
     }
   } catch (e) {
-    // user cancelled or share failed — fall through
     console.warn('Web Share failed, falling back', e);
   }
 
-  // 2) Open inline so the OS PDF viewer renders it (user can then save/share)
-  try {
-    const url = URL.createObjectURL(pdfBlob);
-    const win = window.open(url, '_blank');
-    if (win) {
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
-      return;
+  // 2) For PDFs, open inline so the OS PDF viewer renders it (user can save/share).
+  if (inferredType === 'application/pdf') {
+    try {
+      const url = URL.createObjectURL(finalBlob);
+      const win = window.open(url, '_blank');
+      if (win) {
+        setTimeout(() => URL.revokeObjectURL(url), 60_000);
+        return;
+      }
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.warn('window.open failed, falling back', e);
     }
-    URL.revokeObjectURL(url);
-  } catch (e) {
-    console.warn('window.open failed, falling back', e);
   }
 
   // 3) Anchor download — last resort
-  await anchorDownload(pdfBlob, filename);
+  await anchorDownload(finalBlob, filename);
+}
+
+function inferMime(blob: Blob, filename: string): string {
+  const ext = (filename.split('.').pop() || '').toLowerCase();
+  if (ext === 'pdf') return 'application/pdf';
+  if (ext === 'xlsx') return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  if (ext === 'xls') return 'application/vnd.ms-excel';
+  if (ext === 'csv') return 'text/csv;charset=utf-8';
+  if (ext === 'json') return 'application/json;charset=utf-8';
+  if (ext === 'html' || ext === 'htm') return 'text/html;charset=utf-8';
+  return blob.type || 'application/octet-stream';
 }
 
 async function anchorDownload(blob: Blob, filename: string): Promise<void> {
