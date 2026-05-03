@@ -34,8 +34,7 @@ export function printHTML(htmlContent: string, onReady?: (doc: Document) => void
 
   const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
   if (!iframeDoc || !iframe.contentWindow) {
-    // Fallback: download as HTML file
-    downloadAsHTML(htmlContent);
+    alert('تعذّر فتح نافذة الطباعة في هذا التطبيق.');
     return;
   }
 
