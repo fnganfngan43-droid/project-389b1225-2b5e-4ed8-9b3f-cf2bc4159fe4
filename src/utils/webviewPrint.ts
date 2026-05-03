@@ -109,64 +109,77 @@ async function downloadIframeAsPDF(iframe: HTMLIFrameElement, filename: string):
 }
 
 /**
- * Smart download that works in WebView environments.
- * Tries multiple approaches in order:
- * 1. Web Share API (best for mobile/WebView)
- * 2. Data URI approach (bypasses some WebView restrictions)
- * 3. Standard Blob URL download
+ * Smart download tuned for Android WebView (AppMySite/AppsGeyser/Capacitor).
+ * Order:
+ *   1. Web Share API with File — opens the native share sheet so user can save/open
+ *      the actual PDF in any app (Drive, Files, WhatsApp, PDF viewer…).
+ *   2. Open the PDF blob in a new tab — the OS PDF viewer handles it; user can save.
+ *   3. Anchor download with correct MIME (application/pdf) so WebView doesn't
+ *      mistake it for HTML.
  */
-export function smartDownload(blob: Blob, filename: string): void {
-  // Try Web Share API first (works best in mobile/WebView)
-  if (navigator.share && navigator.canShare) {
-    const file = new File([blob], filename, { type: blob.type });
-    const shareData = { title: filename, files: [file] };
-    
-    if (navigator.canShare(shareData)) {
-      navigator.share(shareData).catch(() => {
-        fallbackDownload(blob, filename);
-      });
+export async function smartDownload(blob: Blob, filename: string): Promise<void> {
+  // Force a proper PDF MIME type so Android WebView doesn't save as .html.
+  const pdfBlob = blob.type === 'application/pdf'
+    ? blob
+    : new Blob([blob], { type: 'application/pdf' });
+
+  // 1) Native share sheet with file (best UX on mobile / WebView)
+  try {
+    const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+    const nav: any = navigator;
+    if (nav.canShare && nav.canShare({ files: [file] }) && typeof nav.share === 'function') {
+      await nav.share({ title: filename, files: [file] });
       return;
     }
+  } catch (e) {
+    // user cancelled or share failed — fall through
+    console.warn('Web Share failed, falling back', e);
   }
-  
-  fallbackDownload(blob, filename);
-}
 
-function fallbackDownload(blob: Blob, filename: string): void {
-  // Try opening blob in new tab (works in some WebViews)
-  const url = URL.createObjectURL(blob);
-  
-  // Method 1: Use data URI for small files
-  if (blob.size < 2 * 1024 * 1024) { // < 2MB
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const dataUri = reader.result as string;
-      const link = document.createElement('a');
-      link.href = dataUri;
-      link.download = filename;
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      setTimeout(() => {
-        document.body.removeChild(link);
-      }, 200);
-    };
-    reader.readAsDataURL(blob);
-  } else {
-    // Method 2: Standard blob URL
-    triggerDownload(url, filename);
-  }
-}
-
-function triggerDownload(url: string, filename: string): void {
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => {
-    document.body.removeChild(a);
+  // 2) Open inline so the OS PDF viewer renders it (user can then save/share)
+  try {
+    const url = URL.createObjectURL(pdfBlob);
+    const win = window.open(url, '_blank');
+    if (win) {
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      return;
+    }
     URL.revokeObjectURL(url);
-  }, 100);
+  } catch (e) {
+    console.warn('window.open failed, falling back', e);
+  }
+
+  // 3) Anchor download — last resort
+  await anchorDownload(pdfBlob, filename);
 }
+
+async function anchorDownload(blob: Blob, filename: string): Promise<void> {
+  // Prefer blob URL on modern WebViews; data URI as a secondary fallback.
+  const tryAnchor = (href: string) => {
+    const a = document.createElement('a');
+    a.href = href;
+    a.download = filename;
+    a.rel = 'noopener';
+    a.target = '_self';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => a.remove(), 200);
+  };
+
+  try {
+    const url = URL.createObjectURL(blob);
+    tryAnchor(url);
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  } catch {
+    const reader = new FileReader();
+    await new Promise<void>((resolve) => {
+      reader.onloadend = () => {
+        tryAnchor(reader.result as string);
+        resolve();
+      };
+      reader.readAsDataURL(blob);
+    });
+  }
+}
+
