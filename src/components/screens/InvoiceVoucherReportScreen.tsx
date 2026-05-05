@@ -70,7 +70,9 @@ export function InvoiceVoucherReportScreen() {
         if (operationType === 'invoices' && isReturn) return false;
         if (operationType === 'returns' && !isReturn) return false;
         if (!isInDateRange(inv.date)) return false;
-        if (selectedCurrency && inv.currency !== selectedCurrency) return false;
+        if (selectedCurrency && selectedCurrency !== 'all' && inv.currency !== selectedCurrency) return false;
+        if (selectedGroup && selectedGroup !== 'all' && inv.groupName !== selectedGroup) return false;
+        if (selectedAccount && selectedAccount !== 'all' && inv.accountName !== selectedAccount) return false;
         if (!isInNumberRange(inv.invoiceNumber)) return false;
         return true;
       }).map(inv => ({
