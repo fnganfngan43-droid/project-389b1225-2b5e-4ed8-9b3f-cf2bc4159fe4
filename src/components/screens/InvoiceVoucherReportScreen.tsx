@@ -22,15 +22,22 @@ const getFirstDayOfYear = () => format(startOfYear(new Date()), 'yyyy-MM-dd');
 const getToday = () => format(new Date(), 'yyyy-MM-dd');
 
 export function InvoiceVoucherReportScreen() {
-  const { invoices, vouchers, currencies, settings } = useAccounting();
+  const { invoices, vouchers, currencies, settings, groups, accounts } = useAccounting();
 
   const [operationType, setOperationType] = useState<OperationType>('invoices');
   const [dateFrom, setDateFrom] = useState(getFirstDayOfYear());
   const [dateTo, setDateTo] = useState(getToday());
   const [selectedCurrency, setSelectedCurrency] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState('');
+  const [selectedAccount, setSelectedAccount] = useState('');
   const [numberFrom, setNumberFrom] = useState('');
   const [numberTo, setNumberTo] = useState('');
   const [showReport, setShowReport] = useState(false);
+
+  const filteredAccountsForSelect = useMemo(() => {
+    if (!selectedGroup || selectedGroup === 'all') return accounts;
+    return accounts.filter(a => a.groupName === selectedGroup);
+  }, [accounts, selectedGroup]);
 
   const operationLabels: Record<OperationType, string> = {
     invoices: 'فواتير المبيعات',
@@ -63,7 +70,9 @@ export function InvoiceVoucherReportScreen() {
         if (operationType === 'invoices' && isReturn) return false;
         if (operationType === 'returns' && !isReturn) return false;
         if (!isInDateRange(inv.date)) return false;
-        if (selectedCurrency && inv.currency !== selectedCurrency) return false;
+        if (selectedCurrency && selectedCurrency !== 'all' && inv.currency !== selectedCurrency) return false;
+        if (selectedGroup && selectedGroup !== 'all' && inv.groupName !== selectedGroup) return false;
+        if (selectedAccount && selectedAccount !== 'all' && inv.accountName !== selectedAccount) return false;
         if (!isInNumberRange(inv.invoiceNumber)) return false;
         return true;
       }).map(inv => ({
@@ -83,7 +92,11 @@ export function InvoiceVoucherReportScreen() {
       return vouchers.filter(v => {
         if (v.type !== voucherType) return false;
         if (!isInDateRange(v.date)) return false;
-        if (selectedCurrency && v.debitCurrency !== selectedCurrency && v.creditCurrency !== selectedCurrency) return false;
+        if (selectedCurrency && selectedCurrency !== 'all' && v.debitCurrency !== selectedCurrency && v.creditCurrency !== selectedCurrency) return false;
+        const vGroup = voucherType === 'receipt' ? v.debitGroupName : v.creditGroupName;
+        const vAccount = voucherType === 'receipt' ? v.debitAccountName : v.creditAccountName;
+        if (selectedGroup && selectedGroup !== 'all' && vGroup !== selectedGroup) return false;
+        if (selectedAccount && selectedAccount !== 'all' && vAccount !== selectedAccount) return false;
         if (!isInNumberRange(v.voucherNumber)) return false;
         return true;
       }).map(v => ({
@@ -99,7 +112,7 @@ export function InvoiceVoucherReportScreen() {
         reference: v.debitReference || v.creditReference || '-',
       }));
     }
-  }, [showReport, operationType, invoices, vouchers, dateFrom, dateTo, selectedCurrency, numberFrom, numberTo]);
+  }, [showReport, operationType, invoices, vouchers, dateFrom, dateTo, selectedCurrency, selectedGroup, selectedAccount, numberFrom, numberTo]);
 
   const totalAmount = useMemo(() => reportData.reduce((sum, item) => sum + item.amount, 0), [reportData]);
 
@@ -419,6 +432,38 @@ export function InvoiceVoucherReportScreen() {
                 <SelectItem value="all">الكل</SelectItem>
                 {currencies.map(c => (
                   <SelectItem key={c.id} value={c.symbol}>{c.name} ({c.symbol})</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Group */}
+          <div className="space-y-1">
+            <Label className="text-xs">المجموعة</Label>
+            <Select value={selectedGroup} onValueChange={(v) => { setSelectedGroup(v); setSelectedAccount(''); }}>
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue placeholder="الكل" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">الكل</SelectItem>
+                {groups.map(g => (
+                  <SelectItem key={g.id} value={g.name}>{g.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Account */}
+          <div className="space-y-1">
+            <Label className="text-xs">الحساب</Label>
+            <Select value={selectedAccount} onValueChange={setSelectedAccount}>
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue placeholder="الكل" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">الكل</SelectItem>
+                {filteredAccountsForSelect.map(a => (
+                  <SelectItem key={a.id} value={a.accountName}>{a.accountName}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
