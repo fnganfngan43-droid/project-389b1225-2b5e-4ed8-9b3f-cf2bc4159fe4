@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { MainHeader } from '@/components/MainHeader';
 import { NavigationBar } from '@/components/NavigationBar';
-import { BottomNav } from '@/components/BottomNav';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import { ChartOfAccountsScreen } from '@/components/screens/ChartOfAccountsScreen';
 import { VoucherScreen } from '@/components/screens/VoucherScreen';
@@ -95,10 +94,9 @@ export function MainDashboard() {
         activeScreen={activeScreen}
         onScreenChange={handleScreenChange}
       />
-      <main className="flex-1 flex flex-col overflow-hidden min-h-0 pb-[72px] md:pb-0">
+      <main className="flex-1 flex flex-col overflow-hidden min-h-0">
         {renderScreens()}
       </main>
-      <BottomNav activeScreen={activeScreen} onScreenChange={handleScreenChange} />
       <SettingsDialog 
         open={settingsOpen}
         onOpenChange={setSettingsOpen}

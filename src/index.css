@@ -5,36 +5,6 @@
 @tailwind utilities;
 
 @layer base {
-  /* Mobile-first global rules */
-  html, body {
-    overscroll-behavior: none;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-  }
-  body {
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-top: env(safe-area-inset-top);
-  }
-  /* Disable text selection on interactive UI; keep selectable text inputs */
-  button, [role="button"], [role="tab"], [role="menuitem"], a, label, nav, .no-select, svg {
-    -webkit-user-select: none;
-    user-select: none;
-  }
-  input, textarea, [contenteditable="true"], [data-selectable="true"] {
-    -webkit-user-select: text;
-    user-select: text;
-  }
-  /* 44px minimum tap targets on mobile */
-  @media (max-width: 768px) {
-    button:not([data-no-min]), [role="button"]:not([data-no-min]), a.btn, .tap-target {
-      min-height: 44px;
-    }
-  }
-  /* Safe-area helper for fixed bottom bars */
-  .safe-bottom {
-    padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
-  }
-
   :root {
     /* Rich Teal & Gold Accounting Theme */
     --background: 180 15% 98%;
