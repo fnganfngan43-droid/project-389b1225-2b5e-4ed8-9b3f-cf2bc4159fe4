@@ -411,6 +411,47 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             </CardContent>
           </Card>
 
+          {/* Danger Zone — Delete all app data */}
+          <Card className="border-destructive/40">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2 text-destructive">
+                <Trash2 className="w-4 h-4" />
+                منطقة الخطر
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="w-full">
+                    <Trash2 className="w-4 h-4 ml-2" />
+                    حذف جميع بيانات التطبيق
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent dir="rtl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>تأكيد حذف جميع البيانات</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      سيتم حذف الحسابات، السندات، الفواتير، الإعدادات وكلمة المرور بشكل نهائي ولا يمكن التراجع. يُنصح بأخذ نسخة احتياطية أولاً.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={() => {
+                        localStorage.clear();
+                        toast.success('تم حذف جميع البيانات. سيتم إعادة التحميل...');
+                        setTimeout(() => window.location.reload(), 800);
+                      }}
+                    >
+                      نعم، احذف كل شيء
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </CardContent>
+          </Card>
+
           {/* Save Button */}
           <Button onClick={handleSave} className="w-full" size="lg">
             <Save className="w-4 h-4" />
