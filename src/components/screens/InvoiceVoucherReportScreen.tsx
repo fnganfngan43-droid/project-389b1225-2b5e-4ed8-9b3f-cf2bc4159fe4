@@ -22,15 +22,22 @@ const getFirstDayOfYear = () => format(startOfYear(new Date()), 'yyyy-MM-dd');
 const getToday = () => format(new Date(), 'yyyy-MM-dd');
 
 export function InvoiceVoucherReportScreen() {
-  const { invoices, vouchers, currencies, settings } = useAccounting();
+  const { invoices, vouchers, currencies, settings, groups, accounts } = useAccounting();
 
   const [operationType, setOperationType] = useState<OperationType>('invoices');
   const [dateFrom, setDateFrom] = useState(getFirstDayOfYear());
   const [dateTo, setDateTo] = useState(getToday());
   const [selectedCurrency, setSelectedCurrency] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState('');
+  const [selectedAccount, setSelectedAccount] = useState('');
   const [numberFrom, setNumberFrom] = useState('');
   const [numberTo, setNumberTo] = useState('');
   const [showReport, setShowReport] = useState(false);
+
+  const filteredAccountsForSelect = useMemo(() => {
+    if (!selectedGroup || selectedGroup === 'all') return accounts;
+    return accounts.filter(a => a.groupName === selectedGroup);
+  }, [accounts, selectedGroup]);
 
   const operationLabels: Record<OperationType, string> = {
     invoices: 'فواتير المبيعات',
