@@ -92,7 +92,11 @@ export function InvoiceVoucherReportScreen() {
       return vouchers.filter(v => {
         if (v.type !== voucherType) return false;
         if (!isInDateRange(v.date)) return false;
-        if (selectedCurrency && v.debitCurrency !== selectedCurrency && v.creditCurrency !== selectedCurrency) return false;
+        if (selectedCurrency && selectedCurrency !== 'all' && v.debitCurrency !== selectedCurrency && v.creditCurrency !== selectedCurrency) return false;
+        const vGroup = voucherType === 'receipt' ? v.debitGroupName : v.creditGroupName;
+        const vAccount = voucherType === 'receipt' ? v.debitAccountName : v.creditAccountName;
+        if (selectedGroup && selectedGroup !== 'all' && vGroup !== selectedGroup) return false;
+        if (selectedAccount && selectedAccount !== 'all' && vAccount !== selectedAccount) return false;
         if (!isInNumberRange(v.voucherNumber)) return false;
         return true;
       }).map(v => ({
@@ -108,7 +112,7 @@ export function InvoiceVoucherReportScreen() {
         reference: v.debitReference || v.creditReference || '-',
       }));
     }
-  }, [showReport, operationType, invoices, vouchers, dateFrom, dateTo, selectedCurrency, numberFrom, numberTo]);
+  }, [showReport, operationType, invoices, vouchers, dateFrom, dateTo, selectedCurrency, selectedGroup, selectedAccount, numberFrom, numberTo]);
 
   const totalAmount = useMemo(() => reportData.reduce((sum, item) => sum + item.amount, 0), [reportData]);
 
