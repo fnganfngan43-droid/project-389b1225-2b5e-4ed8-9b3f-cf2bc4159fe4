@@ -437,6 +437,38 @@ export function InvoiceVoucherReportScreen() {
             </Select>
           </div>
 
+          {/* Group */}
+          <div className="space-y-1">
+            <Label className="text-xs">المجموعة</Label>
+            <Select value={selectedGroup} onValueChange={(v) => { setSelectedGroup(v); setSelectedAccount(''); }}>
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue placeholder="الكل" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">الكل</SelectItem>
+                {groups.map(g => (
+                  <SelectItem key={g.id} value={g.name}>{g.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Account */}
+          <div className="space-y-1">
+            <Label className="text-xs">الحساب</Label>
+            <Select value={selectedAccount} onValueChange={setSelectedAccount}>
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue placeholder="الكل" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">الكل</SelectItem>
+                {filteredAccountsForSelect.map(a => (
+                  <SelectItem key={a.id} value={a.accountName}>{a.accountName}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Number From */}
           <div className="space-y-1">
             <Label className="text-xs">من رقم</Label>
