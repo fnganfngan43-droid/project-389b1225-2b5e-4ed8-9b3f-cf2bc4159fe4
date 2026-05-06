@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FileText, Eye, Printer, Search } from 'lucide-react';
+import { FileText, Eye, Printer, Search, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 type OperationType = 'invoices' | 'returns' | 'receipts' | 'payments' | 'opening' | 'exchange' | 'discount';
@@ -237,8 +237,7 @@ export function InvoiceVoucherReportScreen() {
     toast.success(`تم إنشاء تقرير ${operationLabels[operationType]}`);
   };
 
-  const handlePrint = async () => {
-    const { printHTML } = await import('@/utils/webviewPrint');
+  const buildReportHtml = async () => {
     const { e, escapeUrl } = await import('@/utils/htmlEscape');
 
     const renderTable = (currency: string, items: any[], total: number) => {
@@ -288,7 +287,7 @@ export function InvoiceVoucherReportScreen() {
 
     const filtersText = `من ${e(dateFrom)} إلى ${e(dateTo)}${selectedGroup && selectedGroup !== 'all' ? ' | المجموعة: ' + e(selectedGroup) : ''}${selectedAccount && selectedAccount !== 'all' ? ' | الحساب: ' + e(selectedAccount) : ''}${selectedCurrency && selectedCurrency !== 'all' ? ' | العملة: ' + e(selectedCurrency) : ''}`;
 
-    const htmlContent = `
+    return `
       <!DOCTYPE html>
       <html lang="ar" dir="rtl">
       <head>
@@ -396,8 +395,33 @@ export function InvoiceVoucherReportScreen() {
       </body>
       </html>
     `;
+  };
 
+  const handlePrint = async () => {
+    const { printHTML } = await import('@/utils/webviewPrint');
+    const htmlContent = await buildReportHtml();
     printHTML(htmlContent);
+  };
+
+  const handleDownloadPdf = async () => {
+    try {
+      const htmlContent = await buildReportHtml();
+      const { generatePdfBlobFromHtml } = await import('@/utils/pdfMakeService');
+      const blob = await generatePdfBlobFromHtml(htmlContent);
+      const filename = `تقرير_${operationLabels[operationType]}_${getToday()}.pdf`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast.success('تم تنزيل ملف PDF');
+    } catch (err) {
+      console.error(err);
+      toast.error('تعذر إنشاء ملف PDF');
+    }
   };
 
   const columns = [
@@ -516,17 +540,23 @@ export function InvoiceVoucherReportScreen() {
             عرض التقرير
           </Button>
           {showReport && reportData.length > 0 && (
-            <Button onClick={handlePrint} variant="outline" size="sm">
-              <Printer className="w-4 h-4 ml-2" />
-              طباعة
-            </Button>
+            <>
+              <Button onClick={handlePrint} variant="outline" size="sm">
+                <Printer className="w-4 h-4 ml-2" />
+                طباعة
+              </Button>
+              <Button onClick={handleDownloadPdf} variant="outline" size="sm">
+                <FileDown className="w-4 h-4 ml-2" />
+                طباعة PDF
+              </Button>
+            </>
           )}
         </div>
       </div>
 
       {/* Report Table(s) */}
       {showReport && (
-        <div className="flex-1 flex flex-col overflow-auto p-4 gap-4">
+        <div className="flex-1 flex flex-col overflow-auto p-4 gap-4 min-h-0">
           {showSplitTables ? (
             groupedByCurrency.length === 0 ? (
               <Card className="glass-card">
@@ -537,7 +567,7 @@ export function InvoiceVoucherReportScreen() {
               </Card>
             ) : (
               groupedByCurrency.map(g => (
-                <Card key={g.currency} className="flex flex-col overflow-hidden glass-card">
+                <Card key={g.currency} className="flex flex-col overflow-hidden glass-card max-h-[75vh]">
                   <CardHeader className="py-3 shrink-0">
                     <CardTitle className="text-base flex items-center justify-between">
                       <span className="flex items-center gap-2">
@@ -549,7 +579,7 @@ export function InvoiceVoucherReportScreen() {
                       </span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="overflow-hidden p-0">
+                  <CardContent className="flex-1 overflow-hidden p-0 min-h-0">
                     <ScrollableTable
                       columns={columns}
                       data={g.items}
