@@ -556,7 +556,7 @@ export function InvoiceVoucherReportScreen() {
 
       {/* Report Table(s) */}
       {showReport && (
-        <div className="flex-1 flex flex-col overflow-auto p-4 gap-4">
+        <div className="flex-1 flex flex-col overflow-auto p-4 gap-4 min-h-0">
           {showSplitTables ? (
             groupedByCurrency.length === 0 ? (
               <Card className="glass-card">
