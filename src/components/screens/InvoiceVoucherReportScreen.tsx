@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FileText, Eye, Printer, Search } from 'lucide-react';
+import { FileText, Eye, Printer, Search, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 type OperationType = 'invoices' | 'returns' | 'receipts' | 'payments' | 'opening' | 'exchange' | 'discount';
