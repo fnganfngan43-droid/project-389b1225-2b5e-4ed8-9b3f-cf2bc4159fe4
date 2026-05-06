@@ -237,8 +237,7 @@ export function InvoiceVoucherReportScreen() {
     toast.success(`تم إنشاء تقرير ${operationLabels[operationType]}`);
   };
 
-  const handlePrint = async () => {
-    const { printHTML } = await import('@/utils/webviewPrint');
+  const buildReportHtml = async () => {
     const { e, escapeUrl } = await import('@/utils/htmlEscape');
 
     const renderTable = (currency: string, items: any[], total: number) => {
@@ -288,7 +287,7 @@ export function InvoiceVoucherReportScreen() {
 
     const filtersText = `من ${e(dateFrom)} إلى ${e(dateTo)}${selectedGroup && selectedGroup !== 'all' ? ' | المجموعة: ' + e(selectedGroup) : ''}${selectedAccount && selectedAccount !== 'all' ? ' | الحساب: ' + e(selectedAccount) : ''}${selectedCurrency && selectedCurrency !== 'all' ? ' | العملة: ' + e(selectedCurrency) : ''}`;
 
-    const htmlContent = `
+    return `
       <!DOCTYPE html>
       <html lang="ar" dir="rtl">
       <head>
@@ -396,8 +395,33 @@ export function InvoiceVoucherReportScreen() {
       </body>
       </html>
     `;
+  };
 
+  const handlePrint = async () => {
+    const { printHTML } = await import('@/utils/webviewPrint');
+    const htmlContent = await buildReportHtml();
     printHTML(htmlContent);
+  };
+
+  const handleDownloadPdf = async () => {
+    try {
+      const htmlContent = await buildReportHtml();
+      const { generatePdfBlobFromHtml } = await import('@/utils/pdfMakeService');
+      const blob = await generatePdfBlobFromHtml(htmlContent);
+      const filename = `تقرير_${operationLabels[operationType]}_${getToday()}.pdf`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast.success('تم تنزيل ملف PDF');
+    } catch (err) {
+      console.error(err);
+      toast.error('تعذر إنشاء ملف PDF');
+    }
   };
 
   const columns = [
