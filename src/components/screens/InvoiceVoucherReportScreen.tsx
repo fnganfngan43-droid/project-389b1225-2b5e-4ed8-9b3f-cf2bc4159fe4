@@ -540,10 +540,16 @@ export function InvoiceVoucherReportScreen() {
             عرض التقرير
           </Button>
           {showReport && reportData.length > 0 && (
-            <Button onClick={handlePrint} variant="outline" size="sm">
-              <Printer className="w-4 h-4 ml-2" />
-              طباعة
-            </Button>
+            <>
+              <Button onClick={handlePrint} variant="outline" size="sm">
+                <Printer className="w-4 h-4 ml-2" />
+                طباعة
+              </Button>
+              <Button onClick={handleDownloadPdf} variant="outline" size="sm">
+                <FileDown className="w-4 h-4 ml-2" />
+                طباعة PDF
+              </Button>
+            </>
           )}
         </div>
       </div>
