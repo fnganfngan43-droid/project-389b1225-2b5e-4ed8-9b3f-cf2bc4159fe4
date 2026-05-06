@@ -567,7 +567,7 @@ export function InvoiceVoucherReportScreen() {
               </Card>
             ) : (
               groupedByCurrency.map(g => (
-                <Card key={g.currency} className="flex flex-col overflow-hidden glass-card">
+                <Card key={g.currency} className="flex flex-col overflow-hidden glass-card max-h-[75vh]">
                   <CardHeader className="py-3 shrink-0">
                     <CardTitle className="text-base flex items-center justify-between">
                       <span className="flex items-center gap-2">
@@ -579,7 +579,7 @@ export function InvoiceVoucherReportScreen() {
                       </span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="overflow-hidden p-0">
+                  <CardContent className="flex-1 overflow-hidden p-0 min-h-0">
                     <ScrollableTable
                       columns={columns}
                       data={g.items}
