@@ -1013,17 +1013,6 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
 }
 
 async function openPrintWindow(content: string) {
-  // Try native Android/iOS print framework first; fall back to iframe printing on web.
-  const { Capacitor } = await import('@capacitor/core');
-  if (Capacitor.isNativePlatform()) {
-    try {
-      const { nativePrintHtml } = await import('./nativePrint');
-      await nativePrintHtml(content, 'تقرير');
-      return;
-    } catch (e) {
-      console.warn('Native print failed, falling back to iframe', e);
-    }
-  }
   const { printHTML } = await import('./webviewPrint');
   printHTML(content, (doc) => {
     injectPageNumbers({ document: doc } as unknown as Window);
