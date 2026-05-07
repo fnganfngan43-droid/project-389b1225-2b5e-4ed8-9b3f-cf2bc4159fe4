@@ -10,7 +10,7 @@ import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import { Printer } from '@bcyesil/capacitor-plugin-printer';
-import { smartDownload, printHtmlInIframe } from './webviewPrint';
+import { smartDownload, printHTML } from './webviewPrint';
 
 function isNative() {
   try { return Capacitor.isNativePlatform(); } catch { return false; }
@@ -25,7 +25,7 @@ export async function nativePrintHtml(htmlContent: string, name = 'تقرير'):
       console.warn('Native print failed, falling back to iframe', e);
     }
   }
-  printHtmlInIframe(htmlContent);
+  printHTML(htmlContent);
 }
 
 async function blobToBase64(blob: Blob): Promise<string> {
