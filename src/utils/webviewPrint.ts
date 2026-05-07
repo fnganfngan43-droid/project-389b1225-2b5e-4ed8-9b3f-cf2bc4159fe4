@@ -124,25 +124,46 @@ export async function smartDownload(blob: Blob, filename: string): Promise<void>
     ? blob
     : new Blob([blob], { type: inferredType });
 
-  // 1) Native share sheet with file (best UX on mobile / WebView for PDFs)
+  const { toast } = await import('sonner');
+  const downloadsPath = '/storage/emulated/0/Download/' + filename;
+  const notifySaved = (path: string, extra?: string) => {
+    toast.success('تم حفظ الملف على الجهاز', {
+      description: `📁 المسار: ${path}${extra ? `\n${extra}` : ''}`,
+      duration: 8000,
+    });
+  };
+
+  // 1) Anchor download first so the file is actually saved to the device storage.
+  let saved = false;
+  try {
+    await anchorDownload(finalBlob, filename);
+    saved = true;
+    notifySaved(downloadsPath, 'جاري فتح خيارات المشاركة...');
+  } catch (e) {
+    console.warn('Anchor download failed', e);
+  }
+
+  // 2) Then open the native share sheet so the user can share/open it.
   try {
     const file = new File([finalBlob], filename, { type: inferredType });
     const nav: any = navigator;
     if (nav.canShare && nav.canShare({ files: [file] }) && typeof nav.share === 'function') {
-      await nav.share({ title: filename, files: [file] });
+      await nav.share({ title: filename, text: `الملف: ${filename}`, files: [file] });
+      if (!saved) notifySaved(downloadsPath);
       return;
     }
   } catch (e) {
     console.warn('Web Share failed, falling back', e);
   }
 
-  // 2) For PDFs, open inline so the OS PDF viewer renders it (user can save/share).
-  if (inferredType === 'application/pdf') {
+  // 3) Fallback: open the PDF inline so the OS viewer can save/share it.
+  if (!saved && inferredType === 'application/pdf') {
     try {
       const url = URL.createObjectURL(finalBlob);
       const win = window.open(url, '_blank');
       if (win) {
         setTimeout(() => URL.revokeObjectURL(url), 60_000);
+        notifySaved(downloadsPath);
         return;
       }
       URL.revokeObjectURL(url);
@@ -151,8 +172,10 @@ export async function smartDownload(blob: Blob, filename: string): Promise<void>
     }
   }
 
-  // 3) Anchor download — last resort
-  await anchorDownload(finalBlob, filename);
+  if (!saved) {
+    await anchorDownload(finalBlob, filename);
+    notifySaved(downloadsPath);
+  }
 }
 
 function inferMime(blob: Blob, filename: string): string {
