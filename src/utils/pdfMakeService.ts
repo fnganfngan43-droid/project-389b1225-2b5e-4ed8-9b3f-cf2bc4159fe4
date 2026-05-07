@@ -11,6 +11,7 @@
 import pdfMake from 'pdfmake/build/pdfmake';
 import type { TDocumentDefinitions, Content, TableCell } from 'pdfmake/interfaces';
 import { smartDownload } from './webviewPrint';
+import { nativeSavePdf } from './nativePrint';
 
 // ----- Arabic font (Cairo) loaded once on demand -----
 
