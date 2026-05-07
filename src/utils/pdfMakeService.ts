@@ -192,14 +192,14 @@ export async function downloadHtmlAsPdf(htmlContent: string, filename = 'تقر�
   const parser = new DOMParser();
   const doc = parser.parseFromString(htmlContent, 'text/html');
   const blob = await generatePdfBlobFromDoc(doc, { filename, title: filename });
-  smartDownload(blob, filename);
+  await nativeSavePdf(blob, filename);
 }
 
 export async function downloadIframeAsPdf(iframe: HTMLIFrameElement, filename = 'تقرير.pdf'): Promise<void> {
   const doc = iframe.contentDocument;
   if (!doc) throw new Error('iframe document not available');
   const blob = await generatePdfBlobFromDoc(doc, { filename, title: filename });
-  smartDownload(blob, filename);
+  await nativeSavePdf(blob, filename);
 }
 
 export async function generatePdfBlobFromHtml(htmlContent: string, opts: PdfMakeOptions = {}): Promise<Blob> {
