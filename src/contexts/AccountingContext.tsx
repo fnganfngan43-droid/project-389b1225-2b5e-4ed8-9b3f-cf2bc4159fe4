@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { encryptString, decryptString, hashPassword, isHashedPassword } from '@/utils/secureStorage';
+import { nativeGetItem, nativeSetItem, migrateLocalStorageKey } from '@/utils/nativeStorage';
 import { 
   Account, 
   AccountGroup, 
@@ -116,31 +117,30 @@ const initialAccounts: Account[] = [
   { id: '5', accountNumber: '12001', accountName: 'الصندوق الرئيسي', groupName: 'الصندوق', currency: 'ر.ي', balance: 75000, type: 'debit' },
 ];
 
-// Load data from localStorage (supports legacy plaintext + encrypted payloads).
-// Decryption is async, so callers must await. Plain JSON is migrated on next save.
+// Load data from storage (SQLite on native, localStorage on web).
 const loadFromStorage = async () => {
   try {
-    const data = localStorage.getItem(STORAGE_KEY);
+    await migrateLocalStorageKey(STORAGE_KEY);
+    const data = await nativeGetItem(STORAGE_KEY);
     if (!data) return null;
     if (data.startsWith('ENC1:')) {
       const plain = await decryptString(data);
       return plain ? JSON.parse(plain) : null;
     }
-    // Legacy plaintext payload — return parsed; will be re-saved encrypted.
     return JSON.parse(data);
   } catch (error) {
-    console.error('Error loading from localStorage:', error);
+    console.error('Error loading data:', error);
     return null;
   }
 };
 
-// Save data to localStorage (always encrypted).
+// Save data (always encrypted) to SQLite (native) or localStorage (web).
 const saveToStorage = async (data: any) => {
   try {
     const payload = await encryptString(JSON.stringify(data));
-    localStorage.setItem(STORAGE_KEY, payload);
+    await nativeSetItem(STORAGE_KEY, payload);
   } catch (error) {
-    console.error('Error saving to localStorage:', error);
+    console.error('Error saving data:', error);
   }
 };
 
