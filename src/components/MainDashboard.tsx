@@ -14,6 +14,7 @@ import { GovernorateManagementScreen } from '@/components/screens/GovernorateMan
 import { AccountGroupManagementScreen } from '@/components/screens/AccountGroupManagementScreen';
 import { PasswordSettingsScreen } from '@/components/screens/PasswordSettingsScreen';
 import { InvoiceVoucherReportScreen } from '@/components/screens/InvoiceVoucherReportScreen';
+import { SetupScreen } from '@/components/screens/SetupScreen';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { ScreenType } from '@/types/accounting';
 
@@ -42,6 +43,7 @@ export function MainDashboard() {
       'group-management': 'إدارة المجموعات',
       'password-settings': 'إعدادات كلمة المرور',
       'invoice-voucher-report': 'تقرير الفواتير والسندات',
+      'setup': 'شاشة التهيئة',
     };
     return titles[activeScreen];
   };
@@ -69,6 +71,7 @@ export function MainDashboard() {
     'group-management': <AccountGroupManagementScreen />,
     'password-settings': <PasswordSettingsScreen />,
     'invoice-voucher-report': <InvoiceVoucherReportScreen />,
+    'setup': <SetupScreen onBack={() => setActiveScreen('chart-of-accounts')} />,
   };
 
   const renderScreens = () =>
