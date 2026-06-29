@@ -14,6 +14,7 @@ import { GovernorateManagementScreen } from '@/components/screens/GovernorateMan
 import { AccountGroupManagementScreen } from '@/components/screens/AccountGroupManagementScreen';
 import { PasswordSettingsScreen } from '@/components/screens/PasswordSettingsScreen';
 import { InvoiceVoucherReportScreen } from '@/components/screens/InvoiceVoucherReportScreen';
+import { SetupScreen } from '@/components/screens/SetupScreen';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { ScreenType } from '@/types/accounting';
 
