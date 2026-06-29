@@ -71,6 +71,7 @@ export function MainDashboard() {
     'group-management': <AccountGroupManagementScreen />,
     'password-settings': <PasswordSettingsScreen />,
     'invoice-voucher-report': <InvoiceVoucherReportScreen />,
+    'setup': <SetupScreen onBack={() => setActiveScreen('chart-of-accounts')} />,
   };
 
   const renderScreens = () =>
