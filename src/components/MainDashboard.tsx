@@ -86,6 +86,14 @@ export function MainDashboard() {
         </div>
       ));
 
+  if (activeScreen === 'setup') {
+    return (
+      <div className="h-screen bg-background flex flex-col overflow-hidden">
+        <SetupScreen onBack={() => setActiveScreen('chart-of-accounts')} />
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       <MainHeader 
