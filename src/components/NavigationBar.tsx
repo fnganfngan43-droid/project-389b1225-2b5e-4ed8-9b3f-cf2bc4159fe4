@@ -10,10 +10,7 @@ import {
   Percent,
   RotateCcw,
   ArrowLeftRight,
-  Coins,
-  MapPin,
-  FolderTree,
-  Lock
+  Settings as SettingsIcon
 } from 'lucide-react';
 
 interface NavigationBarProps {
@@ -23,6 +20,7 @@ interface NavigationBarProps {
 
 const navItems: { id: ScreenType; label: string; icon: React.ElementType }[] = [
   { id: 'sales', label: 'المبيعات', icon: ShoppingCart },
+  { id: 'setup', label: 'التهيئة', icon: SettingsIcon },
   { id: 'payment', label: 'سند صرف', icon: CreditCard },
   { id: 'receipt', label: 'سند قبض', icon: Receipt },
   { id: 'opening-balance', label: 'الأرصدة الافتتاحية', icon: BookOpen },
@@ -31,10 +29,6 @@ const navItems: { id: ScreenType; label: string; icon: React.ElementType }[] = [
   { id: 'discount', label: 'الخصم', icon: Percent },
   { id: 'sales-return', label: 'مرتجع المبيعات', icon: RotateCcw },
   { id: 'currency-exchange', label: 'صرف عملة', icon: ArrowLeftRight },
-  { id: 'currency-management', label: 'إدارة العملات', icon: Coins },
-  { id: 'governorate-management', label: 'إدارة المحافظات', icon: MapPin },
-  { id: 'group-management', label: 'إدارة المجموعات', icon: FolderTree },
-  { id: 'password-settings', label: 'كلمة المرور', icon: Lock },
   { id: 'invoice-voucher-report', label: 'تقرير الفواتير', icon: FileText },
 ];
 
