@@ -129,4 +129,5 @@ export type ScreenType =
   | 'governorate-management'
   | 'group-management'
   | 'password-settings'
-  | 'invoice-voucher-report';
+  | 'invoice-voucher-report'
+  | 'setup';
