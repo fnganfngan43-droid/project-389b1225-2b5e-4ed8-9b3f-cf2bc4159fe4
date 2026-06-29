@@ -43,6 +43,7 @@ export function MainDashboard() {
       'group-management': 'إدارة المجموعات',
       'password-settings': 'إعدادات كلمة المرور',
       'invoice-voucher-report': 'تقرير الفواتير والسندات',
+      'setup': 'شاشة التهيئة',
     };
     return titles[activeScreen];
   };
