@@ -97,27 +97,65 @@ export function InvoiceVoucherReportScreen() {
 
     if (operationType === 'receipts' || operationType === 'payments') {
       const voucherType = operationType === 'receipts' ? 'receipt' : 'payment';
-      return vouchers.filter(v => {
-        if (v.type !== voucherType) return false;
-        if (!isInDateRange(v.date)) return false;
-        const vGroup = voucherType === 'receipt' ? v.debitGroupName : v.creditGroupName;
-        const vAccount = voucherType === 'receipt' ? v.debitAccountName : v.creditAccountName;
-        if (!matchGroup(vGroup)) return false;
-        if (!matchAccount(vAccount)) return false;
-        if (!isInNumberRange(v.voucherNumber)) return false;
-        return true;
-      }).map(v => ({
-        id: v.id,
-        number: v.voucherNumber,
-        date: v.date,
-        accountName: voucherType === 'receipt' ? v.debitAccountName : v.creditAccountName,
-        groupName: voucherType === 'receipt' ? v.debitGroupName : v.creditGroupName,
-        amount: voucherType === 'receipt' ? v.debitAmount : v.creditAmount,
-        currency: voucherType === 'receipt' ? v.debitCurrency : v.creditCurrency,
-        type: '-',
-        description: v.debitDescription || v.creditDescription || '-',
-        reference: v.debitReference || v.creditReference || '-',
-      }));
+      const rows: any[] = [];
+      const groupFilterActive = !!(selectedGroup && selectedGroup !== 'all');
+      const accountFilterActive = !!(selectedAccount && selectedAccount !== 'all');
+      vouchers.forEach(v => {
+        if (v.type !== voucherType) return;
+        if (!isInDateRange(v.date)) return;
+        if (!isInNumberRange(v.voucherNumber)) return;
+
+        // When a group/account filter is active, match against BOTH debit and credit sides
+        // and emit a row for each matching side.
+        if (groupFilterActive || accountFilterActive) {
+          const debitMatches = matchGroup(v.debitGroupName) && matchAccount(v.debitAccountName);
+          const creditMatches = matchGroup(v.creditGroupName) && matchAccount(v.creditAccountName);
+          if (debitMatches) {
+            rows.push({
+              id: v.id + '-d',
+              number: v.voucherNumber,
+              date: v.date,
+              accountName: v.debitAccountName,
+              groupName: v.debitGroupName,
+              amount: v.debitAmount,
+              currency: v.debitCurrency,
+              type: 'مدين',
+              description: v.debitDescription || v.creditDescription || '-',
+              reference: v.debitReference || v.creditReference || '-',
+            });
+          }
+          if (creditMatches) {
+            rows.push({
+              id: v.id + '-c',
+              number: v.voucherNumber,
+              date: v.date,
+              accountName: v.creditAccountName,
+              groupName: v.creditGroupName,
+              amount: v.creditAmount,
+              currency: v.creditCurrency,
+              type: 'دائن',
+              description: v.creditDescription || v.debitDescription || '-',
+              reference: v.creditReference || v.debitReference || '-',
+            });
+          }
+          return;
+        }
+
+        // No filter: keep one row per voucher using the primary side
+        rows.push({
+          id: v.id,
+          number: v.voucherNumber,
+          date: v.date,
+          accountName: voucherType === 'receipt' ? v.debitAccountName : v.creditAccountName,
+          groupName: voucherType === 'receipt' ? v.debitGroupName : v.creditGroupName,
+          amount: voucherType === 'receipt' ? v.debitAmount : v.creditAmount,
+          currency: voucherType === 'receipt' ? v.debitCurrency : v.creditCurrency,
+          type: '-',
+          description: v.debitDescription || v.creditDescription || '-',
+          reference: v.debitReference || v.creditReference || '-',
+        });
+      });
+      return rows;
     }
 
     if (operationType === 'opening') {
