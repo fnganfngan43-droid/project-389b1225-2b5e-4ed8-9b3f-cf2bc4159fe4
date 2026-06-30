@@ -172,7 +172,15 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
     (async () => {
       const storedData = await loadFromStorage();
       if (storedData) {
-        if (storedData.password != null) setPasswordStateRaw(storedData.password);
+        if (storedData.password != null) {
+          if (!isHashedPassword(storedData.password)) {
+            // Auto-migrate legacy plaintext passwords to PBKDF2 hash
+            const hashed = await hashPassword(storedData.password);
+            setPasswordStateRaw(hashed);
+          } else {
+            setPasswordStateRaw(storedData.password);
+          }
+        }
         if (storedData.settings) setSettings(storedData.settings);
         if (storedData.accounts) setAccounts(storedData.accounts);
         if (storedData.groups) setGroups(storedData.groups);
