@@ -288,7 +288,13 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
 
   return (
     <AccountingContext.Provider value={value}>
-      {children}
+      {!isReady ? (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="text-muted-foreground text-sm">جاري التحميل...</div>
+        </div>
+      ) : (
+        children
+      )}
     </AccountingContext.Provider>
   );
 }
