@@ -228,6 +228,13 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
     });
   }, [password, settings, accounts, groups, currencies, governorates, vouchers, openingBalances, invoices, currencyExchanges, discounts]);
 
+  if (!isReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-muted-foreground text-sm">جاري التحميل...</div>
+      </div>
+    );
+  }
 
 
   const value: AccountingContextType = {
@@ -288,13 +295,7 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
 
   return (
     <AccountingContext.Provider value={value}>
-      {!isReady ? (
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <div className="text-muted-foreground text-sm">جاري التحميل...</div>
-        </div>
-      ) : (
-        children
-      )}
+      {children}
     </AccountingContext.Provider>
   );
 }
