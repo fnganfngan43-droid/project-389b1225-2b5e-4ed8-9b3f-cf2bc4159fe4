@@ -470,7 +470,7 @@ export function InvoiceVoucherReportScreen() {
   const showSplitTables = !selectedCurrency || selectedCurrency === 'all';
 
   return (
-    <div className="flex flex-col h-full overflow-hidden min-h-0">
+    <div className={`flex flex-col h-full min-h-0 ${showReport ? 'overflow-hidden' : 'overflow-y-auto'}`}>
       {/* Filters - hidden while viewing the report */}
       {!showReport && (
       <div className="shrink-0 bg-card border-b border-border p-4">
