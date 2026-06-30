@@ -471,18 +471,16 @@ export function InvoiceVoucherReportScreen() {
 
   return (
     <div className={`flex flex-col h-full min-h-0 ${showReport ? 'overflow-hidden' : 'overflow-y-auto'}`}>
-      {/* Filters - hidden while viewing the report */}
-      {!showReport && (
+      {/* Filters - always visible */}
       <div className="shrink-0 bg-card border-b border-border p-4">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-...
+          ...
           <Button onClick={handleGenerateReport} className="gradient-primary" size="sm">
             <Eye className="w-4 h-4 ml-2" />
             عرض التقرير
           </Button>
         </div>
       </div>
-      )}
 
       {/* Compact action bar shown while viewing the report */}
       {showReport && (
