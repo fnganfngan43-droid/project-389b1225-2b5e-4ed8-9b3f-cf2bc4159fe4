@@ -474,11 +474,87 @@ export function InvoiceVoucherReportScreen() {
       {/* Filters - always visible */}
       <div className="shrink-0 bg-card border-b border-border p-4">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          ...
-          <Button onClick={handleGenerateReport} className="gradient-primary" size="sm">
-            <Eye className="w-4 h-4 ml-2" />
-            عرض التقرير
-          </Button>
+          <div>
+            <Label className="text-sm text-muted-foreground mb-1 block">نوع العملية</Label>
+            <Select value={operationType} onValueChange={(val) => setOperationType(val as OperationType)}>
+              <SelectTrigger>
+                <SelectValue placeholder="اختر نوع العملية" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="invoices">فواتير المبيعات</SelectItem>
+                <SelectItem value="returns">مرتجعات المبيعات</SelectItem>
+                <SelectItem value="receipts">سندات القبض</SelectItem>
+                <SelectItem value="payments">سندات الصرف</SelectItem>
+                <SelectItem value="opening">الأرصدة الافتتاحية</SelectItem>
+                <SelectItem value="exchange">صرف عملة</SelectItem>
+                <SelectItem value="discount">إشعارات الخصم</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-sm text-muted-foreground mb-1 block">من تاريخ</Label>
+            <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="text-right" />
+          </div>
+          <div>
+            <Label className="text-sm text-muted-foreground mb-1 block">إلى تاريخ</Label>
+            <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="text-right" />
+          </div>
+          <div>
+            <Label className="text-sm text-muted-foreground mb-1 block">العملة</Label>
+            <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+              <SelectTrigger>
+                <SelectValue placeholder="العملة" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">الكل</SelectItem>
+                {currencies.map(curr => (
+                  <SelectItem key={curr.id} value={curr.symbol}>{curr.symbol}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-sm text-muted-foreground mb-1 block">المجموعة</Label>
+            <Select value={selectedGroup} onValueChange={(val) => { setSelectedGroup(val); setSelectedAccount(''); }}>
+              <SelectTrigger>
+                <SelectValue placeholder="اختر المجموعة" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">الكل</SelectItem>
+                {groups.map(group => (
+                  <SelectItem key={group.id} value={group.name}>{group.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-sm text-muted-foreground mb-1 block">الحساب</Label>
+            <Select value={selectedAccount} onValueChange={setSelectedAccount}>
+              <SelectTrigger>
+                <SelectValue placeholder="اختر الحساب" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">الكل</SelectItem>
+                {filteredAccountsForSelect.map(acc => (
+                  <SelectItem key={acc.id} value={acc.accountName}>{acc.accountName}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-sm text-muted-foreground mb-1 block">من رقم</Label>
+            <Input type="number" value={numberFrom} onChange={(e) => setNumberFrom(e.target.value)} placeholder="رقم المستند" />
+          </div>
+          <div>
+            <Label className="text-sm text-muted-foreground mb-1 block">إلى رقم</Label>
+            <Input type="number" value={numberTo} onChange={(e) => setNumberTo(e.target.value)} placeholder="رقم المستند" />
+          </div>
+          <div className="flex items-end">
+            <Button onClick={handleGenerateReport} className="gradient-primary w-full" size="sm">
+              <Eye className="w-4 h-4 ml-2" />
+              عرض التقرير
+            </Button>
+          </div>
         </div>
       </div>
 
