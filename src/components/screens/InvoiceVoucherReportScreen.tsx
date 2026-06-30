@@ -445,22 +445,16 @@ export function InvoiceVoucherReportScreen() {
     try {
       const htmlContent = await buildReportHtml();
       const { generatePdfBlobFromHtml } = await import('@/utils/pdfMakeService');
+      const { smartDownload } = await import('@/utils/webviewPrint');
       const blob = await generatePdfBlobFromHtml(htmlContent);
       const filename = `تقرير_${operationLabels[operationType]}_${getToday()}.pdf`;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      toast.success('تم تنزيل ملف PDF');
+      await smartDownload(blob, filename);
     } catch (err) {
       console.error(err);
       toast.error('تعذر إنشاء ملف PDF');
     }
   };
+
 
   const columns = [
     { key: 'index', header: '#', render: (_: any, idx: number) => <span>{idx + 1}</span> },
