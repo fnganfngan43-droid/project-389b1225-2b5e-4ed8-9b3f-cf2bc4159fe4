@@ -471,107 +471,29 @@ export function InvoiceVoucherReportScreen() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden min-h-0">
-      {/* Filters */}
+      {/* Filters - hidden while viewing the report */}
+      {!showReport && (
       <div className="shrink-0 bg-card border-b border-border p-4">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {/* Operation Type */}
-          <div className="space-y-1 col-span-2 md:col-span-1">
-            <Label className="text-xs">نوع العملية</Label>
-            <Select value={operationType} onValueChange={(v) => { setOperationType(v as OperationType); setShowReport(false); }}>
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="invoices">فواتير المبيعات</SelectItem>
-                <SelectItem value="returns">مرتجعات المبيعات</SelectItem>
-                <SelectItem value="receipts">سندات القبض</SelectItem>
-                <SelectItem value="payments">سندات الصرف</SelectItem>
-                <SelectItem value="opening">الأرصدة الافتتاحية</SelectItem>
-                <SelectItem value="exchange">صرف عملة</SelectItem>
-                <SelectItem value="discount">إشعارات الخصم</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Date From */}
-          <div className="space-y-1">
-            <Label className="text-xs">من تاريخ</Label>
-            <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="h-9 text-sm" />
-          </div>
-
-          {/* Date To */}
-          <div className="space-y-1">
-            <Label className="text-xs">إلى تاريخ</Label>
-            <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="h-9 text-sm" />
-          </div>
-
-          {/* Group */}
-          <div className="space-y-1">
-            <Label className="text-xs">المجموعة</Label>
-            <Select value={selectedGroup} onValueChange={(v) => { setSelectedGroup(v); setSelectedAccount(''); }}>
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue placeholder="الكل" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">الكل</SelectItem>
-                {groups.map(g => (
-                  <SelectItem key={g.id} value={g.name}>{g.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Account */}
-          <div className="space-y-1">
-            <Label className="text-xs">الحساب</Label>
-            <Select value={selectedAccount} onValueChange={setSelectedAccount}>
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue placeholder="الكل" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">الكل</SelectItem>
-                {filteredAccountsForSelect.map(a => (
-                  <SelectItem key={a.id} value={a.accountName}>{a.accountName}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Currency (next to Account) */}
-          <div className="space-y-1">
-            <Label className="text-xs">رمز العملة</Label>
-            <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue placeholder="الكل" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">الكل</SelectItem>
-                {currencies.map(c => (
-                  <SelectItem key={c.id} value={c.symbol}>{c.name} ({c.symbol})</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Number From */}
-          <div className="space-y-1">
-            <Label className="text-xs">من رقم</Label>
-            <Input type="number" value={numberFrom} onChange={(e) => setNumberFrom(e.target.value)} placeholder="1" className="h-9 text-sm" />
-          </div>
-
-          {/* Number To */}
-          <div className="space-y-1">
-            <Label className="text-xs">إلى رقم</Label>
-            <Input type="number" value={numberTo} onChange={(e) => setNumberTo(e.target.value)} placeholder="∞" className="h-9 text-sm" />
-          </div>
-        </div>
-
-        <div className="flex gap-2 mt-3">
+...
           <Button onClick={handleGenerateReport} className="gradient-primary" size="sm">
             <Eye className="w-4 h-4 ml-2" />
             عرض التقرير
           </Button>
-          {showReport && reportData.length > 0 && (
+        </div>
+      </div>
+      )}
+
+      {/* Compact action bar shown while viewing the report */}
+      {showReport && (
+        <div className="shrink-0 bg-card border-b border-border p-3 flex flex-wrap items-center gap-2">
+          <span className="text-sm font-bold text-primary ml-auto">
+            {operationLabels[operationType]} ({reportData.length})
+          </span>
+          <Button onClick={() => setShowReport(false)} variant="outline" size="sm">
+            ✕ إغلاق
+          </Button>
+          {reportData.length > 0 && (
             <>
               <Button onClick={handlePrint} variant="outline" size="sm">
                 <Printer className="w-4 h-4 ml-2" />
@@ -579,12 +501,13 @@ export function InvoiceVoucherReportScreen() {
               </Button>
               <Button onClick={handleDownloadPdf} variant="outline" size="sm">
                 <FileDown className="w-4 h-4 ml-2" />
-                طباعة PDF
+                تحميل / مشاركة PDF
               </Button>
             </>
           )}
         </div>
-      </div>
+      )}
+
 
       {/* Report Table(s) */}
       {showReport && (
