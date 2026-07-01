@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Account } from '@/types/accounting';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 
 interface AccountSearchInputProps {
   accounts: Account[];
@@ -60,6 +60,12 @@ export function AccountSearchInput({
     setShowSuggestions(false);
   };
 
+  const handleClear = () => {
+    setSearchTerm('');
+    onSelect('', undefined);
+    setShowSuggestions(false);
+  };
+
   return (
     <div ref={containerRef} className="relative">
       <div className="relative">
@@ -69,9 +75,19 @@ export function AccountSearchInput({
           onChange={handleInputChange}
           onFocus={() => setShowSuggestions(true)}
           placeholder={placeholder}
-          className="pr-10"
+          className="pr-10 pl-8"
           disabled={disabled}
         />
+        {searchTerm && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="absolute left-2 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-accent hover:text-accent-foreground text-muted-foreground"
+            aria-label="مسح"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        )}
       </div>
       
       {showSuggestions && filteredAccounts.length > 0 && (

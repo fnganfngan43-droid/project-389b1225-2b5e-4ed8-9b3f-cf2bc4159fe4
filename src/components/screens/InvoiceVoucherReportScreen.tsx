@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
+import { AccountSearchInput } from '@/components/AccountSearchInput';
 import {
   Select,
   SelectContent,
@@ -470,7 +471,7 @@ export function InvoiceVoucherReportScreen() {
   const showSplitTables = !selectedCurrency || selectedCurrency === 'all';
 
   return (
-    <div className={`flex flex-col h-full min-h-0 ${showReport ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+    <div className="flex flex-col h-full min-h-0 overflow-y-auto">
       {/* Filters - always visible */}
       <div className="shrink-0 bg-card border-b border-border p-4">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -492,14 +493,6 @@ export function InvoiceVoucherReportScreen() {
             </Select>
           </div>
           <div>
-            <Label className="text-sm text-muted-foreground mb-1 block">من تاريخ</Label>
-            <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="text-right" />
-          </div>
-          <div>
-            <Label className="text-sm text-muted-foreground mb-1 block">إلى تاريخ</Label>
-            <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="text-right" />
-          </div>
-          <div>
             <Label className="text-sm text-muted-foreground mb-1 block">العملة</Label>
             <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
               <SelectTrigger>
@@ -512,6 +505,14 @@ export function InvoiceVoucherReportScreen() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div>
+            <Label className="text-sm text-muted-foreground mb-1 block">من تاريخ</Label>
+            <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="text-right" />
+          </div>
+          <div>
+            <Label className="text-sm text-muted-foreground mb-1 block">إلى تاريخ</Label>
+            <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="text-right" />
           </div>
           <div>
             <Label className="text-sm text-muted-foreground mb-1 block">المجموعة</Label>
@@ -529,17 +530,12 @@ export function InvoiceVoucherReportScreen() {
           </div>
           <div>
             <Label className="text-sm text-muted-foreground mb-1 block">الحساب</Label>
-            <Select value={selectedAccount} onValueChange={setSelectedAccount}>
-              <SelectTrigger>
-                <SelectValue placeholder="اختر الحساب" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">الكل</SelectItem>
-                {filteredAccountsForSelect.map(acc => (
-                  <SelectItem key={acc.id} value={acc.accountName}>{acc.accountName}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <AccountSearchInput
+              accounts={filteredAccountsForSelect}
+              value={selectedAccount === 'all' ? '' : selectedAccount}
+              onSelect={(accountName) => setSelectedAccount(accountName || 'all')}
+              placeholder="ابحث عن الحساب..."
+            />
           </div>
           <div>
             <Label className="text-sm text-muted-foreground mb-1 block">من رقم</Label>
