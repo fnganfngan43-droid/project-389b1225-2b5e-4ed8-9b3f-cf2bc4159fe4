@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
+import { AccountSearchInput } from '@/components/AccountSearchInput';
 import {
   Select,
   SelectContent,
