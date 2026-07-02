@@ -10,7 +10,8 @@ import {
   Invoice,
   Settings,
   CurrencyExchange,
-  DiscountEntry
+  DiscountEntry,
+  Reconciliation
 } from '@/types/accounting';
 
 interface AccountingContextType {
