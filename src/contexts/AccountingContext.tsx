@@ -235,8 +235,9 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
       invoices,
       currencyExchanges,
       discounts,
+      reconciliations,
     });
-  }, [password, settings, accounts, groups, currencies, governorates, vouchers, openingBalances, invoices, currencyExchanges, discounts]);
+  }, [password, settings, accounts, groups, currencies, governorates, vouchers, openingBalances, invoices, currencyExchanges, discounts, reconciliations]);
 
   if (!isReady) {
     return (
