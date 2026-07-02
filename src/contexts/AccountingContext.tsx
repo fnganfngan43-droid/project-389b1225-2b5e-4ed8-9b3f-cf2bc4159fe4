@@ -75,10 +75,17 @@ interface AccountingContextType {
   deleteCurrencyExchange: (id: string) => void;
 
   // Discounts
+  // Discounts
   discounts: DiscountEntry[];
   addDiscount: (discount: Omit<DiscountEntry, 'id'>) => void;
   updateDiscount: (id: string, discount: Partial<DiscountEntry>) => void;
   deleteDiscount: (id: string) => void;
+
+  // Reconciliations
+  reconciliations: Reconciliation[];
+  addReconciliation: (r: Omit<Reconciliation, 'id'>) => void;
+  updateReconciliation: (id: string, r: Partial<Reconciliation>) => void;
+  deleteReconciliation: (id: string) => void;
 }
 
 const AccountingContext = createContext<AccountingContextType | undefined>(undefined);
