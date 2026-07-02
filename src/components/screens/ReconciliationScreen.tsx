@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { getNextSequentialNumber } from '@/utils/sequentialNumber';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { Reconciliation } from '@/types/accounting';
+import { parseExcelFile } from '@/utils/excelImport';
 import {
   Select,
   SelectContent,
@@ -24,6 +25,11 @@ export function ReconciliationScreen() {
     groups,
     currencies,
     reconciliations,
+    vouchers,
+    openingBalances,
+    invoices,
+    discounts,
+    currencyExchanges,
     addReconciliation,
     updateReconciliation,
     deleteReconciliation,
@@ -80,15 +86,55 @@ export function ReconciliationScreen() {
     setEditingItem(null);
   };
 
+  // Compute cumulative balance (debit - credit) for account+currency up to toDate
+  const computeBalance = (
+    accountName: string,
+    currency: string,
+    toDate: string,
+  ): number => {
+    if (!accountName || !currency) return 0;
+    const inRange = (d: string) => !toDate || d <= toDate;
+    let bal = 0;
+    openingBalances
+      .filter((ob) => ob.accountName === accountName && ob.currency === currency && inRange(ob.date))
+      .forEach((ob) => (bal += (ob.debit || 0) - (ob.credit || 0)));
+    vouchers.filter((v) => inRange(v.date)).forEach((v) => {
+      if (v.debitAccountName === accountName && v.debitCurrency === currency) bal += v.debitAmount || 0;
+      if (v.creditAccountName === accountName && v.creditCurrency === currency) bal -= v.creditAmount || 0;
+    });
+    invoices
+      .filter((i) => i.accountName === accountName && i.currency === currency && inRange(i.date))
+      .forEach((i) => (bal += i.amount || 0));
+    discounts
+      .filter((d) => d.accountName === accountName && d.currency === currency && inRange(d.date))
+      .forEach((d) => (bal -= d.amount || 0));
+    currencyExchanges.filter((ex) => inRange(ex.date)).forEach((ex) => {
+      if (ex.fromAccountName === accountName && ex.fromCurrency === currency) bal -= ex.fromAmount || 0;
+      if (ex.toAccountName === accountName && ex.toCurrency === currency) bal += ex.toAmount || 0;
+    });
+    return bal;
+  };
+
   const handleAccountSelect = (name: string, acc?: any) => {
     const account = acc || accounts.find((a) => a.accountName === name);
+    const currency = account?.currency || formData.currency;
     setFormData((prev) => ({
       ...prev,
       accountName: name,
-      currency: account?.currency || prev.currency,
-      amount: account ? String(account.balance) : prev.amount,
+      currency,
+      amount: name && currency ? String(computeBalance(name, currency, prev.toDate)) : prev.amount,
     }));
   };
+
+  // Auto-refresh amount when group/account/currency/toDate change during add (not manual edit)
+  useEffect(() => {
+    if (!isAdding || editingItem) return;
+    if (!formData.accountName || !formData.currency) return;
+    const bal = computeBalance(formData.accountName, formData.currency, formData.toDate);
+    setFormData((prev) => ({ ...prev, amount: String(bal) }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.accountName, formData.currency, formData.toDate, formData.groupName]);
+
 
   const handleSave = () => {
     if (!formData.accountName || !formData.currency) {
@@ -130,11 +176,49 @@ export function ReconciliationScreen() {
   };
 
   const handleDelete = () => {
-    if (!selectedItem) return;
+    if (!selectedItem) {
+      toast.error('يرجى تحديد مطابقة أولاً');
+      return;
+    }
     deleteReconciliation(selectedItem.id);
     setSelectedItem(null);
     toast.success('تم حذف المطابقة');
   };
+
+  const handleEditClick = () => {
+    if (!selectedItem) {
+      toast.error('يرجى تحديد مطابقة أولاً');
+      return;
+    }
+    handleEdit();
+  };
+
+  const handleImport = async (file: File) => {
+    try {
+      const rows = await parseExcelFile(file);
+      let count = 0;
+      const existing = reconciliations.map((r) => r.reconciliationNumber);
+      let nextNum = parseInt(getNextSequentialNumber(existing), 10) || 1;
+      rows.forEach((row) => {
+        const accountName = String(row[2] || '').trim();
+        if (!accountName) return;
+        addReconciliation({
+          reconciliationNumber: String(row[0] || nextNum++),
+          groupName: String(row[1] || ''),
+          accountName,
+          currency: String(row[3] || ''),
+          fromDate: String(row[4] || startOfYear()),
+          toDate: String(row[5] || today()),
+          amount: parseFloat(row[6]) || 0,
+        });
+        count++;
+      });
+      toast.success(`تم استيراد ${count} مطابقة`);
+    } catch (e) {
+      toast.error('فشل استيراد الملف');
+    }
+  };
+
 
   const columns = [
     {
@@ -193,11 +277,22 @@ export function ReconciliationScreen() {
             resetForm();
             setIsAdding(true);
           }}
-          onEdit={selectedItem ? handleEdit : undefined}
-          onDelete={selectedItem ? handleDelete : undefined}
+          onEdit={handleEditClick}
+          onDelete={handleDelete}
+          onImport={handleImport}
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
           searchPlaceholder="بحث في المطابقات..."
+          importColumns={[
+            'الرقم',
+            'اسم المجموعة',
+            'اسم الحساب',
+            'رمز العملة',
+            'مطابق من تاريخ',
+            'مطابقة إلى تاريخ',
+            'المبلغ',
+          ]}
+          importTitle="استيراد المطابقات من Excel"
         />
       </div>
 
