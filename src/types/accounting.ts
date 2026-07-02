@@ -115,6 +115,17 @@ export interface Settings {
   footerNote?: string;
 }
 
+export interface Reconciliation {
+  id: string;
+  reconciliationNumber: string;
+  groupName: string;
+  accountName: string;
+  currency: string;
+  fromDate: string;
+  toDate: string;
+  amount: number;
+}
+
 export type ScreenType = 
   | 'sales' 
   | 'payment' 
@@ -130,4 +141,5 @@ export type ScreenType =
   | 'group-management'
   | 'password-settings'
   | 'invoice-voucher-report'
+  | 'reconciliation'
   | 'setup';

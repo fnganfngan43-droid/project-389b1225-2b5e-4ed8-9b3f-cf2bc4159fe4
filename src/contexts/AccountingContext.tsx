@@ -10,7 +10,8 @@ import {
   Invoice,
   Settings,
   CurrencyExchange,
-  DiscountEntry
+  DiscountEntry,
+  Reconciliation
 } from '@/types/accounting';
 
 interface AccountingContextType {
@@ -74,10 +75,17 @@ interface AccountingContextType {
   deleteCurrencyExchange: (id: string) => void;
 
   // Discounts
+  // Discounts
   discounts: DiscountEntry[];
   addDiscount: (discount: Omit<DiscountEntry, 'id'>) => void;
   updateDiscount: (id: string, discount: Partial<DiscountEntry>) => void;
   deleteDiscount: (id: string) => void;
+
+  // Reconciliations
+  reconciliations: Reconciliation[];
+  addReconciliation: (r: Omit<Reconciliation, 'id'>) => void;
+  updateReconciliation: (id: string, r: Partial<Reconciliation>) => void;
+  deleteReconciliation: (id: string) => void;
 }
 
 const AccountingContext = createContext<AccountingContextType | undefined>(undefined);
@@ -166,6 +174,7 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [currencyExchanges, setCurrencyExchanges] = useState<CurrencyExchange[]>([]);
   const [discounts, setDiscounts] = useState<DiscountEntry[]>([]);
+  const [reconciliations, setReconciliations] = useState<Reconciliation[]>([]);
 
   // Async hydrate from encrypted storage on mount
   useEffect(() => {
@@ -191,6 +200,7 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
         if (storedData.invoices) setInvoices(storedData.invoices);
         if (storedData.currencyExchanges) setCurrencyExchanges(storedData.currencyExchanges);
         if (storedData.discounts) setDiscounts(storedData.discounts);
+        if (storedData.reconciliations) setReconciliations(storedData.reconciliations);
       }
       hydratedRef.current = true;
       setIsReady(true);
@@ -225,8 +235,9 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
       invoices,
       currencyExchanges,
       discounts,
+      reconciliations,
     });
-  }, [password, settings, accounts, groups, currencies, governorates, vouchers, openingBalances, invoices, currencyExchanges, discounts]);
+  }, [password, settings, accounts, groups, currencies, governorates, vouchers, openingBalances, invoices, currencyExchanges, discounts, reconciliations]);
 
   if (!isReady) {
     return (
@@ -291,6 +302,11 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
     addDiscount: (discount) => setDiscounts(prev => [...prev, { ...discount, id: generateId() }]),
     updateDiscount: (id, discount) => setDiscounts(prev => prev.map(d => d.id === id ? { ...d, ...discount } : d)),
     deleteDiscount: (id) => setDiscounts(prev => prev.filter(d => d.id !== id)),
+
+    reconciliations,
+    addReconciliation: (r) => setReconciliations(prev => [...prev, { ...r, id: generateId() }]),
+    updateReconciliation: (id, r) => setReconciliations(prev => prev.map(x => x.id === id ? { ...x, ...r } : x)),
+    deleteReconciliation: (id) => setReconciliations(prev => prev.filter(x => x.id !== id)),
   };
 
   return (

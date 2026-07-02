@@ -15,6 +15,7 @@ import { AccountGroupManagementScreen } from '@/components/screens/AccountGroupM
 import { PasswordSettingsScreen } from '@/components/screens/PasswordSettingsScreen';
 import { InvoiceVoucherReportScreen } from '@/components/screens/InvoiceVoucherReportScreen';
 import { SetupScreen } from '@/components/screens/SetupScreen';
+import { ReconciliationScreen } from '@/components/screens/ReconciliationScreen';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { ScreenType } from '@/types/accounting';
 
@@ -44,6 +45,7 @@ export function MainDashboard() {
       'password-settings': 'إعدادات كلمة المرور',
       'invoice-voucher-report': 'تقرير الفواتير والسندات',
       'setup': 'شاشة التهيئة',
+      'reconciliation': 'المطابقات',
     };
     return titles[activeScreen];
   };
@@ -72,6 +74,7 @@ export function MainDashboard() {
     'password-settings': <PasswordSettingsScreen />,
     'invoice-voucher-report': <InvoiceVoucherReportScreen />,
     'setup': <SetupScreen onBack={() => setActiveScreen('chart-of-accounts')} />,
+    'reconciliation': <ReconciliationScreen />,
   };
 
   const renderScreens = () =>
