@@ -45,6 +45,7 @@ export function MainDashboard() {
       'password-settings': 'إعدادات كلمة المرور',
       'invoice-voucher-report': 'تقرير الفواتير والسندات',
       'setup': 'شاشة التهيئة',
+      'reconciliation': 'المطابقات',
     };
     return titles[activeScreen];
   };
