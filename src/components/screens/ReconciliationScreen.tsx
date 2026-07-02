@@ -86,15 +86,55 @@ export function ReconciliationScreen() {
     setEditingItem(null);
   };
 
+  // Compute cumulative balance (debit - credit) for account+currency up to toDate
+  const computeBalance = (
+    accountName: string,
+    currency: string,
+    toDate: string,
+  ): number => {
+    if (!accountName || !currency) return 0;
+    const inRange = (d: string) => !toDate || d <= toDate;
+    let bal = 0;
+    openingBalances
+      .filter((ob) => ob.accountName === accountName && ob.currency === currency && inRange(ob.date))
+      .forEach((ob) => (bal += (ob.debit || 0) - (ob.credit || 0)));
+    vouchers.filter((v) => inRange(v.date)).forEach((v) => {
+      if (v.debitAccountName === accountName && v.debitCurrency === currency) bal += v.debitAmount || 0;
+      if (v.creditAccountName === accountName && v.creditCurrency === currency) bal -= v.creditAmount || 0;
+    });
+    invoices
+      .filter((i) => i.accountName === accountName && i.currency === currency && inRange(i.date))
+      .forEach((i) => (bal += i.amount || 0));
+    discounts
+      .filter((d) => d.accountName === accountName && d.currency === currency && inRange(d.date))
+      .forEach((d) => (bal -= d.amount || 0));
+    currencyExchanges.filter((ex) => inRange(ex.date)).forEach((ex) => {
+      if (ex.fromAccountName === accountName && ex.fromCurrency === currency) bal -= ex.fromAmount || 0;
+      if (ex.toAccountName === accountName && ex.toCurrency === currency) bal += ex.toAmount || 0;
+    });
+    return bal;
+  };
+
   const handleAccountSelect = (name: string, acc?: any) => {
     const account = acc || accounts.find((a) => a.accountName === name);
+    const currency = account?.currency || formData.currency;
     setFormData((prev) => ({
       ...prev,
       accountName: name,
-      currency: account?.currency || prev.currency,
-      amount: account ? String(account.balance) : prev.amount,
+      currency,
+      amount: name && currency ? String(computeBalance(name, currency, prev.toDate)) : prev.amount,
     }));
   };
+
+  // Auto-refresh amount when group/account/currency/toDate change during add (not manual edit)
+  useEffect(() => {
+    if (!isAdding || editingItem) return;
+    if (!formData.accountName || !formData.currency) return;
+    const bal = computeBalance(formData.accountName, formData.currency, formData.toDate);
+    setFormData((prev) => ({ ...prev, amount: String(bal) }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.accountName, formData.currency, formData.toDate, formData.groupName]);
+
 
   const handleSave = () => {
     if (!formData.accountName || !formData.currency) {
