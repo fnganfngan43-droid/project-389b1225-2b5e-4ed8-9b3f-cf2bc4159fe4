@@ -10,7 +10,8 @@ import {
   Percent,
   RotateCcw,
   ArrowLeftRight,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  CheckSquare
 } from 'lucide-react';
 
 interface NavigationBarProps {
