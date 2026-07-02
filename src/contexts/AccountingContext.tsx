@@ -200,6 +200,7 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
         if (storedData.invoices) setInvoices(storedData.invoices);
         if (storedData.currencyExchanges) setCurrencyExchanges(storedData.currencyExchanges);
         if (storedData.discounts) setDiscounts(storedData.discounts);
+        if (storedData.reconciliations) setReconciliations(storedData.reconciliations);
       }
       hydratedRef.current = true;
       setIsReady(true);
