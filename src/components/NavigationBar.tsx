@@ -31,6 +31,7 @@ const navItems: { id: ScreenType; label: string; icon: React.ElementType }[] = [
   { id: 'sales-return', label: 'مرتجع المبيعات', icon: RotateCcw },
   { id: 'currency-exchange', label: 'صرف عملة', icon: ArrowLeftRight },
   { id: 'invoice-voucher-report', label: 'تقرير الفواتير', icon: FileText },
+  { id: 'reconciliation', label: 'المطابقات', icon: CheckSquare },
 ];
 
 export function NavigationBar({ activeScreen, onScreenChange }: NavigationBarProps) {
