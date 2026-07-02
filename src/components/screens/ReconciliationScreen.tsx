@@ -176,11 +176,49 @@ export function ReconciliationScreen() {
   };
 
   const handleDelete = () => {
-    if (!selectedItem) return;
+    if (!selectedItem) {
+      toast.error('يرجى تحديد مطابقة أولاً');
+      return;
+    }
     deleteReconciliation(selectedItem.id);
     setSelectedItem(null);
     toast.success('تم حذف المطابقة');
   };
+
+  const handleEditClick = () => {
+    if (!selectedItem) {
+      toast.error('يرجى تحديد مطابقة أولاً');
+      return;
+    }
+    handleEdit();
+  };
+
+  const handleImport = async (file: File) => {
+    try {
+      const rows = await parseExcelFile(file);
+      let count = 0;
+      const existing = reconciliations.map((r) => r.reconciliationNumber);
+      let nextNum = parseInt(getNextSequentialNumber(existing), 10) || 1;
+      rows.forEach((row) => {
+        const accountName = String(row[2] || '').trim();
+        if (!accountName) return;
+        addReconciliation({
+          reconciliationNumber: String(row[0] || nextNum++),
+          groupName: String(row[1] || ''),
+          accountName,
+          currency: String(row[3] || ''),
+          fromDate: String(row[4] || startOfYear()),
+          toDate: String(row[5] || today()),
+          amount: parseFloat(row[6]) || 0,
+        });
+        count++;
+      });
+      toast.success(`تم استيراد ${count} مطابقة`);
+    } catch (e) {
+      toast.error('فشل استيراد الملف');
+    }
+  };
+
 
   const columns = [
     {
