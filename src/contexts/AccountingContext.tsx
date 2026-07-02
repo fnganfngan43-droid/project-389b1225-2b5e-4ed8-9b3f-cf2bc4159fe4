@@ -302,6 +302,11 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
     addDiscount: (discount) => setDiscounts(prev => [...prev, { ...discount, id: generateId() }]),
     updateDiscount: (id, discount) => setDiscounts(prev => prev.map(d => d.id === id ? { ...d, ...discount } : d)),
     deleteDiscount: (id) => setDiscounts(prev => prev.filter(d => d.id !== id)),
+
+    reconciliations,
+    addReconciliation: (r) => setReconciliations(prev => [...prev, { ...r, id: generateId() }]),
+    updateReconciliation: (id, r) => setReconciliations(prev => prev.map(x => x.id === id ? { ...x, ...r } : x)),
+    deleteReconciliation: (id) => setReconciliations(prev => prev.filter(x => x.id !== id)),
   };
 
   return (
