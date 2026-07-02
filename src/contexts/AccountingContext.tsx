@@ -174,6 +174,7 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [currencyExchanges, setCurrencyExchanges] = useState<CurrencyExchange[]>([]);
   const [discounts, setDiscounts] = useState<DiscountEntry[]>([]);
+  const [reconciliations, setReconciliations] = useState<Reconciliation[]>([]);
 
   // Async hydrate from encrypted storage on mount
   useEffect(() => {
