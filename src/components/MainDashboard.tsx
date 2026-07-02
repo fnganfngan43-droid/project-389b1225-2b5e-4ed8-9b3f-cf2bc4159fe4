@@ -74,6 +74,7 @@ export function MainDashboard() {
     'password-settings': <PasswordSettingsScreen />,
     'invoice-voucher-report': <InvoiceVoucherReportScreen />,
     'setup': <SetupScreen onBack={() => setActiveScreen('chart-of-accounts')} />,
+    'reconciliation': <ReconciliationScreen />,
   };
 
   const renderScreens = () =>
