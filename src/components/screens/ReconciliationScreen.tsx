@@ -277,11 +277,22 @@ export function ReconciliationScreen() {
             resetForm();
             setIsAdding(true);
           }}
-          onEdit={selectedItem ? handleEdit : undefined}
-          onDelete={selectedItem ? handleDelete : undefined}
+          onEdit={handleEditClick}
+          onDelete={handleDelete}
+          onImport={handleImport}
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
           searchPlaceholder="بحث في المطابقات..."
+          importColumns={[
+            'الرقم',
+            'اسم المجموعة',
+            'اسم الحساب',
+            'رمز العملة',
+            'مطابق من تاريخ',
+            'مطابقة إلى تاريخ',
+            'المبلغ',
+          ]}
+          importTitle="استيراد المطابقات من Excel"
         />
       </div>
 
