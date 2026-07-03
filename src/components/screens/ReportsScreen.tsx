@@ -741,7 +741,20 @@ export function ReportsScreen() {
       let pdfBlob: Blob;
       let filename: string;
 
-      if (reportType === 'summary') {
+      if (reportType === 'reconciliation') {
+        const { rows, totalAmount, currencyName } = getReconciliationReportData();
+        pdfBlob = await generateReconciliationReportPDF({
+          title: 'كشف المطابقة',
+          groupName: selectedGroup,
+          currencyName,
+          dateFrom,
+          dateTo,
+          rows,
+          totalAmount,
+          settings,
+        });
+        filename = `كشف_مطابقة_${selectedGroup}_${new Date().toISOString().split('T')[0]}.pdf`;
+      } else if (reportType === 'summary') {
         // Generate summary report PDF
         if (!selectedGroup) {
           toast.error('يرجى اختيار المجموعة');
