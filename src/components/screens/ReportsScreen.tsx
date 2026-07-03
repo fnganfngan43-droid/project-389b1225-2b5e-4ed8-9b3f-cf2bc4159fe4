@@ -458,9 +458,52 @@ export function ReportsScreen() {
     return { ...t, balance: runningBalance };
   });
 
+  // Build reconciliation report data from displayed rows
+  const getReconciliationReportData = () => {
+    const filtered = reconciliations.filter(r =>
+      r.groupName === selectedGroup &&
+      (!selectedCurrency || selectedCurrency === 'all' || r.currency === selectedCurrency) &&
+      (!dateFrom || r.toDate >= dateFrom) &&
+      (!dateTo || r.toDate <= dateTo)
+    );
+    const rows = filtered.map(r => {
+      const acc = accounts.find(a => a.accountName === r.accountName);
+      return {
+        accountNumber: acc?.accountNumber || '-',
+        accountName: r.accountName,
+        currency: r.currency,
+        amount: r.amount,
+        toDate: r.toDate,
+      };
+    });
+    return {
+      rows,
+      totalAmount: rows.reduce((s, r) => s + r.amount, 0),
+      currencyName: selectedCurrency && selectedCurrency !== 'all'
+        ? getCurrencyFullName(selectedCurrency)
+        : undefined,
+    };
+  };
+
   const handlePrintReport = () => {
     if (!showReport) {
       toast.error('يرجى إنشاء التقرير أولاً');
+      return;
+    }
+
+    if (reportType === 'reconciliation') {
+      const { rows, totalAmount, currencyName } = getReconciliationReportData();
+      printReconciliationReport({
+        title: 'كشف المطابقة',
+        groupName: selectedGroup,
+        currencyName,
+        dateFrom,
+        dateTo,
+        rows,
+        totalAmount,
+        settings,
+      });
+      toast.success('جاري طباعة التقرير...');
       return;
     }
 
