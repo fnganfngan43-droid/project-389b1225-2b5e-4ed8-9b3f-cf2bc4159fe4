@@ -1012,6 +1012,154 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
   openPrintWindow(printContent);
 }
 
+export interface PrintReconciliationReportData {
+  title: string;
+  groupName: string;
+  currencyName?: string;
+  dateFrom: string;
+  dateTo: string;
+  rows: Array<{
+    accountNumber: string;
+    accountName: string;
+    currency: string;
+    amount: number;
+    toDate: string;
+  }>;
+  totalAmount: number;
+  settings: Settings;
+}
+
+export function printReconciliationReport({
+  title,
+  groupName,
+  currencyName,
+  dateFrom,
+  dateTo,
+  rows,
+  totalAmount,
+  settings,
+}: PrintReconciliationReportData) {
+  const rowsHTML = rows.map(r => `
+    <tr>
+      <td>${e(r.accountNumber || '-')}</td>
+      <td style="text-align: right;">${e(r.accountName)}</td>
+      <td style="text-align: center;">${e(r.currency)}</td>
+      <td class="${r.amount >= 0 ? 'debit' : 'credit'}">${e(r.amount.toLocaleString())}</td>
+      <td style="text-align: center;">${e(r.toDate)}</td>
+    </tr>
+  `).join('');
+
+  const printContent = `
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${e(title)} - ${e(groupName)}</title>
+      <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+      <style>
+        ${getCommonStyles()}
+        ${getReportPrintStyles()}
+      </style>
+    </head>
+    <body>
+      <div class="page-frame"></div>
+      <div class="page-border">
+      <div class="print-container">
+        <table class="print-doc">
+          <thead>
+            <tr>
+              <td>
+                ${buildHeaderBlock(settings)}
+                <div class="report-info-wrapper">
+                  <div class="voucher-type">${e(title)}</div>
+                  <div class="info-row">
+                    <span class="info-label">المجموعة:</span>
+                    <span class="info-value">${e(groupName)}</span>
+                  </div>
+                  ${currencyName ? `
+                  <div class="info-row">
+                    <span class="info-label">العملة:</span>
+                    <span class="info-value">${e(currencyName)}</span>
+                  </div>
+                  ` : ''}
+                  <div class="info-row">
+                    <span class="info-label">الفترة:</span>
+                    <span class="info-value">من ${e(dateFrom)} إلى ${e(dateTo)}</span>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </thead>
+          <tfoot>
+            <tr>
+              <td>
+                <div class="page-footer-content">
+                  <span>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}</span>
+                  <span style="margin: 0 15px;">|</span>
+                  <span class="page-number-text">صفحة <span class="current-page"></span> من <span class="total-pages"></span></span>
+                </div>
+              </td>
+            </tr>
+          </tfoot>
+          <tbody>
+            <tr>
+              <td>
+                <div class="content" style="padding: 10px 15px;">
+                  ${rows.length > 0 ? `
+                  <table class="report-table">
+                    <thead>
+                      <tr>
+                        <th>رقم الحساب</th>
+                        <th>اسم الحساب</th>
+                        <th>العملة</th>
+                        <th>المبلغ</th>
+                        <th>إلى تاريخ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${rowsHTML}
+                      <tr class="totals-row">
+                        <td colspan="3">الإجمالي</td>
+                        <td class="${totalAmount >= 0 ? 'debit' : 'credit'}">${e(totalAmount.toLocaleString())}</td>
+                        <td></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  ` : `
+                  <div style="text-align: center; padding: 40px; color: #666;">
+                    لا توجد مطابقات لهذه المجموعة
+                  </div>
+                  `}
+
+                  ${settings.footerNote ? `
+                  <div style="text-align: center; padding: 12px; margin: 15px 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <span style="font-size: 13px; color: #333; font-weight: 500;">${e(settings.footerNote)}</span>
+                  </div>
+                  ` : ''}
+
+                  <div class="footer">
+                    <div class="signature-box">
+                      <div class="signature-line">توقيع المدير</div>
+                    </div>
+                    <div class="signature-box">
+                      <div class="signature-line">توقيع المحاسب</div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  openPrintWindow(printContent);
+}
+
 async function openPrintWindow(content: string) {
   const { printHTML } = await import('./webviewPrint');
   printHTML(content, (doc) => {
