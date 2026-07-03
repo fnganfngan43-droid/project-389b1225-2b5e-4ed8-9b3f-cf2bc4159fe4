@@ -637,6 +637,23 @@ export function ReportsScreen() {
     toast.info('جاري إنشاء ملف PDF...');
 
     try {
+      if (reportType === 'reconciliation') {
+        const { rows, totalAmount, currencyName } = getReconciliationReportData();
+        const pdfBlob = await generateReconciliationReportPDF({
+          title: 'كشف المطابقة',
+          groupName: selectedGroup,
+          currencyName,
+          dateFrom,
+          dateTo,
+          rows,
+          totalAmount,
+          settings,
+        });
+        const filename = `كشف_مطابقة_${selectedGroup}_${new Date().toISOString().split('T')[0]}.pdf`;
+        await sharePDFViaWhatsApp(pdfBlob, filename);
+        toast.success('تم إنشاء ملف PDF وفتح واتساب');
+        return;
+      }
       if (reportType === 'summary') {
         // Generate summary report PDF
         if (!selectedGroup) {
