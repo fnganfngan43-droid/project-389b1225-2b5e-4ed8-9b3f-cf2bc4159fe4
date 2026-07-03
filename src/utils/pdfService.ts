@@ -448,6 +448,135 @@ export async function generateSummaryReportPDF(data: SummaryPDFData): Promise<Bl
   return generateSectionBasedPDF(htmlContent);
 }
 
+interface ReconciliationPDFData {
+  title: string;
+  groupName: string;
+  currencyName?: string;
+  dateFrom: string;
+  dateTo: string;
+  rows: Array<{
+    accountNumber: string;
+    accountName: string;
+    currency: string;
+    amount: number;
+    toDate: string;
+  }>;
+  totalAmount: number;
+  settings: Settings;
+}
+
+const getReconciliationReportHTML = (data: ReconciliationPDFData): string => {
+  const { title, groupName, currencyName, dateFrom, dateTo, rows, totalAmount, settings } = data;
+
+  const rowSections = rows.map((r, i) => `
+    <div data-pdf-section="row-${i}" style="width: 100%;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #000;">${e(r.accountNumber || '-')}</td>
+          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: right; color: #000;">${e(r.accountName)}</td>
+          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #000;">${e(r.currency)}</td>
+          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: ${r.amount >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold;">${e(r.amount.toLocaleString())}</td>
+          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #000;">${e(r.toDate)}</td>
+        </tr>
+      </table>
+    </div>
+  `).join('');
+
+  return `
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Tajawal', Arial, sans-serif; direction: rtl; background: #fff; padding: 20px; }
+        table { border-collapse: collapse; }
+      </style>
+    </head>
+    <body>
+      <div style="max-width: 800px; margin: 0 auto;">
+        <div data-pdf-section="header">
+          ${getHeaderHTML(settings)}
+          <div style="padding: 15px 25px;">
+            <div style="text-align: center; font-size: 22px; font-weight: bold; color: #0d9488; border: 2px solid #0d9488; border-radius: 8px; padding: 10px; margin-bottom: 15px; background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);">
+              ${e(title)}
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ccc;">
+              <span style="color: #666; font-size: 14px;">المجموعة:</span>
+              <span style="font-weight: bold; font-size: 16px;">${e(groupName)}</span>
+            </div>
+            ${currencyName ? `
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ccc;">
+              <span style="color: #666; font-size: 14px;">العملة:</span>
+              <span style="font-weight: bold; font-size: 16px;">${e(currencyName)}</span>
+            </div>
+            ` : ''}
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ccc;">
+              <span style="color: #666; font-size: 14px;">الفترة:</span>
+              <span style="font-weight: bold; font-size: 16px;">من ${e(dateFrom)} إلى ${e(dateTo)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div data-pdf-section="table-header" style="width: 100%; padding: 0 25px;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">رقم الحساب</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">اسم الحساب</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">العملة</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">المبلغ</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">إلى تاريخ</th>
+            </tr>
+          </table>
+        </div>
+
+        <div style="padding: 0 25px;">
+          ${rowSections}
+        </div>
+
+        <div data-pdf-section="totals" style="padding: 0 25px;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr style="background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%); font-weight: bold; font-size: 14px;">
+              <td colspan="3" style="padding: 10px 8px; border: 1px solid #000; text-align: center; border-top: 3px solid #0d9488;">الإجمالي</td>
+              <td style="padding: 10px 8px; border: 1px solid #000; text-align: center; color: ${totalAmount >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold; border-top: 3px solid #0d9488;">${e(totalAmount.toLocaleString())}</td>
+              <td style="padding: 10px 8px; border: 1px solid #000; text-align: center; border-top: 3px solid #0d9488;"></td>
+            </tr>
+          </table>
+        </div>
+
+        ${settings.footerNote ? `
+        <div data-pdf-section="footer-note" style="padding: 0 25px;">
+          <div style="text-align: center; padding: 12px; margin: 10px 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <span style="font-size: 13px; color: #333; font-weight: 500;">${e(settings.footerNote)}</span>
+          </div>
+        </div>
+        ` : ''}
+
+        <div data-pdf-section="signatures" style="padding: 0 25px;">
+          <div style="display: flex; justify-content: space-between; padding: 20px; border-top: 2px solid #eee; margin-top: 15px;">
+            <div style="text-align: center; width: 45%;">
+              <div style="border-top: 2px solid #333; margin-top: 50px; padding-top: 10px; font-size: 14px; color: #666;">توقيع المدير</div>
+            </div>
+            <div style="text-align: center; width: 45%;">
+              <div style="border-top: 2px solid #333; margin-top: 50px; padding-top: 10px; font-size: 14px; color: #666;">توقيع المحاسب</div>
+            </div>
+          </div>
+          <div style="text-align: center; font-size: 12px; color: #999; margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;">
+            تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+
+export async function generateReconciliationReportPDF(data: ReconciliationPDFData): Promise<Blob> {
+  const htmlContent = getReconciliationReportHTML(data);
+  return generateSectionBasedPDF(htmlContent);
+}
+
 export async function sharePDFViaWhatsApp(pdfBlob: Blob, filename: string): Promise<void> {
   // Create a file from the blob
   const file = new File([pdfBlob], filename, { type: 'application/pdf' });

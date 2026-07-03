@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAccounting } from '@/contexts/AccountingContext';
-import { printReport, printSummaryReport } from '@/utils/printService';
-import { generateReportPDF, generateSummaryReportPDF, sharePDFViaWhatsApp } from '@/utils/pdfService';
+import { printReport, printSummaryReport, printReconciliationReport } from '@/utils/printService';
+import { generateReportPDF, generateSummaryReportPDF, generateReconciliationReportPDF, sharePDFViaWhatsApp } from '@/utils/pdfService';
 import { exportAnalyticalReportToExcel, exportSummaryReportToExcel } from '@/utils/excelExport';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { 
@@ -458,9 +458,52 @@ export function ReportsScreen() {
     return { ...t, balance: runningBalance };
   });
 
+  // Build reconciliation report data from displayed rows
+  const getReconciliationReportData = () => {
+    const filtered = reconciliations.filter(r =>
+      r.groupName === selectedGroup &&
+      (!selectedCurrency || selectedCurrency === 'all' || r.currency === selectedCurrency) &&
+      (!dateFrom || r.toDate >= dateFrom) &&
+      (!dateTo || r.toDate <= dateTo)
+    );
+    const rows = filtered.map(r => {
+      const acc = accounts.find(a => a.accountName === r.accountName);
+      return {
+        accountNumber: acc?.accountNumber || '-',
+        accountName: r.accountName,
+        currency: r.currency,
+        amount: r.amount,
+        toDate: r.toDate,
+      };
+    });
+    return {
+      rows,
+      totalAmount: rows.reduce((s, r) => s + r.amount, 0),
+      currencyName: selectedCurrency && selectedCurrency !== 'all'
+        ? getCurrencyFullName(selectedCurrency)
+        : undefined,
+    };
+  };
+
   const handlePrintReport = () => {
     if (!showReport) {
       toast.error('يرجى إنشاء التقرير أولاً');
+      return;
+    }
+
+    if (reportType === 'reconciliation') {
+      const { rows, totalAmount, currencyName } = getReconciliationReportData();
+      printReconciliationReport({
+        title: 'كشف المطابقة',
+        groupName: selectedGroup,
+        currencyName,
+        dateFrom,
+        dateTo,
+        rows,
+        totalAmount,
+        settings,
+      });
+      toast.success('جاري طباعة التقرير...');
       return;
     }
 
@@ -594,6 +637,23 @@ export function ReportsScreen() {
     toast.info('جاري إنشاء ملف PDF...');
 
     try {
+      if (reportType === 'reconciliation') {
+        const { rows, totalAmount, currencyName } = getReconciliationReportData();
+        const pdfBlob = await generateReconciliationReportPDF({
+          title: 'كشف المطابقة',
+          groupName: selectedGroup,
+          currencyName,
+          dateFrom,
+          dateTo,
+          rows,
+          totalAmount,
+          settings,
+        });
+        const filename = `كشف_مطابقة_${selectedGroup}_${new Date().toISOString().split('T')[0]}.pdf`;
+        await sharePDFViaWhatsApp(pdfBlob, filename);
+        toast.success('تم إنشاء ملف PDF وفتح واتساب');
+        return;
+      }
       if (reportType === 'summary') {
         // Generate summary report PDF
         if (!selectedGroup) {
@@ -681,7 +741,20 @@ export function ReportsScreen() {
       let pdfBlob: Blob;
       let filename: string;
 
-      if (reportType === 'summary') {
+      if (reportType === 'reconciliation') {
+        const { rows, totalAmount, currencyName } = getReconciliationReportData();
+        pdfBlob = await generateReconciliationReportPDF({
+          title: 'كشف المطابقة',
+          groupName: selectedGroup,
+          currencyName,
+          dateFrom,
+          dateTo,
+          rows,
+          totalAmount,
+          settings,
+        });
+        filename = `كشف_مطابقة_${selectedGroup}_${new Date().toISOString().split('T')[0]}.pdf`;
+      } else if (reportType === 'summary') {
         // Generate summary report PDF
         if (!selectedGroup) {
           toast.error('يرجى اختيار المجموعة');
@@ -809,6 +882,10 @@ export function ReportsScreen() {
     }
 
     try {
+      if (reportType === 'reconciliation') {
+        toast.info('استخدم زر PDF لتصدير كشف المطابقة');
+        return;
+      }
       if (reportType === 'summary') {
         // Export summary report to Excel
         if (!selectedGroup) {
