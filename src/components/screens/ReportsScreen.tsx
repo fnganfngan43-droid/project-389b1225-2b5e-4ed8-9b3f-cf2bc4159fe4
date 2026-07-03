@@ -1130,6 +1130,80 @@ export function ReportsScreen() {
         </CardContent>
       </Card>
 
+      {/* Reconciliation Report display */}
+      {showReport && reportType === 'reconciliation' && (() => {
+        const filtered = reconciliations.filter(r =>
+          r.groupName === selectedGroup &&
+          (!selectedCurrency || selectedCurrency === 'all' || r.currency === selectedCurrency) &&
+          (!dateFrom || r.toDate >= dateFrom) &&
+          (!dateTo || r.toDate <= dateTo)
+        );
+        return (
+          <Card className="animate-fade-in">
+            <CardHeader className="gradient-primary text-primary-foreground rounded-t-2xl">
+              <CardTitle className="text-center">
+                <p className="text-lg font-bold">كشف المطابقة</p>
+                <p className="text-sm opacity-80 mt-1">{selectedGroup}</p>
+                {selectedCurrency && selectedCurrency !== 'all' && (
+                  <p className="text-xs opacity-60 mt-1">العملة: {getCurrencyFullName(selectedCurrency)}</p>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-auto max-h-[70vh]">
+                <table className="w-full border-collapse text-xs text-black">
+                  <thead style={{ backgroundColor: '#87CEEB' }} className="sticky top-0">
+                    <tr>
+                      <th className="border border-black p-2 whitespace-nowrap">رقم الحساب</th>
+                      <th className="border border-black p-2 whitespace-nowrap">اسم الحساب</th>
+                      <th className="border border-black p-2 whitespace-nowrap">العملة</th>
+                      <th className="border border-black p-2 whitespace-nowrap text-left">المبلغ</th>
+                      <th className="border border-black p-2 whitespace-nowrap">إلى تاريخ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="text-center py-8 text-muted-foreground border border-black">
+                          <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                          <p>لا توجد مطابقات مطابقة للفلترة</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      filtered.map(r => {
+                        const acc = accounts.find(a => a.accountName === r.accountName);
+                        return (
+                          <tr key={r.id} className="hover:bg-secondary/30">
+                            <td className="border border-black p-2 whitespace-nowrap">{acc?.accountNumber || '-'}</td>
+                            <td className="border border-black p-2 whitespace-nowrap">{r.accountName}</td>
+                            <td className="border border-black p-2 whitespace-nowrap">{r.currency}</td>
+                            <td className={`border border-black p-2 whitespace-nowrap text-left font-bold ${r.amount >= 0 ? 'text-success' : 'text-destructive'}`}>
+                              {r.amount.toLocaleString()}
+                            </td>
+                            <td className="border border-black p-2 whitespace-nowrap">{r.toDate}</td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                  {filtered.length > 0 && (
+                    <tfoot>
+                      <tr className="bg-muted font-bold">
+                        <td colSpan={3} className="border border-black p-2">الإجمالي</td>
+                        <td className="border border-black p-2 text-left">
+                          {filtered.reduce((s, r) => s + r.amount, 0).toLocaleString()}
+                        </td>
+                        <td className="border border-black p-2"></td>
+                      </tr>
+                    </tfoot>
+                  )}
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })()}
+
       {/* Analytical Report display - All currencies */}
       {showReport && reportType === 'analytical' && selectedCurrency === 'all' && (
         <div className="space-y-4 animate-fade-in">
