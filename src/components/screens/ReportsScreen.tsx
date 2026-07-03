@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAccounting } from '@/contexts/AccountingContext';
-import { printReport, printSummaryReport } from '@/utils/printService';
-import { generateReportPDF, generateSummaryReportPDF, sharePDFViaWhatsApp } from '@/utils/pdfService';
+import { printReport, printSummaryReport, printReconciliationReport } from '@/utils/printService';
+import { generateReportPDF, generateSummaryReportPDF, generateReconciliationReportPDF, sharePDFViaWhatsApp } from '@/utils/pdfService';
 import { exportAnalyticalReportToExcel, exportSummaryReportToExcel } from '@/utils/excelExport';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { 
