@@ -986,6 +986,7 @@ export function ReportsScreen() {
                 <SelectContent>
                   <SelectItem value="analytical">كشف تحليلي</SelectItem>
                   <SelectItem value="summary">كشف إجمالي</SelectItem>
+                  <SelectItem value="reconciliation">كشف المطابقة</SelectItem>
                 </SelectContent>
               </Select>
             </div>
