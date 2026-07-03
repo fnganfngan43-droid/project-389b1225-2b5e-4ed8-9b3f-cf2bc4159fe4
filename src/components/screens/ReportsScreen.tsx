@@ -18,7 +18,7 @@ import {
 import { BarChart3, Eye, Printer, Share2, FileText, ArrowRight, CalendarIcon, MessageCircle, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
 
-type ReportType = 'analytical' | 'summary';
+type ReportType = 'analytical' | 'summary' | 'reconciliation';
 type OperationType = 'all' | 'opening' | 'receipt' | 'payment' | 'invoices' | 'returns' | 'discount' | 'exchange';
 type AmountFilterType = 'all' | 'less' | 'greater' | 'equal';
 
