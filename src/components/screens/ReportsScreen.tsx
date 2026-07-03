@@ -223,6 +223,10 @@ export function ReportsScreen() {
       toast.error('يرجى اختيار المجموعة');
       return;
     }
+    if (reportType === 'reconciliation' && !selectedGroup) {
+      toast.error('يرجى اختيار المجموعة');
+      return;
+    }
     setShowReport(true);
     toast.success('تم إنشاء التقرير بنجاح');
   };
