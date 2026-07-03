@@ -882,6 +882,10 @@ export function ReportsScreen() {
     }
 
     try {
+      if (reportType === 'reconciliation') {
+        toast.info('استخدم زر PDF لتصدير كشف المطابقة');
+        return;
+      }
       if (reportType === 'summary') {
         // Export summary report to Excel
         if (!selectedGroup) {
