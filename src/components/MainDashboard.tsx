@@ -15,6 +15,7 @@ import { AccountGroupManagementScreen } from '@/components/screens/AccountGroupM
 import { PasswordSettingsScreen } from '@/components/screens/PasswordSettingsScreen';
 import { InvoiceVoucherReportScreen } from '@/components/screens/InvoiceVoucherReportScreen';
 import { SetupScreen } from '@/components/screens/SetupScreen';
+import { OperationsScreen } from '@/components/screens/OperationsScreen';
 import { ReconciliationScreen } from '@/components/screens/ReconciliationScreen';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { ScreenType } from '@/types/accounting';
