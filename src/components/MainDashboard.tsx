@@ -100,6 +100,14 @@ export function MainDashboard() {
     );
   }
 
+  if (activeScreen === 'operations') {
+    return (
+      <div className="h-screen bg-background flex flex-col overflow-hidden">
+        <OperationsScreen onBack={() => setActiveScreen('reports')} />
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       <MainHeader 
