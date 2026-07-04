@@ -860,129 +860,63 @@ export function printReport({ title, accountName, currency, transactions, settin
 }
 
 export function printSummaryReport({ title, groupName, dateFrom, dateTo, currencyData, settings }: PrintSummaryReportData) {
-  // Build all account rows across all currencies for the table
-  const allAccountRows: string[] = [];
-  
-  currencyData.forEach(cd => {
-    cd.accounts.forEach(acc => {
-      allAccountRows.push(`
-        <tr>
-          <td>${e(acc.accountNumber)}</td>
-          <td style="text-align: right;">${e(acc.accountName)}</td>
-          <td style="text-align: center;">${e(cd.currency)}</td>
-          <td class="debit">${acc.totalDebit > 0 ? e(acc.totalDebit.toLocaleString()) : '-'}</td>
-          <td class="credit">${acc.totalCredit > 0 ? e(acc.totalCredit.toLocaleString()) : '-'}</td>
-          <td class="${acc.balance >= 0 ? 'balance-positive' : 'balance-negative'}">${e(acc.balance.toLocaleString())}</td>
-        </tr>
-      `);
-    });
-  });
-
-  // Build totals and balance summary for each currency
-  const currencySummaries = currencyData.map(cd => {
+  // Build a separate table for each currency
+  const currencyTables = currencyData.map(cd => {
     const isDebit = cd.totalBalance >= 0;
     const balanceLabel = isDebit ? 'عليكم رصيد' : 'لكم رصيد';
     const absBalance = Math.abs(cd.totalBalance);
+    const currencyName = getCurrencyFullName(cd.currency);
+
+    const rows = cd.accounts.map(acc => `
+      <tr>
+        <td>${e(acc.accountNumber)}</td>
+        <td style="text-align: right;">${e(acc.accountName)}</td>
+        <td style="text-align: center;">${e(cd.currency)}</td>
+        <td class="debit">${acc.totalDebit > 0 ? e(acc.totalDebit.toLocaleString()) : '-'}</td>
+        <td class="credit">${acc.totalCredit > 0 ? e(acc.totalCredit.toLocaleString()) : '-'}</td>
+        <td class="${acc.balance >= 0 ? 'balance-positive' : 'balance-negative'}">${e(acc.balance.toLocaleString())}</td>
+      </tr>
+    `).join('');
 
     return `
-      <tr class="totals-row">
-        <td colspan="3">إجمالي ${e(getCurrencyFullName(cd.currency))}</td>
-        <td class="debit">${e(cd.totalDebit.toLocaleString())}</td>
-        <td class="credit">${e(cd.totalCredit.toLocaleString())}</td>
-        <td class="${cd.totalBalance >= 0 ? 'balance-positive' : 'balance-negative'}">${e(cd.totalBalance.toLocaleString())}</td>
-      </tr>
-      <tr>
-        <td colspan="6" style="background: #f0fdfa; text-align: center; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
-          ${e(balanceLabel)}: ${e(absBalance.toLocaleString())} ${e(getCurrencyFullName(cd.currency))}
-        </td>
-      </tr>
-      <tr>
-        <td colspan="6" style="background: #f8fafc; text-align: center; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
-          ${e(balanceLabel)}: ${e(numberToArabicWords(absBalance))} ${e(getCurrencyFullName(cd.currency))}
-        </td>
-      </tr>
-    `;
-  }).join('');
-
-  const printContent = `
-    <!DOCTYPE html>
-    <html lang="ar" dir="rtl">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${e(title)} - ${e(groupName)}</title>
-      <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-      <style>
-        ${getCommonStyles()}
-        ${getReportPrintStyles()}
-      </style>
-    </head>
-    <body>
-      <!-- Page border frame - fixed position appears on every printed page -->
-      <div class="page-frame"></div>
-      
-      <div class="page-border">
-      <div class="print-container">
-        <table class="print-doc">
-          <!-- THEAD: الترويسة + معلومات التقرير - تتكرر في كل صفحة -->
+      <div style="margin-bottom: 20px;">
+        <div style="background: #87CEEB; text-align: center; font-weight: bold; padding: 8px; border: 1px solid #000; font-size: 14px;">
+          ${e(currencyName)}
+        </div>
+        <table class="report-table" style="margin-top: 0;">
           <thead>
             <tr>
-              <td>
-                ${buildHeaderBlock(settings)}
-                <div class="report-info-wrapper">
-                  <div class="voucher-type">${e(title)}</div>
-                  <div class="info-row">
-                    <span class="info-label">المجموعة:</span>
-                    <span class="info-value">${e(groupName)}</span>
-                  </div>
-                  <div class="info-row">
-                    <span class="info-label">الفترة:</span>
-                    <span class="info-value">من ${e(dateFrom)} إلى ${e(dateTo)}</span>
-                  </div>
-                </div>
-              </td>
+              <th>رقم الحساب</th>
+              <th>اسم الحساب</th>
+              <th>العملة</th>
+              <th>مدين</th>
+              <th>دائن</th>
+              <th>الرصيد</th>
             </tr>
           </thead>
-
-          <!-- TFOOT: تذييل الصفحة مع ترقيم - يتكرر في كل صفحة -->
-          <tfoot>
+          <tbody>
+            ${rows}
+            <tr class="totals-row">
+              <td colspan="3">إجمالي ${e(currencyName)}</td>
+              <td class="debit">${e(cd.totalDebit.toLocaleString())}</td>
+              <td class="credit">${e(cd.totalCredit.toLocaleString())}</td>
+              <td class="${cd.totalBalance >= 0 ? 'balance-positive' : 'balance-negative'}">${e(cd.totalBalance.toLocaleString())}</td>
+            </tr>
             <tr>
-              <td>
-                <div class="page-footer-content">
-                  <span>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}</span>
-                  <span style="margin: 0 15px;">|</span>
-                  <span class="page-number-text">صفحة <span class="current-page"></span> من <span class="total-pages"></span></span>
-                </div>
+              <td colspan="6" style="background: #f0fdfa; text-align: center; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+                ${e(balanceLabel)}: ${e(absBalance.toLocaleString())} ${e(currencyName)}
               </td>
             </tr>
-          </tfoot>
-
-          <tbody>
             <tr>
-              <td>
-                <div class="content" style="padding: 10px 15px;">
-                  ${currencyData.length > 0 ? `
-                  <table class="report-table">
-                    <thead>
-                      <tr>
-                        <th>رقم الحساب</th>
-                        <th>اسم الحساب</th>
-                        <th>العملة</th>
-                        <th>مدين</th>
-                        <th>دائن</th>
-                        <th>الرصيد</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${allAccountRows.join('')}
-                      ${currencySummaries}
-                    </tbody>
-                  </table>
-                  ` : `
-                  <div style="text-align: center; padding: 40px; color: #666;">
-                    لا توجد حسابات لهذه المجموعة
-                  </div>
-                  `}
+              <td colspan="6" style="background: #f8fafc; text-align: center; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+                ${e(balanceLabel)}: ${e(numberToArabicWords(absBalance))} ${e(currencyName)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+  }).join('');
 
                   ${settings.footerNote ? `
                   <div style="text-align: center; padding: 12px; margin: 15px 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
