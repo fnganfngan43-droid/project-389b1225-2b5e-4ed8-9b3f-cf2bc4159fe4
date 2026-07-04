@@ -860,47 +860,61 @@ export function printReport({ title, accountName, currency, transactions, settin
 }
 
 export function printSummaryReport({ title, groupName, dateFrom, dateTo, currencyData, settings }: PrintSummaryReportData) {
-  // Build all account rows across all currencies for the table
-  const allAccountRows: string[] = [];
-  
-  currencyData.forEach(cd => {
-    cd.accounts.forEach(acc => {
-      allAccountRows.push(`
-        <tr>
-          <td>${e(acc.accountNumber)}</td>
-          <td style="text-align: right;">${e(acc.accountName)}</td>
-          <td style="text-align: center;">${e(cd.currency)}</td>
-          <td class="debit">${acc.totalDebit > 0 ? e(acc.totalDebit.toLocaleString()) : '-'}</td>
-          <td class="credit">${acc.totalCredit > 0 ? e(acc.totalCredit.toLocaleString()) : '-'}</td>
-          <td class="${acc.balance >= 0 ? 'balance-positive' : 'balance-negative'}">${e(acc.balance.toLocaleString())}</td>
-        </tr>
-      `);
-    });
-  });
-
-  // Build totals and balance summary for each currency
-  const currencySummaries = currencyData.map(cd => {
+  // Build a separate table for each currency
+  const currencyTables = currencyData.map(cd => {
     const isDebit = cd.totalBalance >= 0;
     const balanceLabel = isDebit ? 'عليكم رصيد' : 'لكم رصيد';
     const absBalance = Math.abs(cd.totalBalance);
+    const currencyName = getCurrencyFullName(cd.currency);
+
+    const rows = cd.accounts.map(acc => `
+      <tr>
+        <td>${e(acc.accountNumber)}</td>
+        <td style="text-align: right;">${e(acc.accountName)}</td>
+        <td style="text-align: center;">${e(cd.currency)}</td>
+        <td class="debit">${acc.totalDebit > 0 ? e(acc.totalDebit.toLocaleString()) : '-'}</td>
+        <td class="credit">${acc.totalCredit > 0 ? e(acc.totalCredit.toLocaleString()) : '-'}</td>
+        <td class="${acc.balance >= 0 ? 'balance-positive' : 'balance-negative'}">${e(acc.balance.toLocaleString())}</td>
+      </tr>
+    `).join('');
 
     return `
-      <tr class="totals-row">
-        <td colspan="3">إجمالي ${e(getCurrencyFullName(cd.currency))}</td>
-        <td class="debit">${e(cd.totalDebit.toLocaleString())}</td>
-        <td class="credit">${e(cd.totalCredit.toLocaleString())}</td>
-        <td class="${cd.totalBalance >= 0 ? 'balance-positive' : 'balance-negative'}">${e(cd.totalBalance.toLocaleString())}</td>
-      </tr>
-      <tr>
-        <td colspan="6" style="background: #f0fdfa; text-align: center; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
-          ${e(balanceLabel)}: ${e(absBalance.toLocaleString())} ${e(getCurrencyFullName(cd.currency))}
-        </td>
-      </tr>
-      <tr>
-        <td colspan="6" style="background: #f8fafc; text-align: center; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
-          ${e(balanceLabel)}: ${e(numberToArabicWords(absBalance))} ${e(getCurrencyFullName(cd.currency))}
-        </td>
-      </tr>
+      <div style="margin-bottom: 20px;">
+        <div style="background: #87CEEB; text-align: center; font-weight: bold; padding: 8px; border: 1px solid #000; font-size: 14px;">
+          ${e(currencyName)}
+        </div>
+        <table class="report-table" style="margin-top: 0;">
+          <thead>
+            <tr>
+              <th>رقم الحساب</th>
+              <th>اسم الحساب</th>
+              <th>العملة</th>
+              <th>مدين</th>
+              <th>دائن</th>
+              <th>الرصيد</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+            <tr class="totals-row">
+              <td colspan="3">إجمالي ${e(currencyName)}</td>
+              <td class="debit">${e(cd.totalDebit.toLocaleString())}</td>
+              <td class="credit">${e(cd.totalCredit.toLocaleString())}</td>
+              <td class="${cd.totalBalance >= 0 ? 'balance-positive' : 'balance-negative'}">${e(cd.totalBalance.toLocaleString())}</td>
+            </tr>
+            <tr>
+              <td colspan="6" style="background: #f0fdfa; text-align: center; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+                ${e(balanceLabel)}: ${e(absBalance.toLocaleString())} ${e(currencyName)}
+              </td>
+            </tr>
+            <tr>
+              <td colspan="6" style="background: #f8fafc; text-align: center; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+                ${e(balanceLabel)}: ${e(numberToArabicWords(absBalance))} ${e(currencyName)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     `;
   }).join('');
 
@@ -918,13 +932,10 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
       </style>
     </head>
     <body>
-      <!-- Page border frame - fixed position appears on every printed page -->
       <div class="page-frame"></div>
-      
       <div class="page-border">
       <div class="print-container">
         <table class="print-doc">
-          <!-- THEAD: الترويسة + معلومات التقرير - تتكرر في كل صفحة -->
           <thead>
             <tr>
               <td>
@@ -943,8 +954,6 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
               </td>
             </tr>
           </thead>
-
-          <!-- TFOOT: تذييل الصفحة مع ترقيم - يتكرر في كل صفحة -->
           <tfoot>
             <tr>
               <td>
@@ -956,29 +965,11 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
               </td>
             </tr>
           </tfoot>
-
           <tbody>
             <tr>
               <td>
                 <div class="content" style="padding: 10px 15px;">
-                  ${currencyData.length > 0 ? `
-                  <table class="report-table">
-                    <thead>
-                      <tr>
-                        <th>رقم الحساب</th>
-                        <th>اسم الحساب</th>
-                        <th>العملة</th>
-                        <th>مدين</th>
-                        <th>دائن</th>
-                        <th>الرصيد</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${allAccountRows.join('')}
-                      ${currencySummaries}
-                    </tbody>
-                  </table>
-                  ` : `
+                  ${currencyData.length > 0 ? currencyTables : `
                   <div style="text-align: center; padding: 40px; color: #666;">
                     لا توجد حسابات لهذه المجموعة
                   </div>
