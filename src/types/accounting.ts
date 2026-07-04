@@ -142,4 +142,5 @@ export type ScreenType =
   | 'password-settings'
   | 'invoice-voucher-report'
   | 'reconciliation'
-  | 'setup';
+  | 'setup'
+  | 'operations';
