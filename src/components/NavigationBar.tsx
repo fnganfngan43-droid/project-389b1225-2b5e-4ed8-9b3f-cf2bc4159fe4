@@ -1,17 +1,11 @@
 import { cn } from '@/lib/utils';
 import { ScreenType } from '@/types/accounting';
-import { 
-  ShoppingCart, 
-  Receipt, 
-  CreditCard, 
-  BookOpen, 
-  FileText,
+import {
   BarChart3,
-  Percent,
-  RotateCcw,
-  ArrowLeftRight,
   Settings as SettingsIcon,
-  CheckSquare
+  CheckSquare,
+  FileText,
+  Wrench,
 } from 'lucide-react';
 
 interface NavigationBarProps {
@@ -20,16 +14,9 @@ interface NavigationBarProps {
 }
 
 const navItems: { id: ScreenType; label: string; icon: React.ElementType }[] = [
-  { id: 'sales', label: 'المبيعات', icon: ShoppingCart },
   { id: 'setup', label: 'التهيئة', icon: SettingsIcon },
-  { id: 'payment', label: 'سند صرف', icon: CreditCard },
-  { id: 'receipt', label: 'سند قبض', icon: Receipt },
-  { id: 'opening-balance', label: 'الأرصدة الافتتاحية', icon: BookOpen },
-  { id: 'chart-of-accounts', label: 'الدليل المحاسبي', icon: FileText },
+  { id: 'operations', label: 'العمليات', icon: Wrench },
   { id: 'reports', label: 'التقارير', icon: BarChart3 },
-  { id: 'discount', label: 'الخصم', icon: Percent },
-  { id: 'sales-return', label: 'مرتجع المبيعات', icon: RotateCcw },
-  { id: 'currency-exchange', label: 'صرف عملة', icon: ArrowLeftRight },
   { id: 'invoice-voucher-report', label: 'تقرير الفواتير', icon: FileText },
   { id: 'reconciliation', label: 'المطابقات', icon: CheckSquare },
 ];
