@@ -918,6 +918,63 @@ export function printSummaryReport({ title, groupName, dateFrom, dateTo, currenc
     `;
   }).join('');
 
+  const printContent = `
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${e(title)} - ${e(groupName)}</title>
+      <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+      <style>
+        ${getCommonStyles()}
+        ${getReportPrintStyles()}
+      </style>
+    </head>
+    <body>
+      <div class="page-frame"></div>
+      <div class="page-border">
+      <div class="print-container">
+        <table class="print-doc">
+          <thead>
+            <tr>
+              <td>
+                ${buildHeaderBlock(settings)}
+                <div class="report-info-wrapper">
+                  <div class="voucher-type">${e(title)}</div>
+                  <div class="info-row">
+                    <span class="info-label">المجموعة:</span>
+                    <span class="info-value">${e(groupName)}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">الفترة:</span>
+                    <span class="info-value">من ${e(dateFrom)} إلى ${e(dateTo)}</span>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </thead>
+          <tfoot>
+            <tr>
+              <td>
+                <div class="page-footer-content">
+                  <span>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}</span>
+                  <span style="margin: 0 15px;">|</span>
+                  <span class="page-number-text">صفحة <span class="current-page"></span> من <span class="total-pages"></span></span>
+                </div>
+              </td>
+            </tr>
+          </tfoot>
+          <tbody>
+            <tr>
+              <td>
+                <div class="content" style="padding: 10px 15px;">
+                  ${currencyData.length > 0 ? currencyTables : `
+                  <div style="text-align: center; padding: 40px; color: #666;">
+                    لا توجد حسابات لهذه المجموعة
+                  </div>
+                  `}
+
                   ${settings.footerNote ? `
                   <div style="text-align: center; padding: 12px; margin: 15px 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
                     <span style="font-size: 13px; color: #333; font-weight: 500;">${e(settings.footerNote)}</span>
