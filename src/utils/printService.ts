@@ -441,8 +441,8 @@ const getCommonStyles = () => `
       font-size: 10px;
     }
     .report-header-wrapper .header-center img {
-      max-width: 50px;
-      max-height: 50px;
+      max-width: 65px;
+      max-height: 65px;
     }
     
     /* Report info section - compact */
