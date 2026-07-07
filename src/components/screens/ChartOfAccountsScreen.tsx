@@ -251,7 +251,8 @@ export function ChartOfAccountsScreen() {
       <div className="flex-1 overflow-auto p-4 space-y-4">
         {/* Add/Edit Form */}
         {isAdding && (
-          <Card className="animate-slide-up border-2 border-primary/20">
+          <div className="fixed inset-0 z-50 bg-black/60 overflow-y-auto flex items-start justify-center p-4 animate-in fade-in">
+          <Card className="animate-slide-up border-2 border-primary/20 w-full max-w-4xl mt-4 mb-4 shadow-2xl">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
               {editingAccount ? 'تعديل حساب' : 'إضافة حساب جديد'}
@@ -356,6 +357,7 @@ export function ChartOfAccountsScreen() {
             </Button>
             </CardContent>
           </Card>
+        </div>
         )}
 
         {/* Accounts Table */}
