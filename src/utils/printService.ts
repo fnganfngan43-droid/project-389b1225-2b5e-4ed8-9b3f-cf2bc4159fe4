@@ -302,7 +302,7 @@ const getCommonStyles = () => `
   .report-table td {
     padding: 10px 8px;
     border: 1px solid #000;
-    font-size: 12px;
+    font-size: 13px;
     text-align: center;
     color: #000000;
   }
@@ -313,19 +313,19 @@ const getCommonStyles = () => `
     background: #f0fdfa;
   }
   .report-table .debit {
-    color: #16a34a;
+    color: #000000;
     font-weight: bold;
   }
   .report-table .credit {
-    color: #dc2626;
+    color: #000000;
     font-weight: bold;
   }
   .report-table .balance-positive {
-    color: #16a34a;
+    color: #000000;
     font-weight: bold;
   }
   .report-table .balance-negative {
-    color: #dc2626;
+    color: #000000;
     font-weight: bold;
   }
   .previous-balance-row {
@@ -549,7 +549,7 @@ const getReportPrintStyles = () => `
     background: #87CEEB;
     color: #000000;
     padding: 10px 6px;
-    font-size: 12px;
+    font-size: 13px;
     text-align: center;
     border: 1px solid #000;
     font-weight: bold;
@@ -557,7 +557,7 @@ const getReportPrintStyles = () => `
   .report-table td {
     padding: 8px 6px;
     border: 1px solid #000;
-    font-size: 11px;
+    font-size: 13px;
     text-align: center;
     color: #000000;
   }
@@ -565,25 +565,25 @@ const getReportPrintStyles = () => `
     background: #f9fafb;
   }
   .report-table .debit {
-    color: #16a34a;
+    color: #000000;
     font-weight: bold;
   }
   .report-table .credit {
-    color: #dc2626;
+    color: #000000;
     font-weight: bold;
   }
   .report-table .balance-positive {
-    color: #16a34a;
+    color: #000000;
     font-weight: bold;
   }
   .report-table .balance-negative {
-    color: #dc2626;
+    color: #000000;
     font-weight: bold;
   }
   .totals-row {
     background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%) !important;
     font-weight: bold;
-    font-size: 12px !important;
+    font-size: 13px !important;
   }
   .totals-row td {
     border-top: 2px solid #0d9488 !important;
