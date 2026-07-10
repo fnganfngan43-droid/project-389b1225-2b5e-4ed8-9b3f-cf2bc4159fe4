@@ -313,19 +313,19 @@ const getCommonStyles = () => `
     background: #f0fdfa;
   }
   .report-table .debit {
-    color: #16a34a;
+    color: #000000;
     font-weight: bold;
   }
   .report-table .credit {
-    color: #dc2626;
+    color: #000000;
     font-weight: bold;
   }
   .report-table .balance-positive {
-    color: #16a34a;
+    color: #000000;
     font-weight: bold;
   }
   .report-table .balance-negative {
-    color: #dc2626;
+    color: #000000;
     font-weight: bold;
   }
   .previous-balance-row {
@@ -565,19 +565,19 @@ const getReportPrintStyles = () => `
     background: #f9fafb;
   }
   .report-table .debit {
-    color: #16a34a;
+    color: #000000;
     font-weight: bold;
   }
   .report-table .credit {
-    color: #dc2626;
+    color: #000000;
     font-weight: bold;
   }
   .report-table .balance-positive {
-    color: #16a34a;
+    color: #000000;
     font-weight: bold;
   }
   .report-table .balance-negative {
-    color: #dc2626;
+    color: #000000;
     font-weight: bold;
   }
   .totals-row {

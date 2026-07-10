@@ -258,12 +258,12 @@ const getReportHTML = (data: ReportPDFData): string => {
         <!-- Balance Section -->
         <div data-pdf-section="balance" style="padding: 10px 25px;">
           <div style="padding: 15px; background: #f0fdfa; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 10px;">
-            <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+            <span style="font-size: 14px; font-weight: bold; color: #000000;">
               ${e(balanceLabel)}: ${e(absBalance.toLocaleString())} ${e(getCurrencyFullName(currency))}
             </span>
           </div>
           <div style="padding: 15px; background: #f8fafc; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 10px;">
-            <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+            <span style="font-size: 14px; font-weight: bold; color: #000000;">
               ${e(balanceLabel)}: ${e(numberToArabicWords(absBalance))} ${e(getCurrencyFullName(currency))}
             </span>
           </div>
@@ -309,11 +309,11 @@ const getSummaryReportHTML = (data: SummaryPDFData): string => {
       <div data-pdf-section="row-${ci}-${ai}" style="width: 100%;">
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
-            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #000;">${e(acc.accountNumber)}</td>
-            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: right; color: #000;">${e(acc.accountName)}</td>
-            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #16a34a; font-weight: bold;">${acc.totalDebit > 0 ? e(acc.totalDebit.toLocaleString()) : '-'}</td>
-            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #dc2626; font-weight: bold;">${acc.totalCredit > 0 ? e(acc.totalCredit.toLocaleString()) : '-'}</td>
-            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: ${acc.balance >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold;">${e(acc.balance.toLocaleString())}</td>
+            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: center; color: #000;">${e(acc.accountNumber)}</td>
+            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: right; color: #000;">${e(acc.accountName)}</td>
+            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: center; color: #000000; font-weight: bold;">${acc.totalDebit > 0 ? e(acc.totalDebit.toLocaleString()) : '-'}</td>
+            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: center; color: #000000; font-weight: bold;">${acc.totalCredit > 0 ? e(acc.totalCredit.toLocaleString()) : '-'}</td>
+            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: center; color: #000000; font-weight: bold;">${e(acc.balance.toLocaleString())}</td>
           </tr>
         </table>
       </div>
@@ -355,12 +355,12 @@ const getSummaryReportHTML = (data: SummaryPDFData): string => {
       
       <div data-pdf-section="balance-${ci}" style="padding: 10px 25px;">
         <div style="padding: 15px; background: #f0fdfa; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 10px;">
-          <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+          <span style="font-size: 14px; font-weight: bold; color: #000000;">
             ${e(balanceLabel)}: ${e(absBalance.toLocaleString())} ${e(getCurrencyFullName(cd.currency))}
           </span>
         </div>
         <div style="padding: 15px; background: #f8fafc; border: 2px solid #0d9488; border-radius: 8px; text-align: center;">
-          <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+          <span style="font-size: 14px; font-weight: bold; color: #000000;">
             ${e(balanceLabel)}: ${e(numberToArabicWords(absBalance))} ${e(getCurrencyFullName(cd.currency))}
           </span>
         </div>
@@ -472,11 +472,11 @@ const getReconciliationReportHTML = (data: ReconciliationPDFData): string => {
     <div data-pdf-section="row-${i}" style="width: 100%;">
       <table style="width: 100%; border-collapse: collapse;">
         <tr>
-          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #000;">${e(r.accountNumber || '-')}</td>
-          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: right; color: #000;">${e(r.accountName)}</td>
-          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #000;">${e(r.currency)}</td>
-          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: ${r.amount >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold;">${e(r.amount.toLocaleString())}</td>
-          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #000;">${e(r.toDate)}</td>
+          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: center; color: #000;">${e(r.accountNumber || '-')}</td>
+          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: right; color: #000;">${e(r.accountName)}</td>
+          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: center; color: #000;">${e(r.currency)}</td>
+          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: center; color: #000000; font-weight: bold;">${e(r.amount.toLocaleString())}</td>
+          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: center; color: #000;">${e(r.toDate)}</td>
         </tr>
       </table>
     </div>
