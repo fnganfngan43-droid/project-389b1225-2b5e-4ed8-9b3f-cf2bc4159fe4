@@ -170,14 +170,14 @@ const getReportHTML = (data: ReportPDFData): string => {
 
   const tableHeaderHTML = `
     <tr>
-      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">التاريخ</th>
-      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">النوع</th>
-      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">رقم المستند</th>
-      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">البيان</th>
-      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">المرجع</th>
-      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">مدين</th>
-      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">دائن</th>
-      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">الرصيد</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">التاريخ</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">النوع</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">رقم المستند</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">البيان</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">المرجع</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">مدين</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">دائن</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">الرصيد</th>
     </tr>
   `;
 
@@ -329,11 +329,11 @@ const getSummaryReportHTML = (data: SummaryPDFData): string => {
       <div data-pdf-section="table-header" style="width: 100%; padding: 0 25px;">
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
-            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">رقم الحساب</th>
-            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">اسم الحساب</th>
-            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">مدين</th>
-            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">دائن</th>
-            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">الرصيد</th>
+            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">رقم الحساب</th>
+            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">اسم الحساب</th>
+            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">مدين</th>
+            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">دائن</th>
+            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">الرصيد</th>
           </tr>
         </table>
       </div>
@@ -522,11 +522,11 @@ const getReconciliationReportHTML = (data: ReconciliationPDFData): string => {
         <div data-pdf-section="table-header" style="width: 100%; padding: 0 25px;">
           <table style="width: 100%; border-collapse: collapse;">
             <tr>
-              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">رقم الحساب</th>
-              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">اسم الحساب</th>
-              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">العملة</th>
-              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">المبلغ</th>
-              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">إلى تاريخ</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">رقم الحساب</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">اسم الحساب</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">العملة</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">المبلغ</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">إلى تاريخ</th>
             </tr>
           </table>
         </div>
