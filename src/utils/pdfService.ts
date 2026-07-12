@@ -190,7 +190,7 @@ const getReportHTML = (data: ReportPDFData): string => {
           <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(t.date)}</td>
           <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626; font-weight: bold;' : ''}">${e(t.type)}</td>
           <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(stripLeadingZeros(t.documentNumber))}</td>
-          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(t.description)}</td>
+          <td style="padding: 8px; border: 1px solid #000; text-align: center; font-size: 13px; color: #000000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(t.description)}</td>
           <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;">${e(t.reference || '-')}</td>
           <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #16a34a; font-weight: bold;">${t.debit > 0 ? e(t.debit.toLocaleString()) : '-'}</td>
           <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #dc2626; font-weight: bold;">${t.credit > 0 ? e(t.credit.toLocaleString()) : '-'}</td>
