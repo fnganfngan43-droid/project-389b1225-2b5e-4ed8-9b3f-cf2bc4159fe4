@@ -291,13 +291,16 @@ const getCommonStyles = () => `
     margin: 20px 0;
   }
   .report-table th {
-    background: #87CEEB;
-    color: #000000;
+    background: #87CEEB !important;
+    color: #000000 !important;
     padding: 12px 8px;
-    font-size: 13px;
+    font-size: 14px;
     text-align: center;
     border: 1px solid #000;
     font-weight: bold;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
   .report-table td {
     padding: 10px 8px;
