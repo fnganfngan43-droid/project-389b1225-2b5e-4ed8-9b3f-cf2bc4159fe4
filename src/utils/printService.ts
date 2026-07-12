@@ -372,6 +372,12 @@ const getCommonStyles = () => `
   
   @media print {
     body { padding: 0; margin: 0; }
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+    
     
     @page { 
       size: A4;
