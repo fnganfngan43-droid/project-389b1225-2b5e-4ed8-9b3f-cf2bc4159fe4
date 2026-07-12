@@ -549,13 +549,16 @@ const getReportPrintStyles = () => `
     margin: 10px 0;
   }
   .report-table th {
-    background: #87CEEB;
-    color: #000000;
+    background: #87CEEB !important;
+    color: #000000 !important;
     padding: 10px 6px;
-    font-size: 13px;
+    font-size: 14px;
     text-align: center;
     border: 1px solid #000;
     font-weight: bold;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
   .report-table td {
     padding: 8px 6px;
