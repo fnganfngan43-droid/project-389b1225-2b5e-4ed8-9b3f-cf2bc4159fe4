@@ -38,6 +38,15 @@ export function WelcomeScreen() {
     setEnteredPassword('');
   };
 
+  const handleExit = () => {
+    try {
+      window.close();
+    } catch {
+      // ignore
+    }
+    toast.info('يرجى إغلاق التطبيق يدوياً إذا لم يغلق تلقائياً');
+  };
+
   return (
     <div className="min-h-screen gradient-primary flex flex-col items-center justify-center p-6 relative overflow-hidden">
       {/* Background decoration */}
