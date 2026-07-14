@@ -93,16 +93,27 @@ export function WelcomeScreen() {
         {!isLoggedIn ? (
           <>
             {!showPasswordInput ? (
-              <Button
-                onClick={handleLoginClick}
-                size="xl"
-                variant="accent"
-                className="w-full"
-              >
-                <LogIn className="w-5 h-5" />
-                الدخول
-                {password && <Lock className="w-4 h-4 mr-2" />}
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleLoginClick}
+                  size="xl"
+                  variant="accent"
+                  className="flex-1"
+                >
+                  <LogIn className="w-5 h-5" />
+                  الدخول
+                  {password && <Lock className="w-4 h-4 mr-2" />}
+                </Button>
+                <Button
+                  onClick={handleExit}
+                  size="xl"
+                  variant="outline"
+                  className="flex-1 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
+                >
+                  <LogOut className="w-5 h-5" />
+                  خروج
+                </Button>
+              </div>
             ) : (
               <div className="space-y-4 animate-slide-up">
                 <div className="p-4 bg-card/10 backdrop-blur-sm rounded-xl border border-primary-foreground/20">
