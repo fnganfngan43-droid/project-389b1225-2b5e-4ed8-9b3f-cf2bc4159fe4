@@ -12,6 +12,8 @@ import { parseExcelFile, mapVoucherRow } from '@/utils/excelImport';
 import { findClosestMatch } from '@/utils/fuzzyMatch';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { getNextSequentialNumber } from '@/utils/sequentialNumber';
+import { sortByNumberDesc } from '@/lib/utils';
+
 import { 
   Select,
   SelectContent,
@@ -791,8 +793,9 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
         {/* Vouchers Table */}
         <div className="min-h-[300px]">
           <ScrollableTable
-          data={filteredVouchers}
+          data={sortByNumberDesc(filteredVouchers, v => v.voucherNumber)}
           columns={[
+
             {
               key: 'voucherNumber',
               header: 'رقم السند',

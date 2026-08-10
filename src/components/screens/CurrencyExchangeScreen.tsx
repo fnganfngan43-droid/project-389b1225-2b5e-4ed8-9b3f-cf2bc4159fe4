@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
+import { sortByNumberDesc } from '@/lib/utils';
+
 import { 
   Select,
   SelectContent,
@@ -430,7 +432,7 @@ export function CurrencyExchangeScreen() {
         {/* Exchanges Table */}
         <div className="min-h-[300px]">
           <ScrollableTable
-          data={filteredExchanges}
+          data={sortByNumberDesc(filteredExchanges, e => e.exchangeNumber)}
           columns={columns}
           onRowClick={(exchange) => setSelectedExchange(selectedExchange?.id === exchange.id ? null : exchange)}
           selectedId={selectedExchange?.id}
@@ -440,6 +442,7 @@ export function CurrencyExchangeScreen() {
             emptyDescription="اضغط على 'إضافة' لإنشاء عملية صرف جديدة"
           />
         </div>
+
       </div>
 
       <DuplicateReferenceDialog
