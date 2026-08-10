@@ -432,7 +432,7 @@ export function CurrencyExchangeScreen() {
         {/* Exchanges Table */}
         <div className="min-h-[300px]">
           <ScrollableTable
-          data={filteredExchanges}
+          data={sortByNumberDesc(filteredExchanges, e => e.exchangeNumber)}
           columns={columns}
           onRowClick={(exchange) => setSelectedExchange(selectedExchange?.id === exchange.id ? null : exchange)}
           selectedId={selectedExchange?.id}
@@ -442,6 +442,7 @@ export function CurrencyExchangeScreen() {
             emptyDescription="اضغط على 'إضافة' لإنشاء عملية صرف جديدة"
           />
         </div>
+
       </div>
 
       <DuplicateReferenceDialog

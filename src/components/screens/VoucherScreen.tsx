@@ -793,8 +793,9 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
         {/* Vouchers Table */}
         <div className="min-h-[300px]">
           <ScrollableTable
-          data={filteredVouchers}
+          data={sortByNumberDesc(filteredVouchers, v => v.voucherNumber)}
           columns={[
+
             {
               key: 'voucherNumber',
               header: 'رقم السند',

@@ -459,7 +459,7 @@ export function DiscountScreen() {
         {/* Discounts Table */}
         <div className="min-h-[300px]">
           <ScrollableTable
-          data={filteredDiscounts}
+          data={sortByNumberDesc(filteredDiscounts, d => d.discountNumber)}
           columns={columns}
           onRowClick={(discount) => setSelectedDiscount(selectedDiscount?.id === discount.id ? null : discount)}
           selectedId={selectedDiscount?.id}
@@ -469,6 +469,7 @@ export function DiscountScreen() {
             emptyDescription="اضغط على 'إضافة' لإنشاء خصم جديد"
           />
         </div>
+
       </div>
 
       <DuplicateReferenceDialog

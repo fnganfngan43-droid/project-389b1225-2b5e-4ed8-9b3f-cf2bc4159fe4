@@ -445,7 +445,7 @@ export function ReconciliationScreen() {
 
         <div className="min-h-[300px]">
           <ScrollableTable
-            data={filtered}
+            data={sortByNumberDesc(filtered, r => r.reconciliationNumber)}
             columns={columns}
             onRowClick={(r) =>
               setSelectedItem(selectedItem?.id === r.id ? null : r)
@@ -459,6 +459,7 @@ export function ReconciliationScreen() {
             emptyDescription="اضغط على 'إضافة' لإنشاء مطابقة جديدة"
           />
         </div>
+
       </div>
     </div>
   );
