@@ -9,6 +9,8 @@ import { findClosestMatch } from '@/utils/fuzzyMatch';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { getNextSequentialNumber } from '@/utils/sequentialNumber';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
+import { sortByNumberDesc } from '@/lib/utils';
+
 
 import { DiscountEntry } from '@/types/accounting';
 import { 

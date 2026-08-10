@@ -6,6 +6,8 @@ import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { getNextSequentialNumber } from '@/utils/sequentialNumber';
+import { sortByNumberDesc } from '@/lib/utils';
+
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 import { Reconciliation } from '@/types/accounting';
 import { parseExcelFile } from '@/utils/excelImport';

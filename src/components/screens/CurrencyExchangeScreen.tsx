@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
+import { sortByNumberDesc } from '@/lib/utils';
+
 import { 
   Select,
   SelectContent,
