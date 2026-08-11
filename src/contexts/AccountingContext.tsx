@@ -163,6 +163,7 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
     userName: 'المستخدم',
     headerArabic: ['رفيق المحاسب', 'برنامج محاسبي متكامل', 'إدارة الحسابات بسهولة'],
     headerEnglish: ['Accountant Companion', 'Integrated Accounting System', 'Easy Account Management'],
+    footerNote: 'هذا السند إلكتروني لا يحتاج إلى ختم',
   });
 
   const [accounts, setAccounts] = useState<Account[]>(initialAccounts);
