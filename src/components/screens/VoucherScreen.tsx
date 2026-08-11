@@ -39,7 +39,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
   const [editingVoucher, setEditingVoucher] = useState<Voucher | null>(null);
 
   const handlePrint = (voucher: Voucher) => {
-    printVoucher({ voucher, settings });
+    printVoucher({ voucher, settings, accounts });
     toast.success('جاري طباعة السند...');
   };
 
