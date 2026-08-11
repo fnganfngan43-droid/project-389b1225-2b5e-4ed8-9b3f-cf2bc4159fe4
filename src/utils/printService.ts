@@ -636,15 +636,10 @@ export function printVoucher({ voucher, settings, accounts = [] }: PrintVoucherD
   const findNumber = (name?: string) =>
     accounts.find(a => a.accountName === name)?.accountNumber || '';
 
-  // Analytic lines (voucher items): debit side + credit side
+  // Analytic lines (voucher items): credit side only
   const items = [
     {
-      accountName: voucher.debitAccountName || voucher.accountName || '',
-      description: voucher.debitDescription || description,
-      amount: voucher.debitAmount || voucher.amount || 0,
-    },
-    {
-      accountName: voucher.creditAccountName || '',
+      accountName: voucher.creditAccountName || voucher.accountName || '',
       description: voucher.creditDescription || description,
       amount: voucher.creditAmount || voucher.amount || 0,
     },
