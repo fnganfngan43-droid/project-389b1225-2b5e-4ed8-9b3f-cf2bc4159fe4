@@ -715,10 +715,10 @@ export function printVoucher({ voucher, settings, accounts = [] }: PrintVoucherD
         .signs { display: flex; justify-content: space-between; margin-top: 22px; padding: 0 6px 6px; }
         .signs div { flex: 1; text-align: center; font-size: 10pt; }
         .signs span { display: block; border-top: 1px solid #000; margin: 26px 10px 0; padding-top: 3px; }
-        @page { size: A5 portrait; margin: 1cm 2cm; }
+        @page { size: A4; margin: 8mm; }
         @media print {
           body { padding: 0; }
-          .a5-sheet { width: 100%; border: 2px solid #000; }
+          .a5-sheet { width: 100%; max-width: none; border: 2px solid #000; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
       </style>
