@@ -82,6 +82,7 @@ const getCurrencyFullName = (symbol: string): string => {
 interface PrintVoucherData {
   voucher: Voucher;
   settings: Settings;
+  accounts?: Array<{ accountName: string; accountNumber: string }>;
 }
 
 interface PrintReportData {
