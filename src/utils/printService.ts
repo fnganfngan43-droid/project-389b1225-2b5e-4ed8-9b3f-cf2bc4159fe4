@@ -680,7 +680,8 @@ export function printVoucher({ voucher, settings, accounts = [] }: PrintVoucherD
           print-color-adjust: exact;
         }
         .a5-sheet {
-          width: 14.8cm;
+          width: 100%;
+          max-width: 19.4cm;
           margin: 0 auto;
           border: 2px solid #000;
           padding: 6px;
