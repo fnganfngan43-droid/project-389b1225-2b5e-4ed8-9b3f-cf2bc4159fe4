@@ -37,6 +37,34 @@ export async function pickBackupFolder(): Promise<string | null> {
   }
 }
 
+// Fallback for Android WebView / mobile browsers: open the phone's file manager
+// via a directory input so the user can point to a folder. Only the name can be
+// captured (no write access), downloads still go to the share sheet / Downloads.
+export function pickBackupFolderFallback(): Promise<string | null> {
+  return new Promise((resolve) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    (input as any).webkitdirectory = true;
+    (input as any).directory = true;
+    input.multiple = true;
+    input.style.display = 'none';
+    document.body.appendChild(input);
+    input.onchange = () => {
+      const f = input.files?.[0] as any;
+      const rel: string = f?.webkitRelativePath || '';
+      const name = rel ? rel.split('/')[0] : null;
+      if (name) localStorage.setItem(NAME_KEY, name);
+      document.body.removeChild(input);
+      resolve(name);
+    };
+    input.oncancel = () => {
+      document.body.removeChild(input);
+      resolve(null);
+    };
+    input.click();
+  });
+}
+
 export function getBackupFolderName(): string | null {
   return localStorage.getItem(NAME_KEY);
 }
