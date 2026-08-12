@@ -13,7 +13,7 @@ import { Save, User, FileText, Image, Upload, X, Download, UploadCloud, Database
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { isAutoBackupEnabled, setAutoBackupEnabled, triggerBackupDownload } from '@/hooks/useAutoBackup';
-import { pickBackupFolder, getBackupFolderName, clearBackupFolder, isFolderPickerSupported } from '@/utils/backupFolder';
+import { pickBackupFolder, pickBackupFolderFallback, getBackupFolderName, clearBackupFolder, isFolderPickerSupported } from '@/utils/backupFolder';
 import { toast } from 'sonner';
 import { encryptString } from '@/utils/secureStorage';
 
@@ -30,6 +30,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     headerArabic: settings.headerArabic,
     headerEnglish: settings.headerEnglish,
     footerNote: settings.footerNote || '',
+    voucherFooterNote: settings.voucherFooterNote || '',
     logo: settings.logo || '',
   });
   
@@ -80,6 +81,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       headerArabic: formData.headerArabic,
       headerEnglish: formData.headerEnglish,
       footerNote: formData.footerNote,
+      voucherFooterNote: formData.voucherFooterNote,
       logo: formData.logo,
     });
     toast.success('تم حفظ الإعدادات بنجاح');
@@ -241,6 +243,23 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             </CardContent>
           </Card>
 
+          {/* Voucher Footer Note */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                ملاحظة تذييل السندات
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Input
+                value={formData.voucherFooterNote}
+                onChange={(e) => setFormData(prev => ({ ...prev, voucherFooterNote: e.target.value }))}
+                placeholder="نص يظهر في تذييل سند القبض وسند الصرف"
+              />
+            </CardContent>
+          </Card>
+
           {/* Backup & Restore */}
           <Card className="border-primary/30">
             <CardHeader className="pb-3">
@@ -282,7 +301,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 </div>
                 {!folderSupported && (
                   <div className="text-xs text-destructive">
-                    اختيار المجلد غير مدعوم في هذا المتصفح/التطبيق. سيتم استخدام مجلد التنزيلات الافتراضي.
+                    الحفظ المباشر داخل المجلد غير مدعوم هنا، لكن يمكنك تحديد المجلد من مدير ملفات الهاتف وسيتم حفظ النسخة عبر قائمة المشاركة / التنزيلات.
                   </div>
                 )}
                 <div className="flex gap-2">
@@ -291,9 +310,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     variant="outline"
                     size="sm"
                     className="flex-1"
-                    disabled={!folderSupported}
                     onClick={async () => {
-                      const name = await pickBackupFolder();
+                      const name = folderSupported
+                        ? await pickBackupFolder()
+                        : await pickBackupFolderFallback();
                       if (name) {
                         setBackupFolder(name);
                         toast.success(`تم اختيار المجلد: ${name}`);
