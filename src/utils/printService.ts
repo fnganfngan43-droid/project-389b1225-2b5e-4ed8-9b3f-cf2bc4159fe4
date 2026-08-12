@@ -773,7 +773,7 @@ export function printVoucher({ voucher, settings, accounts = [] }: PrintVoucherD
         </table>
 
         ${(settings.footerNote || settings.voucherFooterNote) ? `
-        <div style="border: 1px solid #000; padding: 8px; margin-top: 8px; text-align: center; font-size: 10pt; background: #f8fafc;">
+        <div class="pdf-footer-note" style="border: 1px solid #000; padding: 8px; margin-top: 8px; text-align: center; font-size: 10pt; background: #f8fafc;">
           ${settings.footerNote ? `<div style="font-weight: 600; color: #000;">${e(settings.footerNote)}</div>` : ''}
           ${settings.voucherFooterNote ? `<div style="font-weight: 600; color: #000; margin-top: 4px;">${e(settings.voucherFooterNote)}</div>` : ''}
         </div>
