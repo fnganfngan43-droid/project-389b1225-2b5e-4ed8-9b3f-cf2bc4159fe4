@@ -30,6 +30,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     headerArabic: settings.headerArabic,
     headerEnglish: settings.headerEnglish,
     footerNote: settings.footerNote || '',
+    voucherFooterNote: settings.voucherFooterNote || '',
     logo: settings.logo || '',
   });
   
@@ -80,6 +81,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       headerArabic: formData.headerArabic,
       headerEnglish: formData.headerEnglish,
       footerNote: formData.footerNote,
+      voucherFooterNote: formData.voucherFooterNote,
       logo: formData.logo,
     });
     toast.success('تم حفظ الإعدادات بنجاح');
@@ -237,6 +239,23 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 value={formData.footerNote}
                 onChange={(e) => setFormData(prev => ({ ...prev, footerNote: e.target.value }))}
                 placeholder="حقل إضافي يظهر في نهاية التقرير"
+              />
+            </CardContent>
+          </Card>
+
+          {/* Voucher Footer Note */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                ملاحظة تذييل السندات
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Input
+                value={formData.voucherFooterNote}
+                onChange={(e) => setFormData(prev => ({ ...prev, voucherFooterNote: e.target.value }))}
+                placeholder="نص يظهر في تذييل سند القبض وسند الصرف"
               />
             </CardContent>
           </Card>

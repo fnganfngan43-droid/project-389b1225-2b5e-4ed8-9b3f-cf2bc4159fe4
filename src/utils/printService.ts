@@ -773,6 +773,7 @@ export function printVoucher({ voucher, settings, accounts = [] }: PrintVoucherD
         </table>
 
         ${settings.footerNote ? `<div style="text-align:center;font-size:9pt;margin-top:6px;">${e(settings.footerNote)}</div>` : ''}
+        ${settings.voucherFooterNote ? `<div style="text-align:center;font-size:9pt;margin-top:3px;font-weight:600;">${e(settings.voucherFooterNote)}</div>` : ''}
 
         <div class="signs">
           <div>المستلم<span></span></div>

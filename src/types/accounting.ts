@@ -113,6 +113,7 @@ export interface Settings {
   headerEnglish: string[];
   logo?: string;
   footerNote?: string;
+  voucherFooterNote?: string;
 }
 
 export interface Reconciliation {
