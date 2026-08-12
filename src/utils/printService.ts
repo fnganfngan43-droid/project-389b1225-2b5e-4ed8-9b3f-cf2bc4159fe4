@@ -772,8 +772,12 @@ export function printVoucher({ voucher, settings, accounts = [] }: PrintVoucherD
           </tbody>
         </table>
 
-        ${settings.footerNote ? `<div style="text-align:center;font-size:9pt;margin-top:6px;">${e(settings.footerNote)}</div>` : ''}
-        ${settings.voucherFooterNote ? `<div style="text-align:center;font-size:9pt;margin-top:3px;font-weight:600;">${e(settings.voucherFooterNote)}</div>` : ''}
+        ${(settings.footerNote || settings.voucherFooterNote) ? `
+        <div style="border: 1px solid #000; padding: 8px; margin-top: 8px; text-align: center; font-size: 10pt; background: #f8fafc;">
+          ${settings.footerNote ? `<div style="font-weight: 600; color: #000;">${e(settings.footerNote)}</div>` : ''}
+          ${settings.voucherFooterNote ? `<div style="font-weight: 600; color: #000; margin-top: 4px;">${e(settings.voucherFooterNote)}</div>` : ''}
+        </div>
+        ` : ''}
 
         <div class="signs">
           <div>المستلم<span></span></div>
