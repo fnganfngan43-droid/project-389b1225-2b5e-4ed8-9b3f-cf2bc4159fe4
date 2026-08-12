@@ -96,16 +96,32 @@ function extractContentFromDoc(doc: Document): Content[] {
       const el = node as HTMLElement;
       const tag = el.tagName.toLowerCase();
       if (['h1', 'h2', 'h3', 'h4', 'table'].includes(tag)) return NodeFilter.FILTER_ACCEPT;
+      if (el.classList.contains('pdf-footer-note')) return NodeFilter.FILTER_ACCEPT;
       return NodeFilter.FILTER_SKIP;
     },
   });
 
   const seenTables = new Set<HTMLTableElement>();
+  const seenFooters = new Set<HTMLElement>();
   let node: Node | null = walker.nextNode();
   while (node) {
     const el = node as HTMLElement;
     const tag = el.tagName.toLowerCase();
-    if (tag === 'table') {
+    if (el.classList.contains('pdf-footer-note')) {
+      if (!seenFooters.has(el)) {
+        seenFooters.add(el);
+        const txt = cleanText(el.innerText || el.textContent || '');
+        if (txt) {
+          content.push({
+            text: txt,
+            fontSize: 10,
+            bold: true,
+            alignment: 'center',
+            margin: [0, 4, 0, 4],
+          });
+        }
+      }
+    } else if (tag === 'table') {
       const tbl = el as HTMLTableElement;
       if (!seenTables.has(tbl)) {
         seenTables.add(tbl);
