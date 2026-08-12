@@ -118,7 +118,6 @@ function extractContentFromDoc(doc: Document): Content[] {
             bold: true,
             alignment: 'center',
             margin: [0, 4, 0, 4],
-            border: [1, 1, 1, 1],
           });
         }
       }
