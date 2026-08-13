@@ -87,7 +87,7 @@ export function Calculator({ onClose }: CalculatorProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-primary text-primary-foreground">
           <span className="font-bold text-base">الآلة الحاسبة</span>
-          <Button variant="ghost" size="icon-sm" onClick={onClose} className="text-primary-foreground hover:bg-primary-foreground/20">
+          <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="إغلاق" className="text-primary-foreground hover:bg-primary-foreground/20">
             <X className="w-5 h-5" />
           </Button>
         </div>
