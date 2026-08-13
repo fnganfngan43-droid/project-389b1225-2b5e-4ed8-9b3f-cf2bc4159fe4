@@ -153,7 +153,7 @@ export function ActionToolbar({
           </Button>
         )}
         {showCalculator && (
-          <Button onClick={() => setShowCalc(true)} size="sm" variant="secondary">
+          <Button onClick={() => setShowCalc(true)} size="sm" variant="secondary" aria-label="الآلة الحاسبة">
             <CalculatorIcon className="w-4 h-4" />
           </Button>
         )}

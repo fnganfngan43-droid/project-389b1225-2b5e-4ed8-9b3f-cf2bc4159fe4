@@ -73,7 +73,8 @@ export default function Install() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+      <h1 className="text-3xl font-bold text-foreground mb-6 text-center">تثبيت رفيق المحاسب</h1>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="w-24 h-24 mx-auto mb-4">
@@ -83,7 +84,9 @@ export default function Install() {
               className="w-full h-full object-contain rounded-2xl"
             />
           </div>
-          <CardTitle className="text-2xl">تثبيت رفيق المحاسب</CardTitle>
+          <CardTitle asChild className="text-2xl">
+            <h2>تثبيت رفيق المحاسب</h2>
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <p className="text-muted-foreground text-center">
