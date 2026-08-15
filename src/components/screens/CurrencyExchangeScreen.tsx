@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ActionToolbar } from '@/components/ActionToolbar';
+import { FormCalculatorButton } from '@/components/FormCalculatorButton';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { 
@@ -231,9 +232,12 @@ export function CurrencyExchangeScreen() {
                 <ArrowLeftRight className="w-5 h-5" />
                 {editingExchange ? 'تعديل عملية صرف' : 'صرف عملة جديد'}
               </div>
-              <Button variant="ghost" size="icon-sm" onClick={resetForm}>
-                <X className="w-4 h-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <FormCalculatorButton />
+                <Button variant="ghost" size="icon-sm" onClick={resetForm} aria-label="إغلاق">
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
