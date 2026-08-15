@@ -681,7 +681,7 @@ export function printVoucher({ voucher, settings }: PrintVoucherData) {
           
           <div class="amount-box">
             <div class="amount-label">${e(amountLabel)}</div>
-            <div class="amount-value">${e(voucher.amount.toLocaleString())}</div>
+            <div class="amount-value">${e(Number(voucher.amount ?? 0).toLocaleString())}</div>
             <div class="amount-currency">${e(voucher.currency)}</div>
           </div>
           

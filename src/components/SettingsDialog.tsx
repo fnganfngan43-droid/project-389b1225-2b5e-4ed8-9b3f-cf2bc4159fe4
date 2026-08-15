@@ -14,6 +14,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { isAutoBackupEnabled, setAutoBackupEnabled, triggerBackupDownload } from '@/hooks/useAutoBackup';
 import { pickBackupFolder, getBackupFolderName, clearBackupFolder, isFolderPickerSupported } from '@/utils/backupFolder';
+import { isNativePlatform } from '@/utils/nativeBackup';
+import { NativeFolderPicker } from '@/components/NativeFolderPicker';
 import { toast } from 'sonner';
 import { encryptString } from '@/utils/secureStorage';
 
@@ -38,6 +40,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [autoBackup, setAutoBackup] = useState(isAutoBackupEnabled());
   const [backupFolder, setBackupFolder] = useState<string | null>(getBackupFolderName());
   const folderSupported = isFolderPickerSupported();
+  const [nativePickerOpen, setNativePickerOpen] = useState(false);
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -293,6 +296,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     className="flex-1"
                     disabled={!folderSupported}
                     onClick={async () => {
+                      if (isNativePlatform()) {
+                        setNativePickerOpen(true);
+                        return;
+                      }
                       const name = await pickBackupFolder();
                       if (name) {
                         setBackupFolder(name);
@@ -406,6 +413,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             حفظ الإعدادات
           </Button>
         </div>
+
+        <NativeFolderPicker
+          open={nativePickerOpen}
+          onOpenChange={setNativePickerOpen}
+          onSelected={(label) => setBackupFolder(label)}
+        />
       </SheetContent>
     </Sheet>
   );

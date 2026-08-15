@@ -1,5 +1,15 @@
-// Manages a persisted folder handle for backup storage using File System Access API.
-// Falls back gracefully on unsupported environments (iOS Safari, WebView).
+// Manages the backup destination folder.
+// On Android (Capacitor) it uses the native Filesystem with proper
+// read/write permission requests. On the web it uses the File System
+// Access API when available.
+
+import {
+  isNativePlatform,
+  getNativeTarget,
+  clearNativeTarget,
+  describeNativeTarget,
+  writeNativeBackup,
+} from './nativeBackup';
 
 const DB_NAME = 'backup_folder_db';
 const STORE = 'handles';
@@ -16,11 +26,12 @@ function openDB(): Promise<IDBDatabase> {
 }
 
 export function isFolderPickerSupported(): boolean {
-  return typeof (window as any).showDirectoryPicker === 'function';
+  return isNativePlatform() || typeof (window as any).showDirectoryPicker === 'function';
 }
 
 export async function pickBackupFolder(): Promise<string | null> {
-  if (!isFolderPickerSupported()) return null;
+  if (isNativePlatform()) return null; // handled by the native picker dialog
+  if (typeof (window as any).showDirectoryPicker !== 'function') return null;
   try {
     const handle = await (window as any).showDirectoryPicker({ mode: 'readwrite' });
     const db = await openDB();
@@ -38,18 +49,26 @@ export async function pickBackupFolder(): Promise<string | null> {
 }
 
 export function getBackupFolderName(): string | null {
+  if (isNativePlatform()) {
+    const t = getNativeTarget();
+    return t ? describeNativeTarget(t) : null;
+  }
   return localStorage.getItem(NAME_KEY);
 }
 
 export function clearBackupFolder() {
   localStorage.removeItem(NAME_KEY);
-  openDB().then((db) => {
-    const tx = db.transaction(STORE, 'readwrite');
-    tx.objectStore(STORE).delete(KEY);
-  }).catch(() => {});
+  clearNativeTarget();
+  openDB()
+    .then((db) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).delete(KEY);
+    })
+    .catch(() => {});
 }
 
 export async function getBackupFolderHandle(): Promise<any | null> {
+  if (isNativePlatform()) return getNativeTarget();
   try {
     const db = await openDB();
     const handle: any = await new Promise((res, rej) => {
@@ -72,6 +91,10 @@ export async function getBackupFolderHandle(): Promise<any | null> {
 }
 
 export async function writeBackupToFolder(fileName: string, content: string): Promise<boolean> {
+  if (isNativePlatform()) {
+    const uri = await writeNativeBackup(fileName, content);
+    return !!uri;
+  }
   const dir = await getBackupFolderHandle();
   if (!dir) return false;
   try {
