@@ -14,6 +14,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { isAutoBackupEnabled, setAutoBackupEnabled, triggerBackupDownload } from '@/hooks/useAutoBackup';
 import { pickBackupFolder, getBackupFolderName, clearBackupFolder, isFolderPickerSupported } from '@/utils/backupFolder';
+import { isNativePlatform } from '@/utils/nativeBackup';
+import { NativeFolderPicker } from '@/components/NativeFolderPicker';
 import { toast } from 'sonner';
 import { encryptString } from '@/utils/secureStorage';
 
