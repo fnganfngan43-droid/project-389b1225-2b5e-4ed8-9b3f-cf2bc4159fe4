@@ -413,6 +413,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             حفظ الإعدادات
           </Button>
         </div>
+
+        <NativeFolderPicker
+          open={nativePickerOpen}
+          onOpenChange={setNativePickerOpen}
+          onSelected={(label) => setBackupFolder(label)}
+        />
       </SheetContent>
     </Sheet>
   );
