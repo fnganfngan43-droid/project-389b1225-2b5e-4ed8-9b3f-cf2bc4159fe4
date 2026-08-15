@@ -133,40 +133,46 @@ export function ActionToolbar({
       </Dialog>
       
       {/* Action buttons row */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-nowrap items-center gap-2 overflow-x-auto">
         {onAdd && (
-          <Button onClick={onAdd} size="sm" variant="default">
+          <Button onClick={onAdd} size="sm" variant="default" className="shrink-0">
             <Plus className="w-4 h-4" />
             إضافة
           </Button>
         )}
-        {onDuplicate && showDuplicate && (
-          <Button onClick={onDuplicate} size="sm" variant="secondary">
-            <Copy className="w-4 h-4" />
-            إضافة من
-          </Button>
-        )}
         {onImport && (
-          <Button onClick={handleImportClick} size="sm" variant="secondary">
-            <Download className="w-4 h-4" />
-            استيراد Excel
-          </Button>
-        )}
-        {showCalculator && (
-          <Button onClick={() => setShowCalc(true)} size="sm" variant="secondary">
-            <CalculatorIcon className="w-4 h-4" />
+          <Button
+            onClick={handleImportClick}
+            size="sm"
+            variant="secondary"
+            className="shrink-0"
+            aria-label="استيراد من Excel"
+            title="استيراد من Excel"
+          >
+            <span className="text-base leading-none">📥</span>
           </Button>
         )}
         {onEdit && (
-          <Button onClick={onEdit} size="sm" variant="secondary">
+          <Button onClick={onEdit} size="sm" variant="secondary" className="shrink-0">
             <Edit className="w-4 h-4" />
             تعديل
           </Button>
         )}
         {onDelete && (
-          <Button onClick={onDelete} size="sm" variant="destructive">
+          <Button onClick={onDelete} size="sm" variant="destructive" className="shrink-0">
             <Trash2 className="w-4 h-4" />
             حذف
+          </Button>
+        )}
+        {showCalculator && (
+          <Button
+            onClick={() => setShowCalc(true)}
+            size="sm"
+            variant="secondary"
+            className="shrink-0 hidden"
+            aria-label="الآلة الحاسبة"
+          >
+            <CalculatorIcon className="w-4 h-4" />
           </Button>
         )}
       </div>

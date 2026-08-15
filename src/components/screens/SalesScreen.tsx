@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ActionToolbar } from '@/components/ActionToolbar';
+import { FormCalculatorButton } from '@/components/FormCalculatorButton';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { Invoice } from '@/types/accounting';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
@@ -322,9 +323,12 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
                   ? (isReturn ? 'تعديل مرتجع' : 'تعديل فاتورة') 
                   : (isReturn ? 'مرتجع مبيعات جديد' : 'فاتورة مبيعات جديدة')}
               </div>
-              <Button variant="ghost" size="icon-sm" onClick={resetForm}>
-                <X className="w-4 h-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <FormCalculatorButton />
+                <Button variant="ghost" size="icon-sm" onClick={resetForm} aria-label="إغلاق">
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
