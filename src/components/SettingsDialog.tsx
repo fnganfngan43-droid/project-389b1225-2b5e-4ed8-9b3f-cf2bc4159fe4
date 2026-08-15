@@ -293,6 +293,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     className="flex-1"
                     disabled={!folderSupported}
                     onClick={async () => {
+                      if (isNativePlatform()) {
+                        setNativePickerOpen(true);
+                        return;
+                      }
                       const name = await pickBackupFolder();
                       if (name) {
                         setBackupFolder(name);
