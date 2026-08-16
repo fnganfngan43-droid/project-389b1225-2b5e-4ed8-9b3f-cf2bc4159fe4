@@ -18,6 +18,17 @@ import {
 } from '@/components/ui/select';
 import { Save, X, CheckSquare } from 'lucide-react';
 import { toast } from 'sonner';
+import { matchesSearch, SearchColumn } from '@/utils/searchFilter';
+
+const SEARCH_COLUMNS: SearchColumn[] = [
+  { key: 'reconciliationNumber', header: 'الرقم' },
+  { key: 'groupName', header: 'اسم المجموعة' },
+  { key: 'accountName', header: 'اسم الحساب' },
+  { key: 'currency', header: 'رمز العملة' },
+  { key: 'fromDate', header: 'مطابق من تاريخ' },
+  { key: 'toDate', header: 'مطابقة إلى تاريخ' },
+  { key: 'amount', header: 'المبلغ' },
+];
 
 export function ReconciliationScreen() {
   const {
@@ -36,14 +47,13 @@ export function ReconciliationScreen() {
   } = useAccounting();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchColumn, setSearchColumn] = useState('all');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Reconciliation | null>(null);
   const [editingItem, setEditingItem] = useState<Reconciliation | null>(null);
 
-  const filtered = reconciliations.filter(
-    (r) =>
-      r.accountName.includes(searchTerm) ||
-      r.reconciliationNumber.includes(searchTerm),
+  const filtered = reconciliations.filter((r) =>
+    matchesSearch(r, searchTerm, searchColumn, SEARCH_COLUMNS)
   );
 
   const nextNumber = useMemo(() => {
@@ -282,6 +292,9 @@ export function ReconciliationScreen() {
           onImport={handleImport}
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
+          searchColumns={SEARCH_COLUMNS}
+          searchColumn={searchColumn}
+          onSearchColumnChange={setSearchColumn}
           searchPlaceholder="بحث في المطابقات..."
           importColumns={[
             'الرقم',

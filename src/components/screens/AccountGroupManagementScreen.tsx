@@ -9,10 +9,17 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Save, X, FolderTree } from 'lucide-react';
 import { toast } from 'sonner';
+import { matchesSearch, SearchColumn } from '@/utils/searchFilter';
+
+const SEARCH_COLUMNS: SearchColumn[] = [
+  { key: 'name', header: 'اسم المجموعة' },
+  { key: 'initialNumber', header: 'رقم البداية' },
+];
 
 export function AccountGroupManagementScreen() {
   const { groups, addGroup, updateGroup, deleteGroup, accounts } = useAccounting();
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchColumn, setSearchColumn] = useState('all');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<AccountGroup | null>(null);
   const [formData, setFormData] = useState({
@@ -21,8 +28,7 @@ export function AccountGroupManagementScreen() {
   });
 
   const filteredGroups = groups.filter(group =>
-    group.name.includes(searchTerm) ||
-    group.initialNumber.includes(searchTerm)
+    matchesSearch(group, searchTerm, searchColumn, SEARCH_COLUMNS)
   );
 
   const resetForm = () => {
@@ -117,6 +123,9 @@ export function AccountGroupManagementScreen() {
       <ActionToolbar
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
+          searchColumns={SEARCH_COLUMNS}
+          searchColumn={searchColumn}
+          onSearchColumnChange={setSearchColumn}
         searchPlaceholder="بحث في المجموعات..."
         onAdd={() => {
           resetForm();

@@ -23,18 +23,30 @@ import { Save, X, Percent } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDuplicateReferenceCheck } from '@/hooks/useDuplicateReferenceCheck';
 import { DuplicateReferenceDialog } from '@/components/DuplicateReferenceDialog';
+import { matchesSearch, SearchColumn } from '@/utils/searchFilter';
+
+const SEARCH_COLUMNS: SearchColumn[] = [
+  { key: 'discountNumber', header: 'رقم الخصم' },
+  { key: 'date', header: 'التاريخ' },
+  { key: 'type', header: 'النوع' },
+  { key: 'accountName', header: 'اسم الحساب' },
+  { key: 'description', header: 'البيان' },
+  { key: 'reference', header: 'المرجع' },
+  { key: 'currency', header: 'العملة' },
+  { key: 'amount', header: 'المبلغ' },
+];
 
 export function DiscountScreen() {
   const { accounts, groups, currencies, discounts, addDiscount, updateDiscount, deleteDiscount } = useAccounting();
   const { dialogOpen, duplicateRef, checkAndProceed, warnIfDuplicate, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchColumn, setSearchColumn] = useState('all');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedDiscount, setSelectedDiscount] = useState<DiscountEntry | null>(null);
   const [editingDiscount, setEditingDiscount] = useState<DiscountEntry | null>(null);
 
-  const filteredDiscounts = discounts.filter(d => 
-    d.accountName.includes(searchTerm) || 
-    d.discountNumber.includes(searchTerm)
+  const filteredDiscounts = discounts.filter(d =>
+    matchesSearch(d, searchTerm, searchColumn, SEARCH_COLUMNS)
   );
 
   // Calculate next sequential number based on existing discounts
@@ -284,6 +296,9 @@ export function DiscountScreen() {
           onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
+          searchColumns={SEARCH_COLUMNS}
+          searchColumn={searchColumn}
+          onSearchColumnChange={setSearchColumn}
           searchPlaceholder="بحث في الخصومات..."
           importTitle="استيراد الخصومات"
           importColumns={[
