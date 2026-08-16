@@ -4,6 +4,14 @@ import { Input } from '@/components/ui/input';
 import { Plus, Trash2, Edit, Download, Copy, Search, FileSpreadsheet, Info, Calculator as CalculatorIcon } from 'lucide-react';
 import { Calculator } from '@/components/Calculator';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { SearchColumn } from '@/utils/searchFilter';
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -21,6 +29,9 @@ interface ActionToolbarProps {
   searchValue?: string;
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
+  searchColumns?: SearchColumn[];
+  searchColumn?: string;
+  onSearchColumnChange?: (value: string) => void;
   showDuplicate?: boolean;
   showCalculator?: boolean;
   importColumns?: string[];
@@ -36,6 +47,9 @@ export function ActionToolbar({
   searchValue,
   onSearchChange,
   searchPlaceholder = 'بحث...',
+  searchColumns,
+  searchColumn = 'all',
+  onSearchColumnChange,
   showDuplicate = false,
   showCalculator = false,
   importColumns = [],
