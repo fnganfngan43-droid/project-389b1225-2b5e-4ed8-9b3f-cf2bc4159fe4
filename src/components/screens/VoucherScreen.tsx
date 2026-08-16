@@ -359,7 +359,7 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
       <div className="flex-1 overflow-auto p-4 space-y-4">
         {/* Add Form */}
         {isAdding && (
-          <Card className="animate-slide-up border-2 border-primary/20">
+          <Card className="animate-slide-up border-2 border-primary/20 fixed inset-x-0 top-0 z-50 max-h-[100dvh] overflow-y-auto rounded-none shadow-2xl">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
               {editingVoucher 
