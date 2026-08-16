@@ -41,53 +41,43 @@ export function ScrollableTable<T>({
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden border-2 border-border rounded-lg">
-      {/* Scrollable container - both header and body scroll horizontally together */}
       <ScrollArea className="flex-1">
-        <div className="min-w-max">
-          {/* Sticky Header */}
-          <div className="sticky top-0 z-10 bg-muted">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b">
-                  {columns.map((col) => (
-                    <th 
-                      key={col.key} 
-                      className={`h-12 px-4 text-right align-middle font-medium text-foreground whitespace-nowrap bg-muted border border-border ${col.className || ''}`}
-                    >
-                      {col.header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-            </table>
-          </div>
-          
-          {/* Table Body */}
-          <table className="w-full border-collapse">
-            <tbody>
-              {data.map((item, index) => (
-                <tr
-                  key={getItemId(item)}
-                  onClick={() => onRowClick?.(item)}
-                  className={`border-b cursor-pointer transition-colors ${
-                    selectedId === getItemId(item)
-                      ? 'bg-primary/10 border-primary'
-                      : 'hover:bg-muted/50'
-                  }`}
+        <table className="w-full min-w-max border-collapse">
+          <thead className="sticky top-0 z-10">
+            <tr>
+              {columns.map((col) => (
+                <th
+                  key={col.key}
+                  className={`h-12 px-4 text-right align-middle font-medium text-foreground whitespace-nowrap bg-muted border border-border ${col.className || ''}`}
                 >
-                  {columns.map((col) => (
-                    <td 
-                      key={col.key} 
-                      className={`p-4 align-middle whitespace-nowrap border border-border ${col.className || ''}`}
-                    >
-                      {col.render(item, index)}
-                    </td>
-                  ))}
-                </tr>
+                  {col.header}
+                </th>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((item, index) => (
+              <tr
+                key={getItemId(item)}
+                onClick={() => onRowClick?.(item)}
+                className={`cursor-pointer transition-colors ${
+                  selectedId === getItemId(item)
+                    ? 'bg-primary/10'
+                    : 'hover:bg-muted/50'
+                }`}
+              >
+                {columns.map((col) => (
+                  <td
+                    key={col.key}
+                    className={`p-4 align-middle whitespace-nowrap border border-border ${col.className || ''}`}
+                  >
+                    {col.render(item, index)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
         <ScrollBar orientation="horizontal" />
         <ScrollBar orientation="vertical" />
       </ScrollArea>
