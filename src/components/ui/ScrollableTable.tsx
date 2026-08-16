@@ -40,7 +40,7 @@ export function ScrollableTable<T>({
   }
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden border rounded-lg">
+    <div className="flex flex-col flex-1 overflow-hidden border-2 border-border rounded-lg">
       {/* Scrollable container - both header and body scroll horizontally together */}
       <ScrollArea className="flex-1">
         <div className="min-w-max">
@@ -52,7 +52,7 @@ export function ScrollableTable<T>({
                   {columns.map((col) => (
                     <th 
                       key={col.key} 
-                      className={`h-12 px-4 text-right align-middle font-medium text-muted-foreground whitespace-nowrap bg-muted ${col.className || ''}`}
+                      className={`h-12 px-4 text-right align-middle font-medium text-foreground whitespace-nowrap bg-muted border border-border ${col.className || ''}`}
                     >
                       {col.header}
                     </th>
@@ -78,7 +78,7 @@ export function ScrollableTable<T>({
                   {columns.map((col) => (
                     <td 
                       key={col.key} 
-                      className={`p-4 align-middle whitespace-nowrap ${col.className || ''}`}
+                      className={`p-4 align-middle whitespace-nowrap border border-border ${col.className || ''}`}
                     >
                       {col.render(item, index)}
                     </td>
