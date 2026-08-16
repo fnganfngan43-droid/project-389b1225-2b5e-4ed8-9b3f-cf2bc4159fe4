@@ -23,24 +23,35 @@ import { Save, X, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDuplicateReferenceCheck } from '@/hooks/useDuplicateReferenceCheck';
 import { DuplicateReferenceDialog } from '@/components/DuplicateReferenceDialog';
+import { matchesSearch, SearchColumn } from '@/utils/searchFilter';
 
 interface SalesScreenProps {
   isReturn?: boolean;
 }
 
+const SEARCH_COLUMNS: SearchColumn[] = [
+  { key: 'invoiceNumber', header: 'رقم الفاتورة' },
+  { key: 'date', header: 'التاريخ' },
+  { key: 'type', header: 'النوع' },
+  { key: 'accountName', header: 'اسم الحساب' },
+  { key: 'description', header: 'البيان' },
+  { key: 'reference', header: 'المرجع' },
+  { key: 'currency', header: 'العملة' },
+  { key: 'amount', header: 'المبلغ' },
+];
+
 export function SalesScreen({ isReturn = false }: SalesScreenProps) {
   const { invoices, accounts, groups, currencies, addInvoice, updateInvoice, deleteInvoice } = useAccounting();
   const { dialogOpen, duplicateRef, checkAndProceed, warnIfDuplicate, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchColumn, setSearchColumn] = useState('all');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
 
-  const filteredInvoices = invoices.filter(inv => 
-    (isReturn ? inv.amount < 0 : inv.amount >= 0) && (
-      inv.accountName.includes(searchTerm) || 
-      inv.invoiceNumber.includes(searchTerm)
-    )
+  const filteredInvoices = invoices.filter(inv =>
+    (isReturn ? inv.amount < 0 : inv.amount >= 0) &&
+    matchesSearch(inv, searchTerm, searchColumn, SEARCH_COLUMNS)
   );
 
   // Calculate next sequential number based on existing invoices of same type
@@ -293,6 +304,9 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
           onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
           searchValue={searchTerm}
         onSearchChange={setSearchTerm}
+          searchColumns={SEARCH_COLUMNS}
+          searchColumn={searchColumn}
+          onSearchColumnChange={setSearchColumn}
         searchPlaceholder={isReturn ? "بحث في المرتجعات..." : "بحث في الفواتير..."}
         importTitle={isReturn ? 'استيراد المرتجعات' : 'استيراد الفواتير'}
         importColumns={[

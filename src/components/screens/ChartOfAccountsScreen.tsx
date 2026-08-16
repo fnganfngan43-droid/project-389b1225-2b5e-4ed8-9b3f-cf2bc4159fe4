@@ -16,10 +16,22 @@ import {
 } from "@/components/ui/select";
 import { Save, X, Phone, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import { matchesSearch, SearchColumn } from '@/utils/searchFilter';
+
+const SEARCH_COLUMNS: SearchColumn[] = [
+  { key: 'accountNumber', header: 'رقم الحساب' },
+  { key: 'accountName', header: 'اسم الحساب' },
+  { key: 'groupName', header: 'المجموعة' },
+  { key: 'phone', header: 'رقم الجوال' },
+  { key: 'governorate', header: 'المحافظة' },
+  { key: 'currency', header: 'العملة' },
+  { key: 'balance', header: 'الرصيد' },
+];
 
 export function ChartOfAccountsScreen() {
   const { accounts, groups, currencies, governorates, addAccount, updateAccount, deleteAccount, vouchers, openingBalances, invoices, currencyExchanges } = useAccounting();
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchColumn, setSearchColumn] = useState('all');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
@@ -34,10 +46,8 @@ export function ChartOfAccountsScreen() {
     governorate: '',
   });
 
-  const filteredAccounts = accounts.filter(acc => 
-    acc.accountName.includes(searchTerm) || 
-    acc.accountNumber.includes(searchTerm) ||
-    acc.groupName.includes(searchTerm)
+  const filteredAccounts = accounts.filter(acc =>
+    matchesSearch(acc, searchTerm, searchColumn, SEARCH_COLUMNS)
   );
 
   const handleGroupChange = (groupName: string) => {
@@ -234,6 +244,9 @@ export function ChartOfAccountsScreen() {
           onImport={handleImport}
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
+          searchColumns={SEARCH_COLUMNS}
+          searchColumn={searchColumn}
+          onSearchColumnChange={setSearchColumn}
           searchPlaceholder="بحث في الحسابات..."
           importTitle="استيراد دليل الحسابات"
           importColumns={[

@@ -42,8 +42,8 @@
     --warning: 38 92% 50%;
     --warning-foreground: 38 90% 10%;
 
-    --border: 180 20% 88%;
-    --input: 180 20% 88%;
+    --border: 0 0% 0%;
+    --input: 0 0% 0%;
     --ring: 175 60% 28%;
 
     --radius: 0.75rem;

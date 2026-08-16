@@ -9,10 +9,17 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Save, X, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
+import { matchesSearch, SearchColumn } from '@/utils/searchFilter';
+
+const SEARCH_COLUMNS: SearchColumn[] = [
+  { key: 'name', header: 'اسم المحافظة' },
+  { key: 'city', header: 'المدينة' },
+];
 
 export function GovernorateManagementScreen() {
   const { governorates, addGovernorate, updateGovernorate, deleteGovernorate, accounts } = useAccounting();
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchColumn, setSearchColumn] = useState('all');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedGovernorate, setSelectedGovernorate] = useState<Governorate | null>(null);
   const [formData, setFormData] = useState({
@@ -21,8 +28,7 @@ export function GovernorateManagementScreen() {
   });
 
   const filteredGovernorates = governorates.filter(gov =>
-    gov.name.includes(searchTerm) ||
-    (gov.city && gov.city.includes(searchTerm))
+    matchesSearch(gov, searchTerm, searchColumn, SEARCH_COLUMNS)
   );
 
   const resetForm = () => {
@@ -108,6 +114,9 @@ export function GovernorateManagementScreen() {
       <ActionToolbar
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
+          searchColumns={SEARCH_COLUMNS}
+          searchColumn={searchColumn}
+          onSearchColumnChange={setSearchColumn}
         searchPlaceholder="بحث في المحافظات..."
         onAdd={() => {
           resetForm();

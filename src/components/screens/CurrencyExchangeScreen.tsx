@@ -20,19 +20,28 @@ import { useDuplicateReferenceCheck } from '@/hooks/useDuplicateReferenceCheck';
 import { DuplicateReferenceDialog } from '@/components/DuplicateReferenceDialog';
 
 import { CurrencyExchange } from '@/types/accounting';
+import { matchesSearch, SearchColumn } from '@/utils/searchFilter';
+
+const SEARCH_COLUMNS: SearchColumn[] = [
+  { key: 'exchangeNumber', header: 'رقم العملية' },
+  { key: 'date', header: 'التاريخ' },
+  { key: 'fromAccountName', header: 'من حساب' },
+  { key: 'fromAmount', header: 'المبلغ (من)' },
+  { key: 'toAccountName', header: 'إلى حساب' },
+  { key: 'toAmount', header: 'المبلغ (إلى)' },
+];
 
 export function CurrencyExchangeScreen() {
   const { accounts, groups, currencies, currencyExchanges, addCurrencyExchange, updateCurrencyExchange, deleteCurrencyExchange } = useAccounting();
   const { dialogOpen, duplicateRef, checkAndProceed, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchColumn, setSearchColumn] = useState('all');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedExchange, setSelectedExchange] = useState<CurrencyExchange | null>(null);
   const [editingExchange, setEditingExchange] = useState<CurrencyExchange | null>(null);
 
-  const filteredExchanges = currencyExchanges.filter(e => 
-    e.fromAccountName.includes(searchTerm) || 
-    e.toAccountName.includes(searchTerm) ||
-    e.exchangeNumber.includes(searchTerm)
+  const filteredExchanges = currencyExchanges.filter(e =>
+    matchesSearch(e, searchTerm, searchColumn, SEARCH_COLUMNS)
   );
 
   const [formData, setFormData] = useState({
@@ -217,6 +226,9 @@ export function CurrencyExchangeScreen() {
           onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
+          searchColumns={SEARCH_COLUMNS}
+          searchColumn={searchColumn}
+          onSearchColumnChange={setSearchColumn}
           searchPlaceholder="بحث في عمليات الصرف..."
         />
       </div>

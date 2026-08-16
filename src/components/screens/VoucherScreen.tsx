@@ -24,15 +24,27 @@ import { Save, X, Calendar, Printer, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDuplicateReferenceCheck } from '@/hooks/useDuplicateReferenceCheck';
 import { DuplicateReferenceDialog } from '@/components/DuplicateReferenceDialog';
+import { matchesSearch, SearchColumn } from '@/utils/searchFilter';
 
 interface VoucherScreenProps {
   type: 'receipt' | 'payment';
 }
 
+const SEARCH_COLUMNS: SearchColumn[] = [
+  { key: 'voucherNumber', header: 'رقم السند' },
+  { key: 'date', header: 'التاريخ' },
+  { key: 'debitAccountName', header: 'الحساب المدين' },
+  { key: 'creditAccountName', header: 'الحساب الدائن' },
+  { key: 'description', header: 'البيان' },
+  { key: 'currency', header: 'العملة' },
+  { key: 'amount', header: 'المبلغ' },
+];
+
 export function VoucherScreen({ type }: VoucherScreenProps) {
   const { vouchers, accounts, groups, currencies, settings, addVoucher, updateVoucher, deleteVoucher } = useAccounting();
   const { dialogOpen, duplicateRef, checkAndProceed, warnIfDuplicate, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchColumn, setSearchColumn] = useState('all');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
   const [editingVoucher, setEditingVoucher] = useState<Voucher | null>(null);
@@ -42,12 +54,8 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
     toast.success('جاري طباعة السند...');
   };
 
-  const filteredVouchers = vouchers.filter(v => 
-    v.type === type && (
-      v.debitAccountName?.includes(searchTerm) || 
-      v.creditAccountName?.includes(searchTerm) ||
-      v.voucherNumber.includes(searchTerm)
-    )
+  const filteredVouchers = vouchers.filter(v =>
+    v.type === type && matchesSearch(v, searchTerm, searchColumn, SEARCH_COLUMNS)
   );
 
   // Calculate next sequential number based on existing vouchers of same type
@@ -321,6 +329,9 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
           onDuplicate={() => toast.info('سيتم إضافة هذه الخاصية قريباً')}
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
+          searchColumns={SEARCH_COLUMNS}
+          searchColumn={searchColumn}
+          onSearchColumnChange={setSearchColumn}
           searchPlaceholder="بحث في السندات..."
           importTitle={type === 'receipt' ? 'استيراد سندات القبض' : 'استيراد سندات الصرف'}
           importColumns={[

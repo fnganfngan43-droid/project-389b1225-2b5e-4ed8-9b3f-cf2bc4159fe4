@@ -4,6 +4,14 @@ import { Input } from '@/components/ui/input';
 import { Plus, Trash2, Edit, Download, Copy, Search, FileSpreadsheet, Info, Calculator as CalculatorIcon } from 'lucide-react';
 import { Calculator } from '@/components/Calculator';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { SearchColumn } from '@/utils/searchFilter';
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -21,6 +29,9 @@ interface ActionToolbarProps {
   searchValue?: string;
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
+  searchColumns?: SearchColumn[];
+  searchColumn?: string;
+  onSearchColumnChange?: (value: string) => void;
   showDuplicate?: boolean;
   showCalculator?: boolean;
   importColumns?: string[];
@@ -36,6 +47,9 @@ export function ActionToolbar({
   searchValue,
   onSearchChange,
   searchPlaceholder = 'بحث...',
+  searchColumns,
+  searchColumn = 'all',
+  onSearchColumnChange,
   showDuplicate = false,
   showCalculator = false,
   importColumns = [],
@@ -179,15 +193,35 @@ export function ActionToolbar({
 
       {/* Search row */}
       {onSearchChange && (
-        <div className="relative">
-          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            type="text"
-            value={searchValue}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={searchPlaceholder}
-            className="pr-10"
-          />
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="text"
+              value={searchValue}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder={searchPlaceholder}
+              className="pr-10"
+            />
+          </div>
+          {searchColumns && searchColumns.length > 0 && (
+            <Select
+              value={searchColumn || 'all'}
+              onValueChange={(v) => onSearchColumnChange?.(v)}
+            >
+              <SelectTrigger className="w-36 shrink-0" aria-label="عمود البحث">
+                <SelectValue placeholder="الكل" />
+              </SelectTrigger>
+              <SelectContent className="z-50 bg-popover">
+                <SelectItem value="all">الكل</SelectItem>
+                {searchColumns.map((col) => (
+                  <SelectItem key={col.key} value={col.key}>
+                    {col.header}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       )}
       {showCalc && <Calculator onClose={() => setShowCalc(false)} />}

@@ -19,16 +19,26 @@ import {
 } from "@/components/ui/select";
 import { Save, X, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
+import { matchesSearch, SearchColumn } from '@/utils/searchFilter';
+
+const SEARCH_COLUMNS: SearchColumn[] = [
+  { key: 'date', header: 'التاريخ' },
+  { key: 'accountName', header: 'اسم الحساب' },
+  { key: 'currency', header: 'العملة' },
+  { key: 'debit', header: 'مدين' },
+  { key: 'credit', header: 'دائن' },
+];
 
 export function OpeningBalanceScreen() {
   const { openingBalances, accounts, groups, currencies, addOpeningBalance, updateOpeningBalance, deleteOpeningBalance } = useAccounting();
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchColumn, setSearchColumn] = useState('all');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedBalance, setSelectedBalance] = useState<OpeningBalance | null>(null);
   const [editingBalance, setEditingBalance] = useState<OpeningBalance | null>(null);
 
-  const filteredBalances = openingBalances.filter(b => 
-    b.accountName.includes(searchTerm)
+  const filteredBalances = openingBalances.filter(b =>
+    matchesSearch(b, searchTerm, searchColumn, SEARCH_COLUMNS)
   );
 
   const [formData, setFormData] = useState({
@@ -197,6 +207,9 @@ export function OpeningBalanceScreen() {
           onImport={handleImport}
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
+          searchColumns={SEARCH_COLUMNS}
+          searchColumn={searchColumn}
+          onSearchColumnChange={setSearchColumn}
           searchPlaceholder="بحث في الأرصدة..."
           importTitle="استيراد الأرصدة الافتتاحية"
           importColumns={[
