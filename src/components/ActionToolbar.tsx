@@ -179,15 +179,35 @@ export function ActionToolbar({
 
       {/* Search row */}
       {onSearchChange && (
-        <div className="relative">
-          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            type="text"
-            value={searchValue}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={searchPlaceholder}
-            className="pr-10"
-          />
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="text"
+              value={searchValue}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder={searchPlaceholder}
+              className="pr-10"
+            />
+          </div>
+          {searchColumns && searchColumns.length > 0 && (
+            <Select
+              value={searchColumn || 'all'}
+              onValueChange={(v) => onSearchColumnChange?.(v)}
+            >
+              <SelectTrigger className="w-36 shrink-0" aria-label="عمود البحث">
+                <SelectValue placeholder="الكل" />
+              </SelectTrigger>
+              <SelectContent className="z-50 bg-popover">
+                <SelectItem value="all">الكل</SelectItem>
+                {searchColumns.map((col) => (
+                  <SelectItem key={col.key} value={col.key}>
+                    {col.header}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       )}
       {showCalc && <Calculator onClose={() => setShowCalc(false)} />}
