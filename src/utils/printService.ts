@@ -82,6 +82,7 @@ const getCurrencyFullName = (symbol: string): string => {
 interface PrintVoucherData {
   voucher: Voucher;
   settings: Settings;
+  accounts?: Account[];
 }
 
 interface PrintReportData {
@@ -611,10 +612,42 @@ const buildHeaderBlock = (settings: Settings) => `
   </div>
 `;
 
-export function printVoucher({ voucher, settings }: PrintVoucherData) {
-  const voucherTypeName = voucher.type === 'receipt' ? 'سند قبض' : 'سند صرف';
-  const amountLabel = voucher.type === 'receipt' ? 'المبلغ المستلم' : 'المبلغ المصروف';
-  
+export function printVoucher({ voucher, settings, accounts = [] }: PrintVoucherData) {
+  const isReceipt = voucher.type === 'receipt';
+  const voucherTypeName = isReceipt ? 'سند قبض' : 'سند صرف';
+  const currency = voucher.creditCurrency || voucher.debitCurrency || voucher.currency || '';
+  const currencyName = getCurrencyFullName(currency);
+  const amount = voucher.creditAmount || voucher.debitAmount || voucher.amount || 0;
+  const reference = voucher.creditReference || voucher.debitReference || voucher.reference || '-';
+  const description = voucher.creditDescription || voucher.debitDescription || voucher.description || '';
+
+  const findNumber = (name?: string) =>
+    accounts.find(a => a.accountName === name)?.accountNumber || '';
+
+  // Analytic lines (voucher items): credit side only
+  const items = [
+    {
+      accountName: voucher.creditAccountName || voucher.accountName || '',
+      description: voucher.creditDescription || description,
+      amount: voucher.creditAmount || voucher.amount || 0,
+    },
+  ].filter(it => it.accountName);
+
+  // Party: receipt => credit side (payer), payment => debit side (beneficiary)
+  const partyName = isReceipt
+    ? (voucher.creditAccountName || voucher.accountName || '')
+    : (voucher.debitAccountName || voucher.accountName || '');
+  const partyLabel = isReceipt ? 'استلمنا من السادة' : 'صرفنا إلى السادة';
+
+  const itemRows = items.map(it => `
+    <tr>
+      <td class="c">${e(findNumber(it.accountName) || '-')}</td>
+      <td>${e(it.accountName)}</td>
+      <td>${e(it.description || '-')}</td>
+      <td class="c b">${e(it.amount.toLocaleString())}</td>
+    </tr>
+  `).join('');
+
   const printContent = `
     <!DOCTYPE html>
     <html lang="ar" dir="rtl">
@@ -622,83 +655,123 @@ export function printVoucher({ voucher, settings }: PrintVoucherData) {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>${e(voucherTypeName)} - ${e(voucher.voucherNumber)}</title>
-      <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-      <style>${getCommonStyles()}</style>
+      <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          font-family: 'Cairo', 'Tajawal', Arial, sans-serif;
+          direction: rtl;
+          background: #fff;
+          color: #000;
+          padding: 10px;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .a5-sheet {
+          width: 100%;
+          max-width: 19.4cm;
+          margin: 0 auto;
+          border: 2px solid #000;
+          padding: 6px;
+          font-size: 11pt;
+        }
+        .vh { display: flex; align-items: center; gap: 6px; padding: 4px 6px; }
+        .vh .side { flex: 1; font-size: 9pt; line-height: 1.35; }
+        .vh .side.ar { text-align: right; }
+        .vh .side.en { text-align: left; direction: ltr; }
+        .vh .side .l1 { font-weight: 700; font-size: 10pt; }
+        .vh .logo { flex: 0 0 50px; text-align: center; }
+        .vh .logo img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 1px solid #000; }
+        .hr2 { border-top: 2px solid #000; margin: 4px 0; }
+        .v-title { text-align: center; font-size: 16pt; font-weight: 700; margin: 6px 0; }
+        .top-box { border: 2px solid #000; padding: 0; margin-bottom: 6px; }
+        .meta { display: flex; }
+        .meta > div { flex: 1; border: 1px solid #000; padding: 4px 6px; font-size: 10pt; text-align: center; }
+        .amt-row { display: flex; }
+        .amt-row .num { flex: 0 0 25%; border: 1px solid #000; padding: 6px; text-align: center; font-weight: 700; font-size: 12pt; }
+        .amt-row .words { flex: 1; border: 1px solid #000; padding: 6px; font-size: 10.5pt; }
+        .line { border: 1px solid #000; padding: 6px; font-size: 10.5pt; }
+        .dots { border-bottom: 1px dotted #000; display: inline-block; min-width: 40%; }
+        table.items { width: 100%; border-collapse: collapse; margin-top: 6px; }
+        table.items th, table.items td { border: 1px solid #000; padding: 5px 4px; font-size: 10.5pt; color: #000; }
+        table.items th {
+          background: #87CEEB !important; color: #000 !important; font-weight: 700; text-align: center;
+          -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        table.items td.c { text-align: center; }
+        table.items td.b { font-weight: 700; }
+        .signs { display: flex; justify-content: space-between; margin-top: 22px; padding: 0 6px 6px; }
+        .signs div { flex: 1; text-align: center; font-size: 10pt; }
+        .signs span { display: block; border-top: 1px solid #000; margin: 26px 10px 0; padding-top: 3px; }
+        @page { size: A4; margin: 8mm; }
+        @media print {
+          body { padding: 0; }
+          .a5-sheet { width: 100%; max-width: none; border: 2px solid #000; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+      </style>
     </head>
     <body>
-      <div class="page-border">
-      <div class="print-container">
-        <div class="header">
-          <div class="header-right">
-            <h1>${e(settings.headerArabic[0])}</h1>
-            <h2>${e(settings.headerArabic[1])}</h2>
-            <p>${e(settings.headerArabic[2])}</p>
+      <div class="a5-sheet">
+        <div class="vh">
+          <div class="side ar">
+            <div class="l1">${e(settings.headerArabic?.[0])}</div>
+            <div>${e(settings.headerArabic?.[1])}</div>
+            <div>${e(settings.headerArabic?.[2])}</div>
           </div>
-          <div class="header-center">
-            ${settings.logo ? `<img src="${escapeUrl(settings.logo)}" alt="Logo" style="border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover;" />` : ''}
+          <div class="logo">
+            ${settings.logo ? `<img src="${escapeUrl(settings.logo)}" alt="Logo" />` : ''}
           </div>
-          <div class="header-left">
-            <h1>${e(settings.headerEnglish[0])}</h1>
-            <h2>${e(settings.headerEnglish[1])}</h2>
-            <p>${e(settings.headerEnglish[2])}</p>
-          </div>
-        </div>
-        
-        <div class="content">
-          <div class="voucher-type">${e(voucherTypeName)}</div>
-          
-          <div class="info-row">
-            <span class="info-label">رقم السند:</span>
-            <span class="info-value">#${e(voucher.voucherNumber)}</span>
-          </div>
-          
-          <div class="info-row">
-            <span class="info-label">التاريخ:</span>
-            <span class="info-value">${e(voucher.date)}</span>
-          </div>
-          
-          <div class="info-row">
-            <span class="info-label">اسم الحساب:</span>
-            <span class="info-value">${e(voucher.accountName)}</span>
-          </div>
-          
-          <div class="info-row">
-            <span class="info-label">المجموعة:</span>
-            <span class="info-value">${e(voucher.groupName)}</span>
-          </div>
-          
-          ${voucher.reference ? `
-          <div class="info-row">
-            <span class="info-label">رقم المرجع:</span>
-            <span class="info-value">${e(voucher.reference)}</span>
-          </div>
-          ` : ''}
-          
-          <div class="info-row">
-            <span class="info-label">البيان:</span>
-            <span class="info-value">${e(voucher.description)}</span>
-          </div>
-          
-          <div class="amount-box">
-            <div class="amount-label">${e(amountLabel)}</div>
-            <div class="amount-value">${e(Number(voucher.amount ?? 0).toLocaleString())}</div>
-            <div class="amount-currency">${e(voucher.currency)}</div>
-          </div>
-          
-          <div class="footer">
-            <div class="signature-box">
-              <div class="signature-line">توقيع المستلم</div>
-            </div>
-            <div class="signature-box">
-              <div class="signature-line">توقيع المحاسب</div>
-            </div>
-          </div>
-          
-          <div class="print-date">
-            تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')} - ${new Date().toLocaleTimeString('ar-EG')}
+          <div class="side en">
+            <div class="l1">${e(settings.headerEnglish?.[0])}</div>
+            <div>${e(settings.headerEnglish?.[1])}</div>
+            <div>${e(settings.headerEnglish?.[2])}</div>
           </div>
         </div>
-      </div>
+        <div class="hr2"></div>
+
+        <div class="v-title">${e(voucherTypeName)}</div>
+
+        <div class="top-box">
+          <div class="meta">
+            <div>رقم السند: <b>${e(voucher.voucherNumber)}</b></div>
+            <div>التاريخ: <b>${e(voucher.date)}</b></div>
+            <div>رقم المرجع: <b>${e(reference)}</b></div>
+          </div>
+          <div class="amt-row">
+            <div class="num">${e(amount.toLocaleString())} ${e(currency)}</div>
+            <div class="words">مبلغ وقدره: ${e(numberToArabicWords(amount))} ${e(currencyName)} فقط لا غير</div>
+          </div>
+          <div class="line">${e(partyLabel)}: <span class="dots">&nbsp;${e(partyName)}</span></div>
+          <div class="line">وذلك مقابل: <span class="dots">&nbsp;${e(description || '')}</span></div>
+        </div>
+
+        <table class="items">
+          <thead>
+            <tr>
+              <th style="width:18%">رقم الحساب</th>
+              <th style="width:32%">اسم الحساب</th>
+              <th style="width:30%">البيان</th>
+              <th style="width:20%">المبلغ</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemRows}
+          </tbody>
+        </table>
+
+        ${(settings.footerNote || settings.voucherFooterNote) ? `
+        <div style="border: 1px solid #000; padding: 8px; margin-top: 8px; text-align: center; font-size: 10pt; background: #f8fafc;">
+          ${settings.footerNote ? `<div style="font-weight: 600; color: #000;">${e(settings.footerNote)}</div>` : ''}
+          ${settings.voucherFooterNote ? `<div style="font-weight: 600; color: #000; margin-top: 4px;">${e(settings.voucherFooterNote)}</div>` : ''}
+        </div>
+        ` : ''}
+
+        <div class="signs">
+          <div>المستلم<span></span></div>
+          <div>الصندوق<span></span></div>
+          <div>المدير المالي<span></span></div>
+        </div>
       </div>
     </body>
     </html>
