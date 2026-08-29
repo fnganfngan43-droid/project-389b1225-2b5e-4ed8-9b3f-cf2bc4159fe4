@@ -9,6 +9,8 @@ import { findClosestMatch } from '@/utils/fuzzyMatch';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { getNextSequentialNumber } from '@/utils/sequentialNumber';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
+import { sortByNumberDesc } from '@/lib/utils';
+
 
 import { DiscountEntry } from '@/types/accounting';
 import { 
@@ -457,7 +459,7 @@ export function DiscountScreen() {
         {/* Discounts Table */}
         <div className="min-h-[300px]">
           <ScrollableTable
-          data={filteredDiscounts}
+          data={sortByNumberDesc(filteredDiscounts, d => d.discountNumber)}
           columns={columns}
           onRowClick={(discount) => setSelectedDiscount(selectedDiscount?.id === discount.id ? null : discount)}
           selectedId={selectedDiscount?.id}
@@ -467,6 +469,7 @@ export function DiscountScreen() {
             emptyDescription="اضغط على 'إضافة' لإنشاء خصم جديد"
           />
         </div>
+
       </div>
 
       <DuplicateReferenceDialog

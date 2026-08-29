@@ -160,7 +160,8 @@ const getReportHTML = (data: ReportPDFData): string => {
       <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(t.date)}</td>
       <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626; font-weight: bold;' : ''}">${e(t.type)}</td>
       <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(stripLeadingZeros(t.documentNumber))}</td>
-      <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(t.description)}</td>
+      <td style="padding: 8px; border: 1px solid #000; text-align: center; font-size: 13px; color: #000000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(t.description)}</td>
+
       <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;">${e(t.reference || '-')}</td>
       <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #16a34a; font-weight: bold;">${t.debit > 0 ? e(t.debit.toLocaleString()) : '-'}</td>
       <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #dc2626; font-weight: bold;">${t.credit > 0 ? e(t.credit.toLocaleString()) : '-'}</td>
@@ -170,14 +171,14 @@ const getReportHTML = (data: ReportPDFData): string => {
 
   const tableHeaderHTML = `
     <tr>
-      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">التاريخ</th>
-      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">النوع</th>
-      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">رقم المستند</th>
-      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">البيان</th>
-      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">المرجع</th>
-      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">مدين</th>
-      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">دائن</th>
-      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">الرصيد</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">التاريخ</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">النوع</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">رقم المستند</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">البيان</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">المرجع</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">مدين</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">دائن</th>
+      <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">الرصيد</th>
     </tr>
   `;
 
@@ -189,7 +190,7 @@ const getReportHTML = (data: ReportPDFData): string => {
           <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(t.date)}</td>
           <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626; font-weight: bold;' : ''}">${e(t.type)}</td>
           <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(stripLeadingZeros(t.documentNumber))}</td>
-          <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(t.description)}</td>
+          <td style="padding: 8px; border: 1px solid #000; text-align: center; font-size: 13px; color: #000000;${t.isPreviousBalance ? ' color: #dc2626;' : ''}">${e(t.description)}</td>
           <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #000;">${e(t.reference || '-')}</td>
           <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #16a34a; font-weight: bold;">${t.debit > 0 ? e(t.debit.toLocaleString()) : '-'}</td>
           <td style="padding: 8px; border: 1px solid #000; text-align: center; color: #dc2626; font-weight: bold;">${t.credit > 0 ? e(t.credit.toLocaleString()) : '-'}</td>
@@ -206,7 +207,7 @@ const getReportHTML = (data: ReportPDFData): string => {
       <meta charset="UTF-8">
       <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
       <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
         body { font-family: 'Tajawal', Arial, sans-serif; direction: rtl; background: #fff; padding: 20px; }
         table { border-collapse: collapse; }
       </style>
@@ -258,12 +259,12 @@ const getReportHTML = (data: ReportPDFData): string => {
         <!-- Balance Section -->
         <div data-pdf-section="balance" style="padding: 10px 25px;">
           <div style="padding: 15px; background: #f0fdfa; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 10px;">
-            <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+            <span style="font-size: 14px; font-weight: bold; color: #000000;">
               ${e(balanceLabel)}: ${e(absBalance.toLocaleString())} ${e(getCurrencyFullName(currency))}
             </span>
           </div>
           <div style="padding: 15px; background: #f8fafc; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 10px;">
-            <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+            <span style="font-size: 14px; font-weight: bold; color: #000000;">
               ${e(balanceLabel)}: ${e(numberToArabicWords(absBalance))} ${e(getCurrencyFullName(currency))}
             </span>
           </div>
@@ -309,11 +310,11 @@ const getSummaryReportHTML = (data: SummaryPDFData): string => {
       <div data-pdf-section="row-${ci}-${ai}" style="width: 100%;">
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
-            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #000;">${e(acc.accountNumber)}</td>
-            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: right; color: #000;">${e(acc.accountName)}</td>
-            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #16a34a; font-weight: bold;">${acc.totalDebit > 0 ? e(acc.totalDebit.toLocaleString()) : '-'}</td>
-            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #dc2626; font-weight: bold;">${acc.totalCredit > 0 ? e(acc.totalCredit.toLocaleString()) : '-'}</td>
-            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: ${acc.balance >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold;">${e(acc.balance.toLocaleString())}</td>
+            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: center; color: #000;">${e(acc.accountNumber)}</td>
+            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: right; color: #000;">${e(acc.accountName)}</td>
+            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: center; color: #000000; font-weight: bold;">${acc.totalDebit > 0 ? e(acc.totalDebit.toLocaleString()) : '-'}</td>
+            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: center; color: #000000; font-weight: bold;">${acc.totalCredit > 0 ? e(acc.totalCredit.toLocaleString()) : '-'}</td>
+            <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: center; color: #000000; font-weight: bold;">${e(acc.balance.toLocaleString())}</td>
           </tr>
         </table>
       </div>
@@ -329,11 +330,11 @@ const getSummaryReportHTML = (data: SummaryPDFData): string => {
       <div data-pdf-section="table-header" style="width: 100%; padding: 0 25px;">
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
-            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">رقم الحساب</th>
-            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">اسم الحساب</th>
-            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">مدين</th>
-            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">دائن</th>
-            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">الرصيد</th>
+            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">رقم الحساب</th>
+            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">اسم الحساب</th>
+            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">مدين</th>
+            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">دائن</th>
+            <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">الرصيد</th>
           </tr>
         </table>
       </div>
@@ -355,12 +356,12 @@ const getSummaryReportHTML = (data: SummaryPDFData): string => {
       
       <div data-pdf-section="balance-${ci}" style="padding: 10px 25px;">
         <div style="padding: 15px; background: #f0fdfa; border: 2px solid #0d9488; border-radius: 8px; text-align: center; margin-bottom: 10px;">
-          <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+          <span style="font-size: 14px; font-weight: bold; color: #000000;">
             ${e(balanceLabel)}: ${e(absBalance.toLocaleString())} ${e(getCurrencyFullName(cd.currency))}
           </span>
         </div>
         <div style="padding: 15px; background: #f8fafc; border: 2px solid #0d9488; border-radius: 8px; text-align: center;">
-          <span style="font-size: 16px; font-weight: bold; color: ${isDebit ? '#16a34a' : '#dc2626'};">
+          <span style="font-size: 14px; font-weight: bold; color: #000000;">
             ${e(balanceLabel)}: ${e(numberToArabicWords(absBalance))} ${e(getCurrencyFullName(cd.currency))}
           </span>
         </div>
@@ -375,7 +376,7 @@ const getSummaryReportHTML = (data: SummaryPDFData): string => {
       <meta charset="UTF-8">
       <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
       <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
         body { font-family: 'Tajawal', Arial, sans-serif; direction: rtl; background: #fff; padding: 20px; }
         table { border-collapse: collapse; }
       </style>
@@ -472,11 +473,11 @@ const getReconciliationReportHTML = (data: ReconciliationPDFData): string => {
     <div data-pdf-section="row-${i}" style="width: 100%;">
       <table style="width: 100%; border-collapse: collapse;">
         <tr>
-          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #000;">${e(r.accountNumber || '-')}</td>
-          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: right; color: #000;">${e(r.accountName)}</td>
-          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #000;">${e(r.currency)}</td>
-          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: ${r.amount >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold;">${e(r.amount.toLocaleString())}</td>
-          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 12px; text-align: center; color: #000;">${e(r.toDate)}</td>
+          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: center; color: #000;">${e(r.accountNumber || '-')}</td>
+          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: right; color: #000;">${e(r.accountName)}</td>
+          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: center; color: #000;">${e(r.currency)}</td>
+          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: center; color: #000000; font-weight: bold;">${e(r.amount.toLocaleString())}</td>
+          <td style="padding: 10px 8px; border: 1px solid #000; font-size: 13px; text-align: center; color: #000;">${e(r.toDate)}</td>
         </tr>
       </table>
     </div>
@@ -489,7 +490,7 @@ const getReconciliationReportHTML = (data: ReconciliationPDFData): string => {
       <meta charset="UTF-8">
       <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
       <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
         body { font-family: 'Tajawal', Arial, sans-serif; direction: rtl; background: #fff; padding: 20px; }
         table { border-collapse: collapse; }
       </style>
@@ -522,11 +523,11 @@ const getReconciliationReportHTML = (data: ReconciliationPDFData): string => {
         <div data-pdf-section="table-header" style="width: 100%; padding: 0 25px;">
           <table style="width: 100%; border-collapse: collapse;">
             <tr>
-              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">رقم الحساب</th>
-              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">اسم الحساب</th>
-              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">العملة</th>
-              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">المبلغ</th>
-              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 13px; text-align: center; border: 1px solid #000; font-weight: bold;">إلى تاريخ</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">رقم الحساب</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">اسم الحساب</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">العملة</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">المبلغ</th>
+              <th style="background: #87CEEB; color: #000; padding: 12px 8px; font-size: 14px; text-align: center; border: 1px solid #000; font-weight: bold;">إلى تاريخ</th>
             </tr>
           </table>
         </div>

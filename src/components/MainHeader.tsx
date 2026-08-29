@@ -82,6 +82,7 @@ export function MainHeader({ onSettingsClick, onLogout, title = 'الشاشة ا
             variant="ghost"
             size="icon"
             onClick={onSettingsClick}
+            aria-label="الإعدادات"
             className="text-primary-foreground hover:bg-primary-foreground/10"
           >
             <Settings className="w-5 h-5" />
@@ -90,6 +91,7 @@ export function MainHeader({ onSettingsClick, onLogout, title = 'الشاشة ا
             variant="ghost"
             size="icon"
             onClick={onLogout}
+            aria-label="خروج"
             className="text-primary-foreground hover:bg-primary-foreground/10"
           >
             <LogOut className="w-5 h-5" />

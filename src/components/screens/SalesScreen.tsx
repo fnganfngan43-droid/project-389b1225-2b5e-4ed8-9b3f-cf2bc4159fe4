@@ -11,6 +11,8 @@ import { parseExcelFile, mapInvoiceRow } from '@/utils/excelImport';
 import { findClosestMatch } from '@/utils/fuzzyMatch';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { getNextSequentialNumber } from '@/utils/sequentialNumber';
+import { sortByNumberDesc } from '@/lib/utils';
+
 import { 
   Select,
   SelectContent,
@@ -491,7 +493,7 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
         {/* Invoices Table */}
         <div className="min-h-[300px]">
           <ScrollableTable
-          data={filteredInvoices}
+          data={sortByNumberDesc(filteredInvoices, inv => inv.invoiceNumber)}
           columns={columns}
           onRowClick={(invoice) => setSelectedInvoice(selectedInvoice?.id === invoice.id ? null : invoice)}
           selectedId={selectedInvoice?.id}
@@ -501,6 +503,7 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
             emptyDescription={`اضغط على 'إضافة' لإنشاء ${isReturn ? 'مرتجع' : 'فاتورة'} جديدة`}
           />
         </div>
+
       </div>
 
       <DuplicateReferenceDialog
