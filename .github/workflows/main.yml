@@ -1,4 +1,4 @@
-name: Build Fares Accounting APK
+name: Build Fares Accounting APK - Print
 
 on:
   workflow_dispatch:
@@ -7,10 +7,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Create Android project
+      - name: إنشاء مشروع أندرويد
         run: |
           mkdir -p android-app/app/src/main/java/com/fares/accounting android-app/app/src/main/res/values
-          cat > android-app/settings.gradle <<'EOF'
+
+          cat > android-app/settings.gradle <<'GRADLE'
           pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
           dependencyResolutionManagement {
             repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
@@ -18,15 +19,18 @@ jobs:
           }
           rootProject.name="FaresAccounting"
           include(":app")
-          EOF
-          cat > android-app/build.gradle <<'EOF'
+          GRADLE
+
+          cat > android-app/build.gradle <<'GRADLE'
           plugins { id 'com.android.application' version '8.6.1' apply false }
-          EOF
-          cat > android-app/gradle.properties <<'EOF'
+          GRADLE
+
+          cat > android-app/gradle.properties <<'PROPS'
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
           android.useAndroidX=true
-          EOF
-          cat > android-app/app/build.gradle <<'EOF'
+          PROPS
+
+          cat > android-app/app/build.gradle <<'GRADLE'
           plugins { id 'com.android.application' }
           android {
             namespace 'com.fares.accounting'
@@ -35,15 +39,17 @@ jobs:
               applicationId 'com.fares.accounting'
               minSdk 23
               targetSdk 35
-              versionCode 1
-              versionName '1.0'
+              versionCode 2
+              versionName '1.1'
             }
           }
-          EOF
-          cat > android-app/app/src/main/res/values/strings.xml <<'EOF'
+          GRADLE
+
+          cat > android-app/app/src/main/res/values/strings.xml <<'XML'
           <resources><string name="app_name">رفيق المحاسب</string></resources>
-          EOF
-          cat > android-app/app/src/main/res/values/styles.xml <<'EOF'
+          XML
+
+          cat > android-app/app/src/main/res/values/styles.xml <<'XML'
           <resources>
             <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
               <item name="android:fontFamily">sans</item>
@@ -52,12 +58,20 @@ jobs:
               <item name="android:statusBarColor">#000000</item>
             </style>
           </resources>
-          EOF
-          cat > android-app/app/src/main/AndroidManifest.xml <<'EOF'
+          XML
+
+          cat > android-app/app/src/main/AndroidManifest.xml <<'XML'
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
             <uses-permission android:name="android.permission.INTERNET"/>
-            <application android:label="@string/app_name" android:theme="@style/AppTheme" android:usesCleartextTraffic="true">
-              <activity android:name=".MainActivity" android:screenOrientation="portrait" android:exported="true">
+            <application
+              android:label="@string/app_name"
+              android:theme="@style/AppTheme"
+              android:usesCleartextTraffic="true"
+              android:hardwareAccelerated="true">
+              <activity
+                android:name=".MainActivity"
+                android:screenOrientation="portrait"
+                android:exported="true">
                 <intent-filter>
                   <action android:name="android.intent.action.MAIN"/>
                   <category android:name="android.intent.category.LAUNCHER"/>
@@ -65,74 +79,235 @@ jobs:
               </activity>
             </application>
           </manifest>
-          EOF
-          cat > android-app/app/src/main/java/com/fares/accounting/MainActivity.java <<'EOF'
+          XML
+
+          cat > android-app/app/src/main/java/com/fares/accounting/MainActivity.java <<'JAVA'
           package com.fares.accounting;
+
           import android.app.Activity;
-          import android.os.Bundle;
-          import android.webkit.*;
           import android.content.Intent;
           import android.net.Uri;
+          import android.os.Bundle;
+          import android.os.Handler;
+          import android.os.Looper;
+          import android.print.PrintAttributes;
+          import android.print.PrintManager;
+          import android.webkit.CookieManager;
+          import android.webkit.JavascriptInterface;
+          import android.webkit.ValueCallback;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
 
           public class MainActivity extends Activity {
-            WebView w;
-            ValueCallback<Uri[]> callback;
-            static final int FILES=1001;
+            private WebView w;
+            private WebView printWebView;
+            private ValueCallback<Uri[]> callback;
+            private static final int FILES = 1001;
+
             @Override public void onCreate(Bundle b) {
               super.onCreate(b);
-              w=new WebView(this); setContentView(w);
-              WebSettings s=w.getSettings();
-              s.setJavaScriptEnabled(true); s.setDomStorageEnabled(true);
-              s.setDatabaseEnabled(true); s.setAllowFileAccess(true); s.setAllowContentAccess(true);
+              w = new WebView(this);
+              setContentView(w);
+
+              WebSettings s = w.getSettings();
+              s.setJavaScriptEnabled(true);
+              s.setDomStorageEnabled(true);
+              s.setDatabaseEnabled(true);
+              s.setAllowFileAccess(true);
+              s.setAllowContentAccess(true);
+              s.setSupportZoom(false);
+              s.setBuiltInZoomControls(false);
+              s.setDisplayZoomControls(false);
+
               CookieManager.getInstance().setAcceptCookie(true);
-              CookieManager.getInstance().setAcceptThirdPartyCookies(w,true);
-              w.setWebViewClient(new WebViewClient());
+              CookieManager.getInstance().setAcceptThirdPartyCookies(w, true);
+
+              w.addJavascriptInterface(new PrintBridge(), "AndroidPrint");
+
+              w.setWebViewClient(new WebViewClient() {
+                @Override public void onPageFinished(WebView view, String url) {
+                  super.onPageFinished(view, url);
+                  installPrintBridge();
+                }
+              });
+
               w.setWebChromeClient(new WebChromeClient() {
-                @Override public boolean onShowFileChooser(WebView v, ValueCallback<Uri[]> c, FileChooserParams f) {
-                  callback=c;
-                  try { startActivityForResult(f.createIntent(),FILES); } catch(Exception e) { callback=null; c.onReceiveValue(null); }
+                @Override public boolean onShowFileChooser(
+                    WebView v, ValueCallback<Uri[]> c, FileChooserParams f) {
+                  callback = c;
+                  try {
+                    startActivityForResult(f.createIntent(), FILES);
+                  } catch (Exception e) {
+                    callback = null;
+                    c.onReceiveValue(null);
+                  }
                   return true;
                 }
               });
+
               w.loadUrl("https://fares-2026.lovable.app/");
             }
-            @Override protected void onActivityResult(int r,int c,Intent d) {
-              super.onActivityResult(r,c,d);
-              if(r==FILES && callback!=null) {
-                Uri[] x=null;
-                if(c==RESULT_OK && d!=null) {
-                  if(d.getClipData()!=null) {
-                    int n=d.getClipData().getItemCount(); x=new Uri[n];
-                    for(int i=0;i<n;i++) x[i]=d.getClipData().getItemAt(i).getUri();
-                  } else if(d.getData()!=null) x=new Uri[]{d.getData()};
-                }
-                callback.onReceiveValue(x); callback=null;
+
+            /*
+             * The web application creates an iframe named __print_iframe and calls
+             * iframe.contentWindow.print(). Android WebView does not automatically
+             * open the Android print dialog for window.print(), so we intercept it
+             * and send the generated HTML to Android PrintManager.
+             */
+            private void installPrintBridge() {
+              String js = "javascript:(function(){" +
+                "if(window.__faresNativePrintInstalled)return;" +
+                "window.__faresNativePrintInstalled=true;" +
+                "function send(doc){try{" +
+                  "if(doc&&doc.documentElement&&window.AndroidPrint)" +
+                  "AndroidPrint.printPage(doc.documentElement.outerHTML);" +
+                "}catch(e){}}" +
+                "window.print=function(){send(document);};" +
+                "function hook(f){try{" +
+                  "if(!f||f.__faresHooked)return;" +
+                  "f.__faresHooked=true;" +
+                  "var x=function(){send(f.contentDocument||f.contentWindow.document);};" +
+                  "try{f.contentWindow.print=x;}catch(e){}" +
+                  "setTimeout(function(){try{f.contentWindow.print=x;}catch(e){}},50);" +
+                  "setTimeout(function(){try{f.contentWindow.print=x;}catch(e){}},300);" +
+                "}catch(e){}}" +
+                "function scan(){document.querySelectorAll('iframe#__print_iframe').forEach(hook);}" +
+                "new MutationObserver(scan).observe(document.documentElement,{childList:true,subtree:true});" +
+                "scan();" +
+              "})()";
+              w.evaluateJavascript(js, null);
+            }
+
+            private class PrintBridge {
+              @JavascriptInterface
+              public void printPage(final String html) {
+                new Handler(Looper.getMainLooper()).post(
+                  () -> startNativePrint(html)
+                );
               }
             }
+
+            private void startNativePrint(String html) {
+              try {
+                if (printWebView != null) {
+                  try {
+                    printWebView.stopLoading();
+                    printWebView.destroy();
+                  } catch (Exception ignored) {}
+                }
+
+                printWebView = new WebView(this);
+                WebSettings ps = printWebView.getSettings();
+                ps.setJavaScriptEnabled(true);
+                ps.setDomStorageEnabled(true);
+                ps.setAllowFileAccess(true);
+                ps.setAllowContentAccess(true);
+
+                printWebView.setWebViewClient(new WebViewClient() {
+                  @Override public void onPageFinished(WebView view, String url) {
+                    super.onPageFinished(view, url);
+                    new Handler(Looper.getMainLooper()).postDelayed(
+                      () -> doPrint(view), 500
+                    );
+                  }
+                });
+
+                printWebView.loadDataWithBaseURL(
+                  "https://fares-2026.lovable.app/",
+                  html,
+                  "text/html",
+                  "UTF-8",
+                  null
+                );
+              } catch (Exception e) {
+                android.widget.Toast.makeText(
+                  this,
+                  "تعذر فتح شاشة الطباعة",
+                  android.widget.Toast.LENGTH_LONG
+                ).show();
+              }
+            }
+
+            private void doPrint(WebView view) {
+              try {
+                PrintManager pm = (PrintManager) getSystemService(PRINT_SERVICE);
+                String jobName = "رفيق المحاسب - طباعة";
+
+                PrintAttributes attrs = new PrintAttributes.Builder()
+                  .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
+                  .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
+                  .setColorMode(PrintAttributes.COLOR_MODE_COLOR)
+                  .build();
+
+                pm.print(
+                  jobName,
+                  view.createPrintDocumentAdapter(jobName),
+                  attrs
+                );
+              } catch (Exception e) {
+                android.widget.Toast.makeText(
+                  this,
+                  "تعذر بدء الطباعة: " + e.getMessage(),
+                  android.widget.Toast.LENGTH_LONG
+                ).show();
+              }
+            }
+
+            @Override protected void onActivityResult(int r, int c, Intent d) {
+              super.onActivityResult(r, c, d);
+              if (r == FILES && callback != null) {
+                Uri[] x = null;
+                if (c == RESULT_OK && d != null) {
+                  if (d.getClipData() != null) {
+                    int n = d.getClipData().getItemCount();
+                    x = new Uri[n];
+                    for (int i = 0; i < n; i++) {
+                      x[i] = d.getClipData().getItemAt(i).getUri();
+                    }
+                  } else if (d.getData() != null) {
+                    x = new Uri[]{d.getData()};
+                  }
+                }
+                callback.onReceiveValue(x);
+                callback = null;
+              }
+            }
+
             @Override public void onBackPressed() {
-              if(w.canGoBack()) w.goBack(); else super.onBackPressed();
+              if (w.canGoBack()) w.goBack();
+              else super.onBackPressed();
+            }
+
+            @Override protected void onDestroy() {
+              try { if (printWebView != null) printWebView.destroy(); }
+              catch (Exception ignored) {}
+              try { if (w != null) w.destroy(); }
+              catch (Exception ignored) {}
+              super.onDestroy();
             }
           }
-          EOF
+          JAVA
 
-      - name: Set up JDK 17
+      - name: إعداد JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Gradle
+      - name: إعداد Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
 
-      - name: Build APK
+      - name: بناء ملف APK
         working-directory: android-app
         run: gradle clean assembleDebug --no-daemon
 
-      - name: Upload APK
+      - name: رفع ملف APK
         uses: actions/upload-artifact@v4
         with:
-          name: Fares-Accounting-APK
+          name: Fares-Accounting-APK-Print
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
