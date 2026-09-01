@@ -16,12 +16,29 @@ export function isWebView(): boolean {
     (/(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i.test(ua));
 }
 
+/** Native Android print bridge (exposed by the APK WebView), if available */
+function getNativePrint(): any {
+  const bridge = (window as any).AndroidPrint;
+  return bridge && typeof bridge.printHtml === 'function' ? bridge : null;
+}
+
 /** 
  * Print HTML content - works in both browser and WebView.
  * Uses iframe approach which is more compatible than window.open.
  * Falls back to Blob download if print still fails.
  */
 export function printHTML(htmlContent: string, onReady?: (doc: Document) => void): void {
+  // Native Android printing (phone printer / Save as PDF) when running inside the APK
+  const native = getNativePrint();
+  if (native) {
+    try {
+      native.printHtml(htmlContent, 'تقرير');
+      return;
+    } catch (e) {
+      console.warn('Native print failed, falling back to iframe', e);
+    }
+  }
+
   // Remove any existing print iframe
   const existingFrame = document.getElementById('__print_iframe');
   if (existingFrame) existingFrame.remove();
@@ -31,6 +48,7 @@ export function printHTML(htmlContent: string, onReady?: (doc: Document) => void
   iframe.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;border:none;background:white;';
 
   document.body.appendChild(iframe);
+
 
   const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
   if (!iframeDoc || !iframe.contentWindow) {
