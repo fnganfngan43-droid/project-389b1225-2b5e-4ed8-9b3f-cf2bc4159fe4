@@ -1,4 +1,4 @@
-import { Voucher, Settings } from '@/types/accounting';
+import { Voucher, Settings, Account } from '@/types/accounting';
 import { e, escapeUrl } from './htmlEscape';
 
 // Convert number to Arabic words
@@ -82,6 +82,7 @@ const getCurrencyFullName = (symbol: string): string => {
 interface PrintVoucherData {
   voucher: Voucher;
   settings: Settings;
+  accounts?: Account[];
 }
 
 interface PrintReportData {
