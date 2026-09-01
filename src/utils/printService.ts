@@ -612,10 +612,39 @@ const buildHeaderBlock = (settings: Settings) => `
   </div>
 `;
 
-export function printVoucher({ voucher, settings }: PrintVoucherData) {
+export function printVoucher({ voucher, settings, accounts = [] }: PrintVoucherData) {
   const voucherTypeName = voucher.type === 'receipt' ? 'سند قبض' : 'سند صرف';
   const amountLabel = voucher.type === 'receipt' ? 'المبلغ المستلم' : 'المبلغ المصروف';
-  
+
+  // Resolve account numbers from the chart of accounts (by name)
+  const lookupAccountNumber = (name?: string) =>
+    (name && accounts.find(a => a.accountName === name)?.accountNumber) || '';
+
+  const debitAccountNumber = lookupAccountNumber(voucher.debitAccountName);
+  const creditAccountNumber = lookupAccountNumber(voucher.creditAccountName);
+
+  // Amounts fall back to legacy single-side fields
+  const debitAmount = voucher.debitAmount ?? voucher.amount ?? 0;
+  const creditAmount = voucher.creditAmount ?? voucher.amount ?? 0;
+  const debitCurrency = voucher.debitCurrency ?? voucher.currency ?? '';
+  const creditCurrency = voucher.creditCurrency ?? voucher.currency ?? '';
+  const voucherCurrency = voucher.type === 'receipt' ? creditCurrency : debitCurrency;
+  const voucherAmount = voucher.type === 'receipt' ? creditAmount : debitAmount;
+
+  const amountInWords = numberToArabicWords(voucherAmount) + (voucherCurrency ? ` ${voucherCurrency}` : '');
+
+  // Footer notes: voucher-specific note (with default) + general footer note
+  const defaultVoucherNote = 'هذا السند إلكتروني لا يحتاج إلى ختم';
+  const voucherNote = (settings.voucherFooterNote ?? '').trim() || defaultVoucherNote;
+  const generalNote = (settings.footerNote ?? '').trim();
+
+  const footerNotesBlock = `
+    <div class="voucher-footer-notes">
+      ${generalNote ? `<div class="footer-note-line">${e(generalNote)}</div>` : ''}
+      <div class="footer-note-line">${e(voucherNote)}</div>
+    </div>
+  `;
+
   const printContent = `
     <!DOCTYPE html>
     <html lang="ar" dir="rtl">
@@ -624,7 +653,52 @@ export function printVoucher({ voucher, settings }: PrintVoucherData) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>${e(voucherTypeName)} - ${e(voucher.voucherNumber)}</title>
       <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-      <style>${getCommonStyles()}</style>
+      <style>
+        ${getCommonStyles()}
+        @page { size: A4; margin: 12mm; }
+        .voucher-details {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 18px 0;
+        }
+        .voucher-details th, .voucher-details td {
+          border: 1px solid #000;
+          padding: 10px 8px;
+          font-size: 13px;
+          text-align: center;
+        }
+        .voucher-details th {
+          background: #87CEEB;
+          color: #000;
+          font-weight: bold;
+          font-size: 14px;
+        }
+        .amount-words {
+          background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+          border: 2px solid #0d9488;
+          border-radius: 10px;
+          padding: 12px 16px;
+          margin: 18px 0;
+          font-weight: bold;
+          font-size: 15px;
+          color: #000;
+          text-align: center;
+        }
+        .voucher-footer-notes {
+          border: 2px solid #000;
+          border-radius: 8px;
+          padding: 12px 16px;
+          margin: 18px 0;
+          background: #fff;
+        }
+        .footer-note-line {
+          font-weight: bold;
+          font-size: 14px;
+          color: #000;
+          margin: 4px 0;
+          text-align: center;
+        }
+      </style>
     </head>
     <body>
       <div class="page-border">
@@ -652,40 +726,59 @@ export function printVoucher({ voucher, settings }: PrintVoucherData) {
             <span class="info-label">رقم السند:</span>
             <span class="info-value">#${e(voucher.voucherNumber)}</span>
           </div>
-          
           <div class="info-row">
             <span class="info-label">التاريخ:</span>
             <span class="info-value">${e(voucher.date)}</span>
           </div>
-          
-          <div class="info-row">
-            <span class="info-label">اسم الحساب:</span>
-            <span class="info-value">${e(voucher.accountName)}</span>
-          </div>
-          
-          <div class="info-row">
-            <span class="info-label">المجموعة:</span>
-            <span class="info-value">${e(voucher.groupName)}</span>
-          </div>
-          
           ${voucher.reference ? `
           <div class="info-row">
             <span class="info-label">رقم المرجع:</span>
             <span class="info-value">${e(voucher.reference)}</span>
-          </div>
-          ` : ''}
+          </div>` : ''}
           
-          <div class="info-row">
-            <span class="info-label">البيان:</span>
-            <span class="info-value">${e(voucher.description)}</span>
-          </div>
-          
+          <table class="voucher-details">
+            <thead>
+              <tr>
+                <th>البيان</th>
+                <th>رقم الحساب</th>
+                <th>اسم الحساب</th>
+                <th>المجموعة</th>
+                <th>المبلغ</th>
+                <th>العملة</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>مدين</strong></td>
+                <td>${e(debitAccountNumber)}</td>
+                <td>${e(voucher.debitAccountName ?? '')}</td>
+                <td>${e(voucher.debitGroupName ?? '')}</td>
+                <td>${e(debitAmount.toLocaleString())}</td>
+                <td>${e(debitCurrency)}</td>
+              </tr>
+              <tr>
+                <td><strong>دائن</strong></td>
+                <td>${e(creditAccountNumber)}</td>
+                <td>${e(voucher.creditAccountName ?? '')}</td>
+                <td>${e(voucher.creditGroupName ?? '')}</td>
+                <td>${e(creditAmount.toLocaleString())}</td>
+                <td>${e(creditCurrency)}</td>
+              </tr>
+            </tbody>
+          </table>
+
           <div class="amount-box">
             <div class="amount-label">${e(amountLabel)}</div>
-            <div class="amount-value">${e(voucher.amount.toLocaleString())}</div>
-            <div class="amount-currency">${e(voucher.currency)}</div>
+            <div class="amount-value">${e(voucherAmount.toLocaleString())}</div>
+            <div class="amount-currency">${e(voucherCurrency)}</div>
           </div>
-          
+
+          <div class="amount-words">
+            المبلغ كتابةً: ${e(amountInWords)}
+          </div>
+
+          ${footerNotesBlock}
+
           <div class="footer">
             <div class="signature-box">
               <div class="signature-line">توقيع المستلم</div>
