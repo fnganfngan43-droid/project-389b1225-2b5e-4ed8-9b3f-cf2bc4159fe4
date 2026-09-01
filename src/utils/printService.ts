@@ -633,17 +633,16 @@ export function printVoucher({ voucher, settings, accounts = [] }: PrintVoucherD
 
   const amountInWords = numberToArabicWords(voucherAmount) + (voucherCurrency ? ` ${voucherCurrency}` : '');
 
-  // Footer notes: voucher-specific note (with default) + general footer note
+  // Footer note: voucher-specific note ONLY (general footerNote is not shown on vouchers)
   const defaultVoucherNote = 'هذا السند إلكتروني لا يحتاج إلى ختم';
   const voucherNote = (settings.voucherFooterNote ?? '').trim() || defaultVoucherNote;
-  const generalNote = (settings.footerNote ?? '').trim();
 
   const footerNotesBlock = `
     <div class="voucher-footer-notes">
-      ${generalNote ? `<div class="footer-note-line">${e(generalNote)}</div>` : ''}
       <div class="footer-note-line">${e(voucherNote)}</div>
     </div>
   `;
+
 
   const printContent = `
     <!DOCTYPE html>
