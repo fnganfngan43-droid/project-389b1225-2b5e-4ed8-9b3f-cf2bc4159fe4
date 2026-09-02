@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useAccounting } from '@/contexts/AccountingContext';
-import { Settings, LogOut, Calculator, Download } from 'lucide-react';
+import { Settings, LogOut, Download } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface BeforeInstallPromptEvent extends Event {

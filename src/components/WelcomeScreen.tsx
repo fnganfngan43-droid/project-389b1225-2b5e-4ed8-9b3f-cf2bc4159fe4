@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAccounting } from '@/contexts/AccountingContext';
-import { Calculator, LogIn, LogOut, User, Eye, EyeOff, Lock } from 'lucide-react';
+import { LogIn, LogOut, User, Eye, EyeOff, Lock } from 'lucide-react';
 import { verifyPassword } from '@/utils/secureStorage';
 import { toast } from 'sonner';
 
