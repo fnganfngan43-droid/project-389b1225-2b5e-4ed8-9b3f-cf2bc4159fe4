@@ -1,5 +1,4 @@
 import { ReactNode } from 'react';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 interface Column<T> {
   key: string;
@@ -40,57 +39,41 @@ export function ScrollableTable<T>({
   }
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden border rounded-lg">
-      {/* Scrollable container - both header and body scroll horizontally together */}
-      <ScrollArea className="flex-1">
-        <div className="min-w-max">
-          {/* Sticky Header */}
-          <div className="sticky top-0 z-10 bg-muted">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b">
-                  {columns.map((col) => (
-                    <th 
-                      key={col.key} 
-                      className={`h-12 px-4 text-right align-middle font-medium text-muted-foreground whitespace-nowrap bg-muted ${col.className || ''}`}
-                    >
-                      {col.header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-            </table>
-          </div>
-          
-          {/* Table Body */}
-          <table className="w-full border-collapse">
-            <tbody>
-              {data.map((item, index) => (
-                <tr
-                  key={getItemId(item)}
-                  onClick={() => onRowClick?.(item)}
-                  className={`border-b cursor-pointer transition-colors ${
-                    selectedId === getItemId(item)
-                      ? 'bg-primary/10 border-primary'
-                      : 'hover:bg-muted/50'
-                  }`}
+    <div className="flex-1 overflow-auto scrollbar-thin border-2 border-border rounded-lg bg-card">
+      <table className="w-full min-w-max border-collapse text-[13px] text-foreground">
+        <thead>
+          <tr>
+            {columns.map((col) => (
+              <th
+                key={col.key}
+                className={`sticky top-0 z-10 h-11 px-3 text-right align-middle font-bold whitespace-nowrap border border-border bg-[#87CEEB] text-black text-[14px] ${col.className || ''}`}
+              >
+                {col.header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((item, index) => (
+            <tr
+              key={getItemId(item)}
+              onClick={() => onRowClick?.(item)}
+              className={`cursor-pointer transition-colors ${
+                selectedId === getItemId(item) ? 'bg-primary/20' : 'hover:bg-muted/50'
+              }`}
+            >
+              {columns.map((col) => (
+                <td
+                  key={col.key}
+                  className={`px-3 py-2 align-middle whitespace-nowrap border border-border ${col.className || ''}`}
                 >
-                  {columns.map((col) => (
-                    <td 
-                      key={col.key} 
-                      className={`p-4 align-middle whitespace-nowrap ${col.className || ''}`}
-                    >
-                      {col.render(item, index)}
-                    </td>
-                  ))}
-                </tr>
+                  {col.render(item, index)}
+                </td>
               ))}
-            </tbody>
-          </table>
-        </div>
-        <ScrollBar orientation="horizontal" />
-        <ScrollBar orientation="vertical" />
-      </ScrollArea>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
