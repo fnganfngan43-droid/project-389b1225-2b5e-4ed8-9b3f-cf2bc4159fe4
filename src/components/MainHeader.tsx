@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useAccounting } from '@/contexts/AccountingContext';
-import { Settings, LogOut, Calculator, Download } from 'lucide-react';
+import { Settings, LogOut, Download } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -56,8 +56,8 @@ export function MainHeader({ onSettingsClick, onLogout, title = 'الشاشة ا
       <div className="flex items-center justify-between">
         {/* Right side - Logo & Title */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full gradient-gold flex items-center justify-center shadow-soft">
-            <Calculator className="w-5 h-5 text-accent-foreground" />
+          <div className="w-10 h-10 rounded-full overflow-hidden shadow-soft border-2 border-accent/60">
+            <img src="/pwa-192x192.png" alt="شعار التطبيق" className="w-full h-full object-cover" />
           </div>
           <div>
             <h1 className="text-lg font-bold">{title}</h1>

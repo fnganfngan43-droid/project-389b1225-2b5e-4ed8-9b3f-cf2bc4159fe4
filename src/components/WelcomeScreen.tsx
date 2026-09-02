@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAccounting } from '@/contexts/AccountingContext';
-import { Calculator, LogIn, LogOut, User, Eye, EyeOff, Lock } from 'lucide-react';
+import { LogIn, LogOut, User, Eye, EyeOff, Lock } from 'lucide-react';
 import { verifyPassword } from '@/utils/secureStorage';
 import { toast } from 'sonner';
 
@@ -48,8 +48,8 @@ export function WelcomeScreen() {
 
       {/* Logo */}
       <div className="relative z-10 animate-slide-up">
-        <div className="w-32 h-32 rounded-full gradient-gold shadow-glow flex items-center justify-center mb-8 animate-float">
-          <Calculator className="w-16 h-16 text-accent-foreground" />
+        <div className="w-32 h-32 rounded-full shadow-glow overflow-hidden mb-8 animate-float border-4 border-accent/60">
+          <img src="/pwa-512x512.png" alt="شعار رفيق المحاسب" className="w-full h-full object-cover" />
         </div>
       </div>
 
