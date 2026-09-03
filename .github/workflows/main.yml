@@ -317,6 +317,33 @@ jobs:
               -alpha off -compose CopyOpacity -composite "$dir/ic_launcher_round.png"
           done
 
+          # Adaptive icons (Android 8+) — يضمن ظهور الشعار الدائري على المشغّلات الحديثة مثل MIUI
+          cat > android-app/app/src/main/res/values/ic_launcher_background.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources><color name="ic_launcher_background">#1A6B5F</color></resources>
+          XML
+          mkdir -p android-app/app/src/main/res/mipmap-anydpi-v26
+          cat > android-app/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+            <background android:drawable="@color/ic_launcher_background"/>
+            <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+          </adaptive-icon>
+          XML
+          cat > android-app/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+            <background android:drawable="@color/ic_launcher_background"/>
+            <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+          </adaptive-icon>
+          XML
+          # Foreground بحجم 108dp مع منطقة أمان (الشعار في الوسط 72%)
+          for spec in "mdpi:108" "hdpi:162" "xhdpi:216" "xxhdpi:324" "xxxhdpi:432"; do
+            d="${spec%%:*}"; s="${spec##*:}"; inner=$((s*72/100))
+            dir="android-app/app/src/main/res/mipmap-$d"
+            convert /tmp/logo.png -background none -gravity center -resize ${inner}x${inner} -extent ${s}x${s} "$dir/ic_launcher_foreground.png"
+          done
+
       - name: إعداد JDK 17
         uses: actions/setup-java@v4
         with:
