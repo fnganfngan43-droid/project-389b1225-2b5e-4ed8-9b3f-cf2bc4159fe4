@@ -14,14 +14,35 @@ interface MainHeaderProps {
   title?: string;
 }
 
+/** True when the app is already installed/standalone (PWA or Android APK WebView). */
+function detectInstalled(): boolean {
+  // PWA installed (Chrome/Edge/Safari standalone)
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    return true;
+  }
+  // iOS Safari standalone
+  if ((navigator as Navigator & { standalone?: boolean }).standalone === true) {
+    return true;
+  }
+  // Android APK WebView — the native print bridge is injected only inside the installed APK
+  if ((window as Window & { AndroidPrint?: unknown }).AndroidPrint) {
+    return true;
+  }
+  // Generic WebView signals (AppsGeyser / Capacitor / Android WebView)
+  const ua = navigator.userAgent || '';
+  if (/wv|WebView|AppGeyser|Capacitor/i.test(ua)) {
+    return true;
+  }
+  return false;
+}
+
 export function MainHeader({ onSettingsClick, onLogout, title = 'الشاشة الرئيسية' }: MainHeaderProps) {
   const { settings } = useAccounting();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
-    // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    if (detectInstalled()) {
       setIsInstalled(true);
     }
 
