@@ -7,6 +7,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: تنزيل ملفات المشروع
+        uses: actions/checkout@v4
+
       - name: إنشاء مشروع أندرويد
         run: |
           mkdir -p android-app/app/src/main/java/com/fares/accounting android-app/app/src/main/res/values
@@ -39,8 +42,8 @@ jobs:
               applicationId 'com.fares.accounting'
               minSdk 23
               targetSdk 35
-              versionCode 2
-              versionName '1.1'
+              versionCode 3
+              versionName '1.2'
             }
           }
           GRADLE
@@ -189,6 +192,13 @@ jobs:
                   () -> startNativePrint(html)
                 );
               }
+
+              @JavascriptInterface
+              public void printHtml(final String html, final String name) {
+                new Handler(Looper.getMainLooper()).post(
+                  () -> startNativePrint(html)
+                );
+              }
             }
 
             private void startNativePrint(String html) {
@@ -295,13 +305,14 @@ jobs:
       - name: إنشاء أيقونة التطبيق الدائرية
         run: |
           sudo apt-get update && sudo apt-get install -y imagemagick
-          curl -fsSL -o /tmp/logo.png https://fares-2026.lovable.app/pwa-512x512.png
+          test -f public/pwa-512x512.png
+          cp public/pwa-512x512.png /tmp/logo.png
           for spec in "mdpi:48" "hdpi:72" "xhdpi:96" "xxhdpi:144" "xxxhdpi:192"; do
             d="${spec%%:*}"; s="${spec##*:}"
             dir="android-app/app/src/main/res/mipmap-$d"
             mkdir -p "$dir"
-            convert /tmp/logo.png -resize ${s}x${s} "$dir/ic_launcher.png"
-            convert /tmp/logo.png -resize ${s}x${s} \
+            convert /tmp/logo.png -background none -gravity center -resize ${s}x${s} -extent ${s}x${s} "$dir/ic_launcher.png"
+            convert /tmp/logo.png -background none -gravity center -resize ${s}x${s} -extent ${s}x${s} \
               \( +clone -threshold -1 -negate -fill white -draw "circle $((s/2)),$((s/2)) $((s/2)),0" \) \
               -alpha off -compose CopyOpacity -composite "$dir/ic_launcher_round.png"
           done

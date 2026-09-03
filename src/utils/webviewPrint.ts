@@ -16,10 +16,17 @@ export function isWebView(): boolean {
     (/(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i.test(ua));
 }
 
+interface AndroidPrintBridge {
+  printHtml?: (html: string, name: string) => void;
+  printPage?: (html: string) => void;
+}
+
 /** Native Android print bridge (exposed by the APK WebView), if available */
-function getNativePrint(): any {
-  const bridge = (window as any).AndroidPrint;
-  return bridge && typeof bridge.printHtml === 'function' ? bridge : null;
+function getNativePrint(): AndroidPrintBridge | null {
+  const bridge = (window as Window & { AndroidPrint?: AndroidPrintBridge }).AndroidPrint;
+  return bridge && (typeof bridge.printHtml === 'function' || typeof bridge.printPage === 'function')
+    ? bridge
+    : null;
 }
 
 /** 
@@ -32,7 +39,11 @@ export function printHTML(htmlContent: string, onReady?: (doc: Document) => void
   const native = getNativePrint();
   if (native) {
     try {
-      native.printHtml(htmlContent, 'تقرير');
+      if (typeof native.printHtml === 'function') {
+        native.printHtml(htmlContent, 'تقرير');
+      } else if (typeof native.printPage === 'function') {
+        native.printPage(htmlContent);
+      }
       return;
     } catch (e) {
       console.warn('Native print failed, falling back to iframe', e);
