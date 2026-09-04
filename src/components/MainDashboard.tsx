@@ -138,6 +138,7 @@ export function MainDashboard() {
         title={getScreenTitle()}
         onHomeClick={() => setActiveScreen('home')}
         onLogout={logout}
+        showLogout={activeScreen !== 'reports'}
       />
       <NavigationBar 
         activeScreen={activeScreen}
