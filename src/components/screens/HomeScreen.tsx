@@ -8,6 +8,7 @@ import {
   ShoppingCart,
   ShoppingBag,
   Boxes,
+  BookOpen,
   LogOut,
 } from 'lucide-react';
 
@@ -19,6 +20,7 @@ interface HomeScreenProps {
 
 const homeItems: { id: ScreenType; label: string; icon: React.ElementType }[] = [
   { id: 'setup', label: 'التهيئة', icon: SettingsIcon },
+  { id: 'chart-of-accounts', label: 'الدليل المحاسبي', icon: BookOpen },
   { id: 'operations', label: 'العمليات', icon: Wrench },
   { id: 'reports', label: 'التقارير', icon: BarChart3 },
   { id: 'sales', label: 'المبيعات', icon: ShoppingCart },
