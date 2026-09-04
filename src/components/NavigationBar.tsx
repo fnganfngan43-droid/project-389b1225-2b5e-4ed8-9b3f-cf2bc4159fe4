@@ -2,6 +2,7 @@ import { cn } from '@/lib/utils';
 import { ScreenType } from '@/types/accounting';
 import {
   BarChart3,
+  Home,
   Settings as SettingsIcon,
   CheckSquare,
   FileText,
@@ -14,6 +15,7 @@ interface NavigationBarProps {
 }
 
 const navItems: { id: ScreenType; label: string; icon: React.ElementType }[] = [
+  { id: 'home', label: 'الرئيسية', icon: Home },
   { id: 'setup', label: 'التهيئة', icon: SettingsIcon },
   { id: 'operations', label: 'العمليات', icon: Wrench },
   { id: 'reports', label: 'التقارير', icon: BarChart3 },

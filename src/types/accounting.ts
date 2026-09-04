@@ -128,6 +128,9 @@ export interface Reconciliation {
 }
 
 export type ScreenType = 
+  | 'home'
+  | 'purchases'
+  | 'inventory'
   | 'sales' 
   | 'payment' 
   | 'receipt' 
