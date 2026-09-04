@@ -12,6 +12,7 @@ interface MainHeaderProps {
   onHomeClick: () => void;
   onLogout: () => void;
   title?: string;
+  showLogout?: boolean;
 }
 
 /** True when the app is already installed/standalone (PWA or Android APK WebView). */
