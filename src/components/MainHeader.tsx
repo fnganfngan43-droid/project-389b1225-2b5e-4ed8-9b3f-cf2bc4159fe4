@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useAccounting } from '@/contexts/AccountingContext';
-import { Settings, LogOut, Download } from 'lucide-react';
+import { LogOut, Download, Home } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -9,7 +9,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 interface MainHeaderProps {
-  onSettingsClick: () => void;
+  onHomeClick: () => void;
   onLogout: () => void;
   title?: string;
 }
@@ -36,7 +36,7 @@ function detectInstalled(): boolean {
   return false;
 }
 
-export function MainHeader({ onSettingsClick, onLogout, title = 'الشاشة الرئيسية' }: MainHeaderProps) {
+export function MainHeader({ onHomeClick, onLogout, title = 'الشاشة الرئيسية' }: MainHeaderProps) {
   const { settings } = useAccounting();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -102,10 +102,11 @@ export function MainHeader({ onSettingsClick, onLogout, title = 'الشاشة ا
           <Button
             variant="ghost"
             size="icon"
-            onClick={onSettingsClick}
+            onClick={onHomeClick}
             className="text-primary-foreground hover:bg-primary-foreground/10"
+            title="الرجوع إلى الشاشة الرئيسية"
           >
-            <Settings className="w-5 h-5" />
+            <Home className="w-5 h-5" />
           </Button>
           <Button
             variant="ghost"

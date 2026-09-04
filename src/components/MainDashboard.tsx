@@ -15,6 +15,9 @@ import { AccountGroupManagementScreen } from '@/components/screens/AccountGroupM
 import { PasswordSettingsScreen } from '@/components/screens/PasswordSettingsScreen';
 import { InvoiceVoucherReportScreen } from '@/components/screens/InvoiceVoucherReportScreen';
 import { SetupScreen } from '@/components/screens/SetupScreen';
+import { HomeScreen } from '@/components/screens/HomeScreen';
+import { PurchasesScreen } from '@/components/screens/PurchasesScreen';
+import { InventoryScreen } from '@/components/screens/InventoryScreen';
 import { OperationsScreen } from '@/components/screens/OperationsScreen';
 import { ReconciliationScreen } from '@/components/screens/ReconciliationScreen';
 import { useAccounting } from '@/contexts/AccountingContext';
@@ -22,7 +25,7 @@ import { ScreenType } from '@/types/accounting';
 
 export function MainDashboard() {
   const { logout } = useAccounting();
-  const [activeScreen, setActiveScreen] = useState<ScreenType>('chart-of-accounts');
+  const [activeScreen, setActiveScreen] = useState<ScreenType>('home');
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const handleScreenChange = (screen: ScreenType) => {
@@ -31,6 +34,9 @@ export function MainDashboard() {
 
   const getScreenTitle = () => {
     const titles: Record<ScreenType, string> = {
+      'home': 'الشاشة الرئيسية',
+      'purchases': 'المشتريات',
+      'inventory': 'المخزون',
       'sales': 'المبيعات',
       'payment': 'سند صرف',
       'receipt': 'سند قبض',
@@ -75,9 +81,11 @@ export function MainDashboard() {
     'group-management': <AccountGroupManagementScreen />,
     'password-settings': <PasswordSettingsScreen />,
     'invoice-voucher-report': <InvoiceVoucherReportScreen />,
-    'setup': <SetupScreen onBack={() => setActiveScreen('chart-of-accounts')} />,
-    'operations': <OperationsScreen onBack={() => setActiveScreen('reports')} />,
+    'setup': <SetupScreen onBack={() => setActiveScreen('home')} />,
+    'operations': <OperationsScreen onBack={() => setActiveScreen('home')} />,
     'reconciliation': <ReconciliationScreen />,
+    'purchases': <PurchasesScreen />,
+    'inventory': <InventoryScreen />,
   };
 
   const renderScreens = () =>
@@ -92,10 +100,26 @@ export function MainDashboard() {
         </div>
       ));
 
+  if (activeScreen === 'home') {
+    return (
+      <div className="h-screen bg-background flex flex-col overflow-hidden">
+        <HomeScreen
+          onNavigate={handleScreenChange}
+          onSettingsClick={() => setSettingsOpen(true)}
+          onLogout={logout}
+        />
+        <SettingsDialog
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+        />
+      </div>
+    );
+  }
+
   if (activeScreen === 'setup') {
     return (
       <div className="h-screen bg-background flex flex-col overflow-hidden">
-        <SetupScreen onBack={() => setActiveScreen('chart-of-accounts')} />
+        <SetupScreen onBack={() => setActiveScreen('home')} />
       </div>
     );
   }
@@ -103,7 +127,7 @@ export function MainDashboard() {
   if (activeScreen === 'operations') {
     return (
       <div className="h-screen bg-background flex flex-col overflow-hidden">
-        <OperationsScreen onBack={() => setActiveScreen('reports')} />
+        <OperationsScreen onBack={() => setActiveScreen('home')} />
       </div>
     );
   }
@@ -112,7 +136,7 @@ export function MainDashboard() {
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       <MainHeader 
         title={getScreenTitle()}
-        onSettingsClick={() => setSettingsOpen(true)}
+        onHomeClick={() => setActiveScreen('home')}
         onLogout={logout}
       />
       <NavigationBar 
