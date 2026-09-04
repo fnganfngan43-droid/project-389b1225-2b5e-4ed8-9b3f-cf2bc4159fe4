@@ -136,7 +136,7 @@ export function MainDashboard() {
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       <MainHeader 
         title={getScreenTitle()}
-        onSettingsClick={() => setSettingsOpen(true)}
+        onHomeClick={() => setActiveScreen('home')}
         onLogout={logout}
       />
       <NavigationBar 
