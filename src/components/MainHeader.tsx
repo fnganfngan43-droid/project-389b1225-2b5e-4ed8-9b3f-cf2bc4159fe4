@@ -37,7 +37,7 @@ function detectInstalled(): boolean {
   return false;
 }
 
-export function MainHeader({ onHomeClick, onLogout, title = 'الشاشة الرئيسية' }: MainHeaderProps) {
+export function MainHeader({ onHomeClick, onLogout, title = 'الشاشة الرئيسية', showLogout = true }: MainHeaderProps) {
   const { settings } = useAccounting();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
