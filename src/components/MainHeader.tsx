@@ -109,14 +109,16 @@ export function MainHeader({ onHomeClick, onLogout, title = 'الشاشة الر
           >
             <Home className="w-5 h-5" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onLogout}
-            className="text-primary-foreground hover:bg-primary-foreground/10"
-          >
-            <LogOut className="w-5 h-5" />
-          </Button>
+          {showLogout && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onLogout}
+              className="text-primary-foreground hover:bg-primary-foreground/10"
+            >
+              <LogOut className="w-5 h-5" />
+            </Button>
+          )}
         </div>
       </div>
     </header>
