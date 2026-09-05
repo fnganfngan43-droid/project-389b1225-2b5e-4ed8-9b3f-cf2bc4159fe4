@@ -11,7 +11,9 @@ import {
   Settings,
   CurrencyExchange,
   DiscountEntry,
-  Reconciliation
+  Reconciliation,
+  ChartAccount,
+  AnalyticEntity
 } from '@/types/accounting';
 
 interface AccountingContextType {
@@ -86,7 +88,26 @@ interface AccountingContextType {
   addReconciliation: (r: Omit<Reconciliation, 'id'>) => void;
   updateReconciliation: (id: string, r: Partial<Reconciliation>) => void;
   deleteReconciliation: (id: string) => void;
+
+  // Chart of accounts tree
+  chartAccounts: ChartAccount[];
+  addChartAccount: (a: Omit<ChartAccount, 'id'>) => void;
+  updateChartAccount: (id: string, a: Partial<ChartAccount>) => void;
+  deleteChartAccount: (id: string) => void;
+
+  // Analytic entities (customers / boxes / banks / suppliers / inventory)
+  analyticEntities: AnalyticEntity[];
+  addAnalyticEntity: (e: Omit<AnalyticEntity, 'id'>) => void;
+  updateAnalyticEntity: (id: string, e: Partial<AnalyticEntity>) => void;
+  deleteAnalyticEntity: (id: string) => void;
 }
+
+const initialChartAccounts: ChartAccount[] = [
+  { id: 'ca1', rank: 1, kind: 'رئيسي', accountName: 'الأصول', accountNumber: '1', reportType: 'ميزانية عمومية', nature: 'مدين', isSystem: true },
+  { id: 'ca2', rank: 1, kind: 'رئيسي', accountName: 'الخصوم', accountNumber: '2', reportType: 'ميزانية عمومية', nature: 'دائن', isSystem: true },
+  { id: 'ca3', rank: 1, kind: 'رئيسي', accountName: 'المصروفات', accountNumber: '3', reportType: 'أرباح وخسائر', nature: 'مدين', isSystem: true },
+  { id: 'ca4', rank: 1, kind: 'رئيسي', accountName: 'الإيرادات', accountNumber: '4', reportType: 'أرباح وخسائر', nature: 'دائن', isSystem: true },
+];
 
 const AccountingContext = createContext<AccountingContextType | undefined>(undefined);
 
@@ -175,6 +196,8 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
   const [currencyExchanges, setCurrencyExchanges] = useState<CurrencyExchange[]>([]);
   const [discounts, setDiscounts] = useState<DiscountEntry[]>([]);
   const [reconciliations, setReconciliations] = useState<Reconciliation[]>([]);
+  const [chartAccounts, setChartAccounts] = useState<ChartAccount[]>(initialChartAccounts);
+  const [analyticEntities, setAnalyticEntities] = useState<AnalyticEntity[]>([]);
 
   // Async hydrate from encrypted storage on mount
   useEffect(() => {
@@ -201,6 +224,8 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
         if (storedData.currencyExchanges) setCurrencyExchanges(storedData.currencyExchanges);
         if (storedData.discounts) setDiscounts(storedData.discounts);
         if (storedData.reconciliations) setReconciliations(storedData.reconciliations);
+        if (storedData.chartAccounts?.length) setChartAccounts(storedData.chartAccounts);
+        if (storedData.analyticEntities) setAnalyticEntities(storedData.analyticEntities);
       }
       hydratedRef.current = true;
       setIsReady(true);
@@ -236,8 +261,10 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
       currencyExchanges,
       discounts,
       reconciliations,
+      chartAccounts,
+      analyticEntities,
     });
-  }, [password, settings, accounts, groups, currencies, governorates, vouchers, openingBalances, invoices, currencyExchanges, discounts, reconciliations]);
+  }, [password, settings, accounts, groups, currencies, governorates, vouchers, openingBalances, invoices, currencyExchanges, discounts, reconciliations, chartAccounts, analyticEntities]);
 
   if (!isReady) {
     return (
@@ -307,6 +334,16 @@ export function AccountingProvider({ children }: { children: ReactNode }) {
     addReconciliation: (r) => setReconciliations(prev => [...prev, { ...r, id: generateId() }]),
     updateReconciliation: (id, r) => setReconciliations(prev => prev.map(x => x.id === id ? { ...x, ...r } : x)),
     deleteReconciliation: (id) => setReconciliations(prev => prev.filter(x => x.id !== id)),
+
+    chartAccounts,
+    addChartAccount: (a) => setChartAccounts(prev => [...prev, { ...a, id: generateId() }]),
+    updateChartAccount: (id, a) => setChartAccounts(prev => prev.map(x => x.id === id ? { ...x, ...a } : x)),
+    deleteChartAccount: (id) => setChartAccounts(prev => prev.filter(x => x.id !== id)),
+
+    analyticEntities,
+    addAnalyticEntity: (e) => setAnalyticEntities(prev => [...prev, { ...e, id: generateId() }]),
+    updateAnalyticEntity: (id, e) => setAnalyticEntities(prev => prev.map(x => x.id === id ? { ...x, ...e } : x)),
+    deleteAnalyticEntity: (id) => setAnalyticEntities(prev => prev.filter(x => x.id !== id)),
   };
 
   return (
