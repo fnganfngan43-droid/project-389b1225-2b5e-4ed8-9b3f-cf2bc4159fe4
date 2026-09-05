@@ -127,6 +127,41 @@ export interface Reconciliation {
   amount: number;
 }
 
+// ===== Chart of Accounts tree =====
+export type AnalyticType = 'عام' | 'عميل' | 'صناديق' | 'بنوك' | 'موردين' | 'مخزون';
+
+export interface ChartAccount {
+  id: string;
+  rank: 1 | 2 | 3 | 4 | 5 | 6;
+  kind: 'رئيسي' | 'فرعي';
+  reportType?: 'ميزانية عمومية' | 'أرباح وخسائر';
+  parentNumber?: string;
+  accountName: string;
+  accountNumber: string;
+  nature?: 'مدين' | 'دائن';
+  analyticType?: AnalyticType;
+  analyticName?: string;
+  currencies?: string[];
+  isSystem?: boolean;
+}
+
+export interface AnalyticEntity {
+  id: string;
+  analyticType: AnalyticType;
+  parentAccountNumber: string;
+  parentAccountName: string;
+  entityNumber: string;
+  entityName: string;
+  phone?: string;
+  phone2?: string;
+  country?: string;
+  governorate?: string;
+  city?: string;
+  currencies: string[];
+  defaultCurrency?: string;
+}
+
+
 export type ScreenType = 
   | 'home'
   | 'purchases'
