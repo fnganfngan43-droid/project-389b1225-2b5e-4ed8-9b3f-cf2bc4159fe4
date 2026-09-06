@@ -191,7 +191,7 @@ export function AnalyticAccountsScreen({ analyticType, title }: Props) {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <div>
               <Label>اسم الحساب / المجموعة</Label>
               <Select value={form.parentAccountNumber} onValueChange={handleParentChange}>
