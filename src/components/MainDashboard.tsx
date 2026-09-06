@@ -67,7 +67,7 @@ export function MainDashboard() {
   }
 
   const screenMap: Partial<Record<ScreenType, JSX.Element>> = {
-    'chart-of-accounts': <ChartOfAccountsScreen />,
+    'chart-of-accounts': <ChartOfAccountsScreen onClose={() => setActiveScreen('home')} />,
     'receipt': <VoucherScreen type="receipt" />,
     'payment': <VoucherScreen type="payment" />,
     'sales': <SalesScreen />,
