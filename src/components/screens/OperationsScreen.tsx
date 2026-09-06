@@ -65,7 +65,7 @@ export function OperationsScreen({ onBack }: OperationsScreenProps) {
   }
 
   const screenMap: Record<OpsSubScreen, JSX.Element> = {
-    'chart-of-accounts': <ChartOfAccountsScreen />,
+    'chart-of-accounts': <ChartOfAccountsScreen onClose={onBack} />,
     'opening-balance': <OpeningBalanceScreen />,
     'receipt': <VoucherScreen type="receipt" />,
     'payment': <VoucherScreen type="payment" />,
