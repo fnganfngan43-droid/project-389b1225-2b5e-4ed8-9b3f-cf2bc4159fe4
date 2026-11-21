@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
+import { SubAccountFields } from '@/components/SubAccountFields';
 import { OpeningBalance } from '@/types/accounting';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
 
@@ -261,34 +262,11 @@ export function OpeningBalanceScreen() {
 
             {/* Row 2 */}
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
-                <Select 
-                  value={formData.groupName} 
-                  onValueChange={(val) => setFormData(prev => ({ ...prev, groupName: val, accountName: '' }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر المجموعة" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {groups.map(group => (
-                      <SelectItem key={group.id} value={group.name}>
-                        {group.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-                <AccountSearchInput
-                  accounts={filteredAccounts}
-                  value={formData.accountName}
-                  onSelect={(val, acc) => setFormData(prev => ({ ...prev, accountName: val, accountNumber: acc?.accountNumber || prev.accountNumber }))}
-                  placeholder="ابحث عن الحساب..."
-                  disabled={!formData.groupName}
-                />
-              </div>
+              <SubAccountFields
+ subAccountName={formData.groupName}
+ analyticName={formData.accountName}
+ onChange={({ subAccountName, analyticName }) => setFormData(prev => ({ ...prev, groupName: subAccountName, accountName: analyticName }))}
+ />
             </div>
 
             {/* Row 3 */}

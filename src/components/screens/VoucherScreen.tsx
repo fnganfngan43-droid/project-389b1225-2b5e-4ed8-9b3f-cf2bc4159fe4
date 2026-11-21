@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
+import { SubAccountFields } from '@/components/SubAccountFields';
 import { Voucher } from '@/types/accounting';
 import { printVoucher } from '@/utils/printService';
 import { AccountSearchInput } from '@/components/AccountSearchInput';
@@ -393,34 +394,11 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                   <h3 className="text-sm font-semibold text-primary text-center bg-primary/10 rounded py-1">الطرف المدين</h3>
                   
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
-                      <Select 
-                        value={formData.debitGroupName} 
-                        onValueChange={(val) => setFormData(prev => ({ ...prev, debitGroupName: val, debitAccountNumber: '', debitAccountName: '' }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="اختر المجموعة" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {groups.map(group => (
-                            <SelectItem key={group.id} value={group.name}>
-                              {group.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-                      <AccountSearchInput
-                        accounts={debitFilteredAccounts}
-                        value={formData.debitAccountName}
-                        onSelect={(val, acc) => setFormData(prev => ({ ...prev, debitAccountName: val, debitAccountNumber: acc?.accountNumber || prev.debitAccountNumber }))}
-                        placeholder="ابحث عن الحساب..."
-                        disabled={!formData.debitGroupName}
-                      />
-                    </div>
+                    <SubAccountFields
+ subAccountName={formData.debitGroupName}
+ analyticName={formData.debitAccountName}
+ onChange={({ subAccountName, analyticName }) => setFormData(prev => ({ ...prev, debitGroupName: subAccountName, debitAccountName: analyticName }))}
+ />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -486,34 +464,11 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                   <h3 className="text-sm font-semibold text-success text-center bg-success/10 rounded py-1">الطرف الدائن</h3>
                   
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
-                      <Select 
-                        value={formData.creditGroupName} 
-                        onValueChange={(val) => setFormData(prev => ({ ...prev, creditGroupName: val, creditAccountNumber: '', creditAccountName: '' }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="اختر المجموعة" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {groups.map(group => (
-                            <SelectItem key={group.id} value={group.name}>
-                              {group.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-                      <AccountSearchInput
-                        accounts={creditFilteredAccounts}
-                        value={formData.creditAccountName}
-                        onSelect={(val, acc) => setFormData(prev => ({ ...prev, creditAccountName: val, creditAccountNumber: acc?.accountNumber || prev.creditAccountNumber }))}
-                        placeholder="ابحث عن الحساب..."
-                        disabled={!formData.creditGroupName}
-                      />
-                    </div>
+                    <SubAccountFields
+ subAccountName={formData.creditGroupName}
+ analyticName={formData.creditAccountName}
+ onChange={({ subAccountName, analyticName }) => setFormData(prev => ({ ...prev, creditGroupName: subAccountName, creditAccountName: analyticName }))}
+ />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -581,34 +536,11 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                   <h3 className="text-sm font-semibold text-success text-center bg-success/10 rounded py-1">الطرف الدائن</h3>
                   
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
-                      <Select 
-                        value={formData.creditGroupName} 
-                        onValueChange={(val) => setFormData(prev => ({ ...prev, creditGroupName: val, creditAccountNumber: '', creditAccountName: '' }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="اختر المجموعة" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {groups.map(group => (
-                            <SelectItem key={group.id} value={group.name}>
-                              {group.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-                      <AccountSearchInput
-                        accounts={creditFilteredAccounts}
-                        value={formData.creditAccountName}
-                        onSelect={(val, acc) => setFormData(prev => ({ ...prev, creditAccountName: val, creditAccountNumber: acc?.accountNumber || prev.creditAccountNumber }))}
-                        placeholder="ابحث عن الحساب..."
-                        disabled={!formData.creditGroupName}
-                      />
-                    </div>
+                    <SubAccountFields
+ subAccountName={formData.creditGroupName}
+ analyticName={formData.creditAccountName}
+ onChange={({ subAccountName, analyticName }) => setFormData(prev => ({ ...prev, creditGroupName: subAccountName, creditAccountName: analyticName }))}
+ />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -674,34 +606,11 @@ export function VoucherScreen({ type }: VoucherScreenProps) {
                   <h3 className="text-sm font-semibold text-primary text-center bg-primary/10 rounded py-1">الطرف المدين</h3>
                   
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
-                      <Select 
-                        value={formData.debitGroupName} 
-                        onValueChange={(val) => setFormData(prev => ({ ...prev, debitGroupName: val, debitAccountNumber: '', debitAccountName: '' }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="اختر المجموعة" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {groups.map(group => (
-                            <SelectItem key={group.id} value={group.name}>
-                              {group.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-                      <AccountSearchInput
-                        accounts={debitFilteredAccounts}
-                        value={formData.debitAccountName}
-                        onSelect={(val, acc) => setFormData(prev => ({ ...prev, debitAccountName: val, debitAccountNumber: acc?.accountNumber || prev.debitAccountNumber }))}
-                        placeholder="ابحث عن الحساب..."
-                        disabled={!formData.debitGroupName}
-                      />
-                    </div>
+                    <SubAccountFields
+ subAccountName={formData.debitGroupName}
+ analyticName={formData.debitAccountName}
+ onChange={({ subAccountName, analyticName }) => setFormData(prev => ({ ...prev, debitGroupName: subAccountName, debitAccountName: analyticName }))}
+ />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">

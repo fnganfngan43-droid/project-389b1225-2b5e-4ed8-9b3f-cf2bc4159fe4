@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
+import { SubAccountFields } from '@/components/SubAccountFields';
 import { ScrollableTable } from '@/components/ui/ScrollableTable';
 import { 
   Select,
@@ -264,42 +265,11 @@ export function CurrencyExchangeScreen() {
               <p className="text-sm font-semibold text-destructive mb-3">الطرف المحول منه (دائن)</p>
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
-                    <Select 
-                      value={formData.fromGroupName} 
-                      onValueChange={(val) => setFormData(prev => ({ ...prev, fromGroupName: val, fromAccountNumber: '', fromAccountName: '' }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="اختر المجموعة" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {groups.map(group => (
-                          <SelectItem key={group.id} value={group.name}>
-                            {group.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-                    <Select 
-                      value={formData.fromAccountName} 
-                      onValueChange={(val) => setFormData(prev => ({ ...prev, fromAccountName: val }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="اختر الحساب" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {fromAccounts.map(acc => (
-                          <SelectItem key={acc.id} value={acc.accountName}>
-                            {acc.accountName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <SubAccountFields
+ subAccountName={formData.fromGroupName}
+ analyticName={formData.fromAccountName}
+ onChange={({ subAccountName, analyticName }) => setFormData(prev => ({ ...prev, fromGroupName: subAccountName, fromAccountName: analyticName }))}
+ />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -347,42 +317,11 @@ export function CurrencyExchangeScreen() {
               <p className="text-sm font-semibold text-success mb-3">الطرف المحول إليه (مدين)</p>
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
-                    <Select 
-                      value={formData.toGroupName} 
-                      onValueChange={(val) => setFormData(prev => ({ ...prev, toGroupName: val, toAccountNumber: '', toAccountName: '' }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="اختر المجموعة" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {groups.map(group => (
-                          <SelectItem key={group.id} value={group.name}>
-                            {group.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-                    <Select 
-                      value={formData.toAccountName} 
-                      onValueChange={(val) => setFormData(prev => ({ ...prev, toAccountName: val }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="اختر الحساب" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {toAccounts.map(acc => (
-                          <SelectItem key={acc.id} value={acc.accountName}>
-                            {acc.accountName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <SubAccountFields
+ subAccountName={formData.toGroupName}
+ analyticName={formData.toAccountName}
+ onChange={({ subAccountName, analyticName }) => setFormData(prev => ({ ...prev, toGroupName: subAccountName, toAccountName: analyticName }))}
+ />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
