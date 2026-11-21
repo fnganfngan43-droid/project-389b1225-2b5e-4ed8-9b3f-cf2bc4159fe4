@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ActionToolbar } from '@/components/ActionToolbar';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { Invoice } from '@/types/accounting';
-import { AccountSearchInput } from '@/components/AccountSearchInput';
+import { SubAccountFields } from '@/components/SubAccountFields';
 
 import { parseExcelFile, mapInvoiceRow } from '@/utils/excelImport';
 import { findClosestMatch } from '@/utils/fuzzyMatch';
@@ -28,7 +28,7 @@ interface SalesScreenProps {
 }
 
 export function SalesScreen({ isReturn = false }: SalesScreenProps) {
-  const { invoices, accounts, groups, currencies, addInvoice, updateInvoice, deleteInvoice } = useAccounting();
+  const { invoices, accounts, groups, currencies, addInvoice, updateInvoice, deleteInvoice, chartAccounts } = useAccounting();
   const { dialogOpen, duplicateRef, checkAndProceed, warnIfDuplicate, handleConfirm, handleCancel } = useDuplicateReferenceCheck();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
@@ -62,7 +62,6 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
     description: '',
   });
 
-  const filteredAccounts = accounts.filter(a => a.groupName === formData.groupName);
 
   const performSave = () => {
     if (editingInvoice) {
@@ -356,23 +355,19 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
                   value={formData.type} 
                   onValueChange={(val) => {
                     const newType = val as 'cash' | 'credit';
-                    if (newType === 'cash') {
-                      setFormData(prev => ({ 
-                        ...prev, 
-                        type: newType,
-                        groupName: 'الصندوق',
-                        accountName: '',
-                        description: isReturn ? 'مرتجع مبيعات نقدية' : 'مبيعات نقدية'
-                      }));
-                    } else {
-                      setFormData(prev => ({ 
-                        ...prev, 
-                        type: newType,
-                        groupName: 'العملاء',
-                        accountName: '',
-                        description: isReturn ? 'مرتجع فاتورة آجلة' : 'عليكم جملة فاتورة آجلة'
-                      }));
-                    }
+                    const analyticType = newType === 'cash' ? 'صناديق' : 'عميل';
+                    const candidates = chartAccounts.filter(a => a.kind === 'فرعي' && a.analyticType === analyticType);
+                    setFormData(prev => ({
+                      ...prev,
+                      type: newType,
+                      groupName: candidates.find(a => a.accountName === prev.groupName)?.accountName
+                        || (candidates.length === 1 ? candidates[0].accountName : ''),
+                      accountNumber: '',
+                      accountName: '',
+                      description: newType === 'cash'
+                        ? (isReturn ? 'مرتجع مبيعات نقدية' : 'مبيعات نقدية')
+                        : (isReturn ? 'مرتجع فاتورة آجلة' : 'عليكم جملة فاتورة آجلة'),
+                    }));
                   }}
                 >
                   <SelectTrigger>
@@ -388,34 +383,13 @@ export function SalesScreen({ isReturn = false }: SalesScreenProps) {
 
             {/* Row 2 */}
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">اسم المجموعة</label>
-                <Select 
-                  value={formData.groupName} 
-                  onValueChange={(val) => setFormData(prev => ({ ...prev, groupName: val, accountName: '' }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر المجموعة" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {groups.map(group => (
-                      <SelectItem key={group.id} value={group.name}>
-                        {group.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب</label>
-                <AccountSearchInput
-                  accounts={filteredAccounts}
-                  value={formData.accountName}
-                  onSelect={(val, acc) => setFormData(prev => ({ ...prev, accountName: val, accountNumber: acc?.accountNumber || prev.accountNumber }))}
-                  placeholder="ابحث عن الحساب..."
-                  disabled={!formData.groupName}
-                />
-              </div>
+              <SubAccountFields
+                subAccountName={formData.groupName}
+                analyticName={formData.accountName}
+                onChange={({ subAccountName, analyticName }) => setFormData(prev => ({
+                  ...prev, groupName: subAccountName, accountName: analyticName, accountNumber: '',
+                }))}
+              />
             </div>
 
             {/* Row 3 */}

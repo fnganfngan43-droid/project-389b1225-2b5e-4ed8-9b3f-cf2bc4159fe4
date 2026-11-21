@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Search, X } from 'lucide-react';
 import { useAccounting } from '@/contexts/AccountingContext';
+import { getGeneralAnalyticName, getLinkedAnalyticEntities, getSubAccounts } from '@/utils/subAccountSelection';
 
 interface SimpleSearchProps {
   options: string[];
@@ -36,17 +38,20 @@ function SimpleSearchInput({ options, value, onSelect, placeholder, disabled }: 
           value={term}
           disabled={disabled}
           placeholder={placeholder}
+          aria-label={placeholder}
           className="pr-10 pl-8"
           onFocus={() => setOpen(true)}
           onChange={(e) => {
             const v = e.target.value;
             setTerm(v);
             setOpen(true);
-            if (options.includes(v)) onSelect(v);
+            onSelect(options.includes(v) ? v : '');
           }}
         />
         {term && !disabled && (
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             type="button"
             onClick={() => {
               setTerm('');
@@ -57,15 +62,17 @@ function SimpleSearchInput({ options, value, onSelect, placeholder, disabled }: 
             aria-label="مسح"
           >
             <X className="w-3 h-3" />
-          </button>
+          </Button>
         )}
       </div>
       {open && suggestions.length > 0 && (
         <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
           {suggestions.map((o) => (
-            <div
+            <Button
+              type="button"
+              variant="ghost"
               key={o}
-              className="px-3 py-2 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
+              className="w-full justify-start px-3 py-2 text-sm h-auto whitespace-normal text-right"
               onClick={() => {
                 setTerm(o);
                 onSelect(o);
@@ -73,7 +80,7 @@ function SimpleSearchInput({ options, value, onSelect, placeholder, disabled }: 
               }}
             >
               {o}
-            </div>
+            </Button>
           ))}
         </div>
       )}
@@ -94,7 +101,7 @@ export function SubAccountFields({ subAccountName, analyticName, onChange }: Sub
   const { chartAccounts, analyticEntities } = useAccounting();
 
   const subAccounts = useMemo(
-    () => chartAccounts.filter((a) => a.kind === 'فرعي'),
+    () => getSubAccounts(chartAccounts),
     [chartAccounts]
   );
 
@@ -108,26 +115,24 @@ export function SubAccountFields({ subAccountName, analyticName, onChange }: Sub
 
   const entityNames = useMemo(
     () =>
-      analyticType && !isGeneral
-        ? analyticEntities.filter((e) => e.analyticType === analyticType).map((e) => e.entityName)
-        : [],
-    [analyticEntities, analyticType, isGeneral]
+      getLinkedAnalyticEntities(selected, analyticEntities).map((e) => e.entityName),
+    [analyticEntities, selected]
   );
 
   // للحساب العام: تنزيل اسم الحساب التحليلي تلقائياً
   useEffect(() => {
     if (!selected) return;
     if (isGeneral) {
-      const auto = selected.analyticName || selected.accountName;
+      const auto = getGeneralAnalyticName(selected);
       if (analyticName !== auto) onChange({ subAccountName, analyticName: auto });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, isGeneral]);
+  }, [selected, isGeneral, analyticName]);
 
   return (
     <>
       <div>
-        <label className="text-sm text-muted-foreground mb-1 block">الحساب الفرعي</label>
+        <label className="text-sm text-muted-foreground mb-1 block">اسم الحساب الفرعي</label>
         <SimpleSearchInput
           options={subAccounts.map((a) => a.accountName)}
           value={subAccountName}
@@ -149,7 +154,7 @@ export function SubAccountFields({ subAccountName, analyticName, onChange }: Sub
             options={entityNames}
             value={analyticName}
             placeholder={`ابحث في ${analyticType}...`}
-            disabled={!subAccountName}
+            disabled={!selected}
             onSelect={(val) => onChange({ subAccountName, analyticName: val })}
           />
         )}

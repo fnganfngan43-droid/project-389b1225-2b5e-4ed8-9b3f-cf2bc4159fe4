@@ -22,7 +22,7 @@ import { Save, X, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function OpeningBalanceScreen() {
-  const { openingBalances, accounts, groups, currencies, addOpeningBalance, updateOpeningBalance, deleteOpeningBalance } = useAccounting();
+  const { openingBalances, accounts, groups, currencies, chartAccounts, analyticEntities, addOpeningBalance, updateOpeningBalance, deleteOpeningBalance } = useAccounting();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [selectedBalance, setSelectedBalance] = useState<OpeningBalance | null>(null);
@@ -75,10 +75,15 @@ export function OpeningBalanceScreen() {
   const handleEdit = () => {
     if (selectedBalance) {
       const account = accounts.find(a => a.accountName === selectedBalance.accountName);
+      const entity = analyticEntities.find(e => e.entityName === selectedBalance.accountName);
+      const subAccount = chartAccounts.find(a => a.kind === 'فرعي' && (
+        (entity && a.accountNumber === entity.parentAccountNumber) ||
+        ((!a.analyticType || a.analyticType === 'عام') && a.analyticName === selectedBalance.accountName)
+      ));
       setEditingBalance(selectedBalance);
       setFormData({
         date: selectedBalance.date,
-        groupName: account?.groupName || '',
+        groupName: subAccount?.accountName || account?.groupName || '',
         accountNumber: account?.accountNumber || '',
         accountName: selectedBalance.accountName,
         debit: selectedBalance.debit.toString(),
