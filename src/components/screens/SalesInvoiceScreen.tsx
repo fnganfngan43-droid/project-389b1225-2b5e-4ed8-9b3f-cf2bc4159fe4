@@ -82,7 +82,7 @@ export function SalesInvoiceScreen({ isReturn = false, onClose }: Props) {
   const importExcel = async (file: File) => {
     const rows = await parseExcelFile(file);
     if (mode === 'edit' && doc) {
-      const lines = rows.map((r: any) => ({ ...newLine(), itemNumber: String(r['رقم الصنف'] ?? ''), itemName: String(r['اسم الصنف'] ?? ''), unit: String(r['الوحدة'] ?? 'حبة'), qty: +r['الكمية'] || 0, unitCost: +r['تكلفة الوحدة'] || 0, price: +r['السعر'] || 0, discount: +r['الخصم'] || 0 })).filter(l => l.itemName);
+      const lines = rows.map((r: any[]) => ({ ...newLine(), itemNumber: String(r[0] ?? ''), itemName: String(r[1] ?? ''), unit: String(r[2] ?? 'حبة'), qty: +r[3] || 0, unitCost: +r[4] || 0, price: +r[5] || 0, discount: +r[6] || 0 })).filter(l => l.itemName);
       set({ lines: [...doc.lines.filter(l => l.itemName), ...lines] });
       toast.success(`تم استيراد ${lines.length} صنف`);
     } else toast.info('افتح فاتورة جديدة ثم استورد الأصناف');
@@ -119,7 +119,7 @@ export function SalesInvoiceScreen({ isReturn = false, onClose }: Props) {
           </div>
           <div className="overflow-auto border border-border rounded-md max-h-[70vh]">
             <table className="w-full text-[13px] border-collapse">
-              <thead><tr>{['رقم الفاتورة', 'التاريخ', 'النوع', 'العميل/الصندوق', 'العملة', 'الصافي'].map(h => <th key={h} className="sticky top-0 bg-[hsl(var(--report-header,197_71%_73%))] border border-border p-2 whitespace-nowrap">{h}</th>)}</tr></thead>
+              <thead><tr>{['رقم الفاتورة', 'التاريخ', 'النوع', 'العميل/الصندوق', 'العملة', 'الصافي'].map(h => <th key={h} className="sticky top-0 bg-[#87CEEB] text-black border border-border p-2 whitespace-nowrap">{h}</th>)}</tr></thead>
               <tbody>
                 {filtered.map(i => (
                   <tr key={i.id} onClick={() => { setSelectedId(i.id); setDoc(i); setMode('edit'); }} className={`cursor-pointer ${selectedId === i.id ? 'bg-primary/20' : ''}`}>

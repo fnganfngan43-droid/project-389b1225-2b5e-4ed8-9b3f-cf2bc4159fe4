@@ -19,6 +19,7 @@ import { HomeScreen } from '@/components/screens/HomeScreen';
 import { PurchasesScreen } from '@/components/screens/PurchasesScreen';
 import { InventoryScreen } from '@/components/screens/InventoryScreen';
 import { OperationsScreen } from '@/components/screens/OperationsScreen';
+import { SalesHubScreen } from '@/components/screens/SalesHubScreen';
 import { ReconciliationScreen } from '@/components/screens/ReconciliationScreen';
 import { useAccounting } from '@/contexts/AccountingContext';
 import { ScreenType } from '@/types/accounting';
@@ -120,6 +121,14 @@ export function MainDashboard() {
     return (
       <div className="h-screen bg-background flex flex-col overflow-hidden">
         <SetupScreen onBack={() => setActiveScreen('home')} />
+      </div>
+    );
+  }
+
+  if (activeScreen === 'sales') {
+    return (
+      <div className="h-screen bg-background flex flex-col overflow-hidden">
+        <SalesHubScreen onBack={() => setActiveScreen('home')} />
       </div>
     );
   }

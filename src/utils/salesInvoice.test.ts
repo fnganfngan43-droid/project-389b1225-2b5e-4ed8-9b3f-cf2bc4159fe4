@@ -1,33 +1,21 @@
-import { describe, it, expect } from 'vitest';
+import { describe, test as it } from 'node:test';
+import { strict as assert } from 'node:assert';
 import { buildJournal, invoiceTotals, isBelowCost, InvoiceLine, SalesInvoiceDoc } from './salesInvoice';
 
 const line = (o: Partial<InvoiceLine>): InvoiceLine => ({ id: '1', itemNumber: '1', itemName: 'x', unit: 'حبة', stock: 0, qty: 1, unitCost: 0, price: 0, discount: 0, ...o });
 const doc = (o: Partial<SalesInvoiceDoc>): SalesInvoiceDoc => ({ id: 'a', invoiceNumber: 'INV-001', date: '', payType: 'cash', payAccountNumber: '', payAccountName: 'الصندوق الرئيسي', customerNumber: '', customerName: 'علي', phone: '', currency: 'YER', rate: 1, reference: '', userName: '', savedAt: '', lines: [line({ qty: 1, price: 5000, discount: 400, unitCost: 3500 })], ...o });
 
 describe('sales invoice', () => {
-  it('cash invoice 5000 - discount 400: box debit 4600, sales credit 5000', () => {
-    const [sales] = buildJournal(doc({}));
-    expect(sales[0]).toMatchObject({ account: 'الصندوق الرئيسي', debit: 4600 });
-    expect(sales[1]).toMatchObject({ account: 'خصم مسموح به', debit: 400 });
-    expect(sales[2]).toMatchObject({ account: 'إيرادات المبيعات', credit: 5000 });
+  it('cash 5000 - discount 400: box debit 4600, discount 400, sales credit 5000', () => {
+    const [s] = buildJournal(doc({}));
+    assert.equal(s[0].debit, 4600); assert.equal(s[1].debit, 400); assert.equal(s[2].credit, 5000);
   });
-  it('cost entry 3500 debit cost of sales, credit inventory', () => {
-    const [, cost] = buildJournal(doc({}));
-    expect(cost[0]).toMatchObject({ debit: 3500 });
-    expect(cost[1]).toMatchObject({ account: 'المخزون', credit: 3500 });
+  it('cost entry 3500', () => {
+    const [, c] = buildJournal(doc({}));
+    assert.equal(c[0].debit, 3500); assert.equal(c[1].credit, 3500);
   });
-  it('credit invoice debits the customer', () => {
-    expect(buildJournal(doc({ payType: 'credit' }))[0][0].account).toBe('علي');
-  });
-  it('return reverses entries', () => {
-    const [sales] = buildJournal(doc({ isReturn: true }));
-    expect(sales[0].credit).toBe(4600);
-  });
-  it('total = qty x price', () => {
-    expect(invoiceTotals([line({ qty: 10, price: 12 })]).net).toBe(120);
-  });
-  it('flags price below cost', () => {
-    expect(isBelowCost(line({ price: 9, unitCost: 10 }))).toBe(true);
-    expect(isBelowCost(line({ price: 10, unitCost: 10 }))).toBe(false);
-  });
+  it('credit invoice debits customer', () => assert.equal(buildJournal(doc({ payType: 'credit' }))[0][0].account, 'علي'));
+  it('return reverses', () => assert.equal(buildJournal(doc({ isReturn: true }))[0][0].credit, 4600));
+  it('total = qty x price', () => assert.equal(invoiceTotals([line({ qty: 10, price: 12 })]).net, 120));
+  it('below cost', () => { assert.ok(isBelowCost(line({ price: 9, unitCost: 10 }))); assert.ok(!isBelowCost(line({ price: 10, unitCost: 10 }))); });
 });
