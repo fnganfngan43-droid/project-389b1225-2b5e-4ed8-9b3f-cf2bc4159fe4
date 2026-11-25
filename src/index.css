@@ -18,6 +18,7 @@
 
     /* Deep Teal Primary */
     --primary: 175 60% 28%;
+    --table-header: 197 71% 73%;
     --primary-foreground: 0 0% 100%;
 
     /* Light Teal Secondary */
@@ -77,6 +78,7 @@
     --popover-foreground: 180 10% 95%;
 
     --primary: 175 55% 45%;
+    --table-header: 197 50% 35%;
     --primary-foreground: 180 25% 8%;
 
     --secondary: 180 20% 18%;
