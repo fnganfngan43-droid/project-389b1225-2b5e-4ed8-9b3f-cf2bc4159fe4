@@ -86,7 +86,7 @@ export function MainDashboard() {
     'operations': <OperationsScreen onBack={() => setActiveScreen('home')} />,
     'reconciliation': <ReconciliationScreen />,
     'purchases': <PurchasesScreen />,
-    'inventory': <InventoryScreen />,
+    'inventory': <InventoryScreen onBack={() => setActiveScreen('home')} />,
   };
 
   const renderScreens = () =>
